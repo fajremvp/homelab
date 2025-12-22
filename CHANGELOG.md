@@ -22,6 +22,18 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 ### Removido (Removed)
 - **Hardware PCIe:** Placa HP Quad-Port removida devido a incompatibilidade de drivers/conflito IRQ e redundância técnica após implementação de VLANs.
 
+## [2025-12-22] - Migração Router-on-a-Stick e Otimização de Hardware
+### Adicionado (Added)
+- **VLAN Trunking:** Implementada VLAN 90 (WAN_FIBRA) no Proxmox e OPNsense via interface onboard.
+- **Router-on-a-Stick:** Configuração funcional utilizando o Switch TP-Link para multiplexação de tráfego WAN/LAN em um único cabo físico.
+
+### Alterado (Changed)
+- **Dropbear:** Reconfigurado para escutar na porta `2222` e utilizar a interface `enp4s0` (onboard) após a remoção da placa PCIe.
+- **Topology:** Transição de rede física multiserial para topologia virtualizada baseada em VLANs (802.1Q).
+
+### Removido (Removed)
+- **Hardware PCIe:** Placa HP Quad-Port removida devido a incompatibilidade de drivers/conflito IRQ e redundância técnica após implementação de VLANs.
+
 ## [2025-12-21] - Hardening e Acesso Remoto
 ### Adicionado (Added)
 - **ZFS Swap:** Configurada partição de swap de 16GB em ZVOL para mitigar OOM (Out of Memory) e deadlocks no ZFS.
