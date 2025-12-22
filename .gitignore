@@ -1,0 +1,86 @@
+# --- SISTEMA E EDITORES ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- SEGURANÇA GERAL (CRÍTICO) ---
+# Bloqueia arquivos de variáveis de ambiente (senhas costumam morar aqui)
+.env
+.env.*
+!.env.example
+
+# Chaves SSH e Certificados
+*.pem
+*.key
+*.pub
+id_rsa
+id_ed25519
+known_hosts
+authorized_keys
+*.crt
+*.csr
+*.pfx
+*.p12
+
+# --- INFRASTRUCTURE AS CODE (TERRAFORM) ---
+# O .tfstate contem TUDO em texto plano (senhas do Proxmox, IPs, etc)
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+override.tf.json
+.terraform/
+.terraformrc
+terraform.rc
+
+# Arquivos de variaveis
+*.tfvars
+*.tfvars.json
+
+# --- AUTOMACAO (ANSIBLE) ---
+*.retry
+.vault_pass
+.vault_password
+# Logs de execucao que podem vazar dados
+ansible.log
+
+# --- PROXMOX & HARDWARE ---
+# Imagens de disco e ISOs
+*.iso
+*.img
+*.qcow2
+*.vmdk
+
+# Backups de Cabecalho LUKS
+header-*.img
+luks-header-*
+*.luks
+
+# Bitcoin Core
+wallet.dat
+debug.log
+db.log
+.cookie
+
+# KUBERNETES & TALOS
+admin.kubeconfig
+kubeconfig
+talosconfig
+secrets.yaml
+*.enc.yaml
+
+# --- BACKUPS GERAIS ---
+*.bak
+*.backup
+*.tar.gz
+*.zip
+*.sql
+*.dump
+
+# --- LOGS ---
+*.log
+/logs/

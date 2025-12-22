@@ -1,0 +1,15 @@
+### 2.2. Políticas de Identidade e Acesso (IAM & Zero Trust)
+
+* **Princípios:** "Verify Explicitly" (Verifique explicitamente), "Use Least Privilege" (Menor privilégio possível) e "Assume Breach" (Assuma que já foi invadido). A identidade é o novo perímetro de segurança.
+
+| Entidade | Método de Autenticação | Política de Acesso (RBAC) | Expiração de Sessão/Token (TTL) |
+| :--- | :--- | :--- | :--- |
+| **Eu (Humano/Admin)** | **MFA Obrigatório** (Passkeys/YubiKey + Senha no Vaultwarden). Acesso via SSO (Authentik). | **Admin:** Acesso amplo, mas requer elevação explícita (sudo ou re-autenticação) para operações destrutivas. | Sessão Web: 12 horas.  Token CLI: 1 hora (máx). |
+| **Visitantes (Guest)** | Wi-Fi Guest (VLAN 50). Sem acesso a serviços internos. | **Nenhum:** Apenas acesso à internet com banda limitada (Throttling). Isolamento total via Firewall. | 24 horas (Rotativo). |
+| **CI/CD (Forgejo Actions)** | **AppRole (Vault)**. O runner se autentica no Vault para pegar segredos dinâmicos "Just-in-Time". | **Escopo Limitado:** Apenas leitura de repositórios e escrita no registry de containers. Sem acesso a SSH de servidores. | TTL: 15 minutos (Duração do Job). |
+| **K3s (Kubernetes)** | **Service Accounts (K8s)** mapeadas para Roles do Vault via *External Secrets Operator*. | **Namespace Isolation:** O pod do "App A" só consegue decriptar segredos do namespace "App A". | Rotação automática a cada 1 hora. |
+| **Servidores (SSH)** | Chaves SSH Ed25519 (Armazenadas em YubiKey ou Vault). | **Sem Root:** Login apenas como usuário nominal não-privilegiado; escalação via `sudo` com log de auditoria. | N/A (Chave estática, protegida por passphrase). |
+
+* **Regras de Machine-to-Machine (M2M):**
+    * **Proibido Hardcoded Credentials:** Nenhum código, script ou arquivo `.env` comitado pode conter senhas ou chaves de API reais. Deve-se usar injeção de variáveis de ambiente via Vault.
+    * **Secret Leasing (Segredos Dinâmicos):** Para serviços compatíveis (ex: Banco de Dados, AWS/S3), o Vault deve gerar uma credencial temporária que expira automaticamente assim que a tarefa termina.
