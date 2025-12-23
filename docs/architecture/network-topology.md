@@ -4,6 +4,7 @@
 
 | VLAN ID | Nome | CIDR | Descrição / Quem habita |
 | :--- | :--- | :--- | :--- |
+| **90** | `WAN_FIBRA` (Internet) | `DHCP` | **Tráfego Externo**. Sinal "sujo" da operadora que entra pelo Switch (Porta 8) e é entregue ao OPNsense via Tagged VLAN.
 | **10** | `MGMT` (Management) | `10.10.10.0/24` | **"A Torre de Controle"**. Acesso restrito. **Regra de Ouro:** IPs Estáticos obrigatórios para Proxmox e Pi. Não dependem de DHCP. **Porta de Emergência:** Uma porta física do switch será configurada como "Untagged VLAN 10". **Etiqueta Física** (Protocolo de Crise): Colar uma etiqueta física no switch ou no case do servidor contendo: "IP Emergência: 10.10.10.99 / Máscara: 255.255.255.0 / GW: 10.10.10.1". Garante acesso rápido via notebook mesmo em pânico ou sem memória.
 | **20** | `TRUSTED` (Home) | `10.10.20.0/24` | **"Dispositivos Pessoais"**. Rede de confiança média-alta. Habitantes: Notebook Arch, Celular, Desktop. Acesso permitido à Internet e, via regras restritas, a serviços na VLAN SERVER. |
 | **30** | `SERVER` (Services) | `10.10.30.0/24` | **"Produção"**. Onde rodam os serviços estáveis. Habitantes: DockerHost (Stalwart, Nostr, Vaultwarden, Forgejo), Bitcoin Node. Isolados, acessíveis apenas via portas específicas (ex: 443 via Traefik). |
