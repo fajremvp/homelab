@@ -14,13 +14,10 @@
 - **DMZ:** IP da interface WAN do OPNsense configurado como DMZ.
   - *Objetivo:* Evitar Double NAT e garantir encaminhamento direto de tráfego.
 
-### Topologia de Cabos (Double Edge)
-- **Porta LAN 1:** Conectada ao Raspberry Pi.
-  - *Uso:* VPN de emergência independente do servidor principal.
-- **Porta LAN 2:** Conectada à NIC dedicada (HP NC364T) do servidor.
-  - *Uso:* Interface WAN do firewall OPNsense.
-- **Portas restantes:** Não utilizadas.
-  - *Motivo:* Reduzir superfície de ataque.
+### Topologia de Cabos (Router-on-a-Stick)
+- **Porta LAN 1:** Conectada ao Raspberry Pi (VPN de emergência).
+- **Porta LAN 2:** Conectada à **Porta 8** do Switch TP-Link (VLAN 90 - WAN_FIBRA).
+- **Porta LAN 3:** (Livre).
 
 ---
 
@@ -158,3 +155,9 @@
 
 ### Aplicação
 - Interconexão de alta velocidade e estabilidade para todo o Homelab.
+
+---
+## Hardware Legado / Descartado
+### Placa de Rede PCIe - HP NC364T (Quad-Port)
+- **Status:** Removida do sistema em 2025-12-22.
+- **Motivo:** Incompatibilidade de drivers e redundância técnica após implementação de VLAN Trunking (802.1Q) no Switch TP-Link.
