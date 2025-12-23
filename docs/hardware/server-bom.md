@@ -145,7 +145,7 @@
 
 ### Justificativa Técnica
 - VRM suficiente para carga contínua em ambiente de servidor doméstico.  
-- Suporte nativo a 2 × NVMe PCIe 4.0 (ex.: ZFS mirror) + 4 × SATA.  
+- Suporte nativo a 2 × NVMe PCIe 4.0 (ex.: ZFS mirror) + 4 × SATA.
 - Rede 2.5 GbE integrada, eliminando necessidade de NIC adicional.
 
 ## Memória RAM — Kingston Fury Beast DDR4 (2 × 32 GB)
@@ -345,37 +345,6 @@
 - Fluxo de ar adequado para operação contínua com múltiplos discos e NVMe.  
 - Ventoinhas inclusas reduzem necessidade de upgrades imediatos.  
 - Nível de ruído compatível com ambiente doméstico.
-      
-## Placa de Rede Extra (NIC) — HP NC364T (Intel 82571EB)
-
-### Função
-- Interface dedicada para WAN do OPNsense  
-- Conexão física direta ao modem da operadora (“internet não confiável”)  
-- Isolamento lógico e físico da rede interna  
-
-### Identificação
-- Fabricante: HP  
-- Modelo: NC364T  
-- Chipset: Intel 82571EB  
-
-### Interface e Portas
-- Interface: PCI Express  
-- Portas: 4 × Gigabit Ethernet (RJ-45)  
-
-### Especificações Técnicas
-- Velocidade: 10 / 100 / 1000 Mb/s  
-- Suporte a offloading: checksum, segmentation (dependente do driver)  
-- VLAN: 802.1Q  
-
-### Compatibilidade de Software
-- Linux (kernel mainline, driver `e1000`)  
-- FreeBSD / OPNsense / pfSense  
-- Proxmox VE  
-
-### Justificativa Técnica
-- Chipset Intel garante drivers maduros e estáveis em ambientes virtualizados.  
-- Evita problemas conhecidos de NICs Realtek sob carga (packet loss, resets).  
-- Permite separação clara entre WAN, LAN e redes virtuais adicionais.
 
 #### Teste de Instalação e Rede (Dry Run)
 
@@ -386,3 +355,21 @@
     * **Conectividade:** Latência de `0.2ms` em link direto Gigabit.
     * **Discos:** ZFS Mirror (`rpool`) montado e ativo.
     * **Bloqueios Superados:** Ajuste de regra de saída/entrada no Firewall do cliente (Arch Linux) necessário para pingar o servidor na sub-rede `10.10.10.x` sem roteador.
+
+## [LEGADO] Placa de Rede Extra (NIC) — HP NC364T (Removida)
+
+> **STATUS:** Removida do sistema em 2025-12-22.
+> **MOTIVO:** Incompatibilidade com drivers modernos no Proxmox/Debian e redundância técnica após a implementação de VLAN Trunking no Switch Gerenciável.
+
+### Função Anterior
+- Interface dedicada para WAN do OPNsense.
+
+### Especificações Técnicas
+- Fabricante: HP  
+- Modelo: NC364T  
+- Chipset: Intel 82571EB  
+- Portas: 4 × Gigabit Ethernet.
+
+### Lições Aprendidas
+- Hardware de servidor antigo pode causar conflitos de IRQ e instabilidade em placas-mãe de consumidor modernas (LGA1700). 
+- A virtualização de rede (VLANs) é mais eficiente e consome menos energia do que múltiplas placas físicas para tráfego gigabit doméstico.
