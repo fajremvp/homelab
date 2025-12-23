@@ -12,6 +12,14 @@
          - Executar comando: `cryptroot-unlock` no Proxmox.
      4. **Boot:** O ZFS monta e os serviços (OPNsense, Vault, etc.) iniciam conforme a ordem de prioridade.
 
+ 	- Atualmente:
+    	- **Initramfs:** Carrega o Dropbear SSH na porta 2222 via interface `enp4s0`.
+		- **Procedimento de Desbloqueio:**
+    		1. No notebook Arch, garantir IP `10.10.10.99`.
+    		2. Executar: `ssh -p 2222 root@10.10.10.1`.
+    		3. No prompt do BusyBox, rodar: `cryptroot-unlock`.
+    		4. Digitar a senha do LUKS e aguardar a queda da conexão.
+
 * **Ordem de Boot Automática (Startup Delays):**
 	1. OPNsense: Priority 1 (Delay 0s). A rede precisa subir primeiro.
 	2. Vault: Priority 2 (Delay 30s). Os segredos precisam estar disponíveis.
