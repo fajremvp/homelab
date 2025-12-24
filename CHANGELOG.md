@@ -10,6 +10,10 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - 
 
 ---
+## [2025-12-24] Corrigido (Fixed)
+- **Remote Unlock:** Corrigida falha de autenticação no Dropbear SSH (permissões de chave e flags de inicialização).
+- **Network Interface:** Normalizada nomenclatura da interface de rede física para `nic0` no Proxmox host.
+
 ## [2025-12-22] - Migração Router-on-a-Stick e Otimização de Hardware
 ### Adicionado (Added)
 - **VLAN Trunking:** Implementada VLAN 90 (WAN_FIBRA) no Proxmox e OPNsense via interface onboard.
