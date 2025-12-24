@@ -5,19 +5,23 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
 ## 2025-12-24
-**Status:** ✅ Sucesso Crítico
+**Status:** ⚠️ Resgate de Rede (Rollback)
 
-**Foco:** Correção do Desbloqueio Remoto (Dropbear) e Rede
+**Foco:** Recuperação de Acesso e Simplificação de Rede
 
-- **Problema Identificado:** O Dropbear conectava mas rejeitava a chave (`Permission denied`) ou dava timeout de rede.
-- **Causa Raiz:**
-    1. A interface de rede foi renomeada pelo sistema de `enp4s0` para `nic0`, quebrando a configuração de IP no boot.
-    2. O Dropbear não estava importando a chave SSH pública corretamente ou estava com flags conflitantes (`-s`).
-- **Solução:**
-    - Ajustado `/etc/network/interfaces` para usar `nic0`.
-    - Configurado Dropbear sem a flag `-s` e corrigidas permissões (`chmod 600`) do `authorized_keys` no initramfs.
-    - Testado fluxo completo: Reboot > SSH porta 2222 > `cryptroot-unlock` > Boot do Proxmox.
-- **Estado Atual:** Servidor operando em modo Headless com FDE (Full Disk Encryption) funcional.
+- **O Incidente:**
+    - Após o sucesso inicial com o Dropbear, tentamos migrar para a topologia "Router-on-a-Stick" configurando VLANs (10, 20, 90) no OPNsense e no Switch.
+    - **Resultado:** Perda total de acesso (Lockout). O Dropbear parou de responder e o Proxmox ficou inacessível.
+- **Diagnóstico (A Causa Raiz):**
+    1. **Hardcoding no Boot:** O arquivo `/etc/initramfs-tools/initramfs.conf` continha uma linha forçando IP Estático (`IP:10.10.10.1...`).
+    2. **Desalinhamento:** O Switch foi configurado para esperar VLANs, mas o servidor bootava forçando um IP fora da sub-rede e sem tagging, causando falha de comunicação.
+- **A Solução (O Resgate):**
+    - **Physical Reset:** Reset físico do Switch TP-Link para configurações de fábrica (Rede Flat 192.168.0.x).
+    - **Boot Config:** Editado `initramfs.conf` para remover o IP estático e definir `IP=dhcp`.
+    - **Proxmox Config:** Editado `/etc/network/interfaces` para usar DHCP na `vmbr0`.
+- **Lição Aprendida:**
+    - **NUNCA** definir IPs estáticos no `initramfs` em ambiente de Homelab. Usar `IP=dhcp` e controlar a fixação de IP via reserva no Roteador (DHCP Static Lease).
+    - O Dropbear (Desbloqueio) deve permanecer sempre na VLAN Nativa/Untagged (Rede "Burra") para garantir acesso de emergência independente do estado do OPNsense.
 ## 2025-12-22
 **Status:** ✅ Sucesso Total
 
