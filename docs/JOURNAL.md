@@ -4,6 +4,20 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2025-12-24
+**Status:** ✅ Sucesso Crítico
+
+**Foco:** Correção do Desbloqueio Remoto (Dropbear) e Rede
+
+- **Problema Identificado:** O Dropbear conectava mas rejeitava a chave (`Permission denied`) ou dava timeout de rede.
+- **Causa Raiz:**
+    1. A interface de rede foi renomeada pelo sistema de `enp4s0` para `nic0`, quebrando a configuração de IP no boot.
+    2. O Dropbear não estava importando a chave SSH pública corretamente ou estava com flags conflitantes (`-s`).
+- **Solução:**
+    - Ajustado `/etc/network/interfaces` para usar `nic0`.
+    - Configurado Dropbear sem a flag `-s` e corrigidas permissões (`chmod 600`) do `authorized_keys` no initramfs.
+    - Testado fluxo completo: Reboot > SSH porta 2222 > `cryptroot-unlock` > Boot do Proxmox.
+- **Estado Atual:** Servidor operando em modo Headless com FDE (Full Disk Encryption) funcional.
 ## 2025-12-22
 **Status:** ✅ Sucesso Total
 
