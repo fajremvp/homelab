@@ -10,9 +10,14 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - 
 
 ---
-## [2025-12-24] Corrigido (Fixed)
-- **Remote Unlock:** Corrigida falha de autenticação no Dropbear SSH (permissões de chave e flags de inicialização).
-- **Network Interface:** Normalizada nomenclatura da interface de rede física para `nic0` no Proxmox host.
+## [2025-12-24] - Correção de Boot e Rede
+### Corrigido (Fixed)
+- **Boot Network:** Removida configuração de IP Estático hardcoded (`IP:10.10.10.1...`) do `initramfs.conf` que causava conflitos de rede ao mudar a topologia. Alterado para `IP=dhcp`.
+- **Remote Unlock:** Corrigida falha de autenticação no Dropbear SSH e permissões de chave (`chmod 600 authorized_keys`).
+- **Network Interface:** Normalizada nomenclatura da interface física para `nic0` (renomeada de `enp4s0` via udev/systemd) e revertida configuração da bridge `vmbr0` para DHCP para facilitar manutenção.
+
+### Revertido (Reverted)
+- **Switch Configuration:** Reset físico do Switch TP-Link para "Factory Defaults" (Layer 2 Flat), desfazendo a segmentação de VLANs temporariamente para recuperar o acesso ao servidor.
 
 ## [2025-12-22] - Migração Router-on-a-Stick e Otimização de Hardware
 ### Adicionado (Added)
