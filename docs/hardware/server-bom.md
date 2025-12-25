@@ -235,35 +235,31 @@
   - Throughput sequencial: ~10–30% (mitigado pelas flags de performance)  
   - Vida útil do SSD: impacto desprezível com TRIM ativo.
 
-## Armazenamento (Bitcoin) — SSD SATA 2 TB (SanDisk)
+## Armazenamento (Bitcoin) — Samsung 870 EVO 2 TB
 
 ### Função e Arquitetura
-- Uso exclusivo: blockchain do Bitcoin (I/O intenso e contínuo)  
-- Isolamento físico do workload para separar desgaste (TBW) do sistema e VMs  
-- Camada lógica: LVM-Thin  
-
-### Segurança (Criptografia em Repouso)
-- Criptografia: LUKS2  
-- Desbloqueio automático via `crypttab`  
-- Método: keyfile em `/root/keyfiles/bitcoin_ssd.key`  
-- Dependência: keyfile reside no NVMe root já criptografado  
-- Propriedade: o SSD SATA só é acessível após o desbloqueio manual do sistema principal (FDE em cascata)  
+- Uso exclusivo: blockchain do Bitcoin (I/O intenso e contínuo)
+- Isolamento físico do workload para separar desgaste (TBW) do sistema e VMs
+- Camada lógica: LVM-Thin
 
 ### Identificação
-- Fabricante: SanDisk  
-- Modelo: SDSSDA-2T00-G26  
+- Fabricante: Samsung
+- Modelo: 870 EVO
+- Part number: MZ-77E2T0B/AM
 
 ### Especificações Técnicas
-- Capacidade: 2 TB  
-- Interface: SATA III (6 Gb/s)  
-- Fator de forma: 2.5"  
-- Leitura sequencial: até 545 MB/s  
-- Gravação sequencial: até 450 MB/s  
+- Capacidade: 2 TB
+- Interface: SATA III (6 Gb/s)
+- Fator de forma: 2.5"
+- Controlador: Samsung MKX
+- Cache DRAM: **Sim (2GB LPDDR4)**
+- Leitura sequencial: até 560 MB/s
+- Gravação sequencial: até 530 MB/s
 
 ### Justificativa Técnica
-- Performance SATA suficiente para validação e manutenção da blockchain.  
-- SSD dedicado reduz contenção de I/O e preserva a vida útil dos NVMe principais.  
-- Criptografia garante proteção dos dados em caso de acesso físico ao servidor.
+- **Cache DRAM Dedicado:** Diferencial crítico em relação a modelos de entrada (como SanDisk Plus). Permite sustentar a alta taxa de IOPS necessária durante o IBD (Initial Block Download) sem engasgar o controlador.
+- **Durabilidade:** Controlador robusto para cargas de escrita sustentada.
+- **Segurança:** Será criptografado via LUKS2 (keyfile dependente do root) para proteção de dados em repouso.
 
 ## Fonte (PSU) — MSI MAG A750GL PCIE5
 
