@@ -10,6 +10,11 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - 
 
 ---
+## [2025-12-25] - Upgrade de Storage Bitcoin
+### Alterado (Changed)
+- **Hardware de Storage:** Substituído SSD planejado (SanDisk Plus 2TB) por Samsung 870 EVO 2TB.
+    - *Motivo Técnico:* O modelo anterior era DRAM-less, o que causaria degradação severa de performance (IOPS) durante a sincronização inicial (IBD) do Bitcoin Node.
+    - *Motivo Logístico:* Falha e demora de entrega do antigo e abaixo do preço.
 ## [2025-12-24] - Correção de Boot e Rede
 ### Corrigido (Fixed)
 - **Boot Network:** Removida configuração de IP Estático hardcoded (`IP:10.10.10.1...`) do `initramfs.conf` que causava conflitos de rede ao mudar a topologia. Alterado para `IP=dhcp`.
