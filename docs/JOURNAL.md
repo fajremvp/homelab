@@ -4,6 +4,16 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2025-12-25
+**Status:** 🔄 Troca de Hardware
+
+**Foco:** Aquisição de Storage para Bitcoin Node
+
+- **Problema Logístico:** O SSD SanDisk (comprado em 14/12) entrou em estado de atraso indefinido no Mercado Livre ("Em preparação" por 10 dias). Compra cancelada para evitar parada no projeto.
+- **Revisão Técnica:** Aproveitei o incidente para reavaliar a especificação. Identifiquei que o SanDisk Plus é **DRAM-less**. Para um Full Node Bitcoin, isso seria catastrófico durante o IBD (Initial Block Download), pois o esgotamento do cache SLC derrubaria a velocidade de escrita drasticamente.
+- **Decisão:** Adquirido **Samsung 870 EVO 2TB** (Envio Full).
+    - Embora o custo seja marginalmente maior, ele possui **2GB de Cache LPDDR4** e controlador MKX. Isso garante que a sincronização da blockchain ocorra na velocidade máxima da interface SATA, economizando dias de espera futura.
+    - A placa de rede HP NC364T (incompatível) devolvida também serviu para abater a diferença de custo.
 ## 2025-12-24
 **Status:** ⚠️ Resgate de Rede (Rollback)
 
