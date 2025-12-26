@@ -4,6 +4,22 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2025-12-26
+**Status:** ✅ Sucesso Crítico (Rede Funcional)
+
+**Foco:** Troubleshooting de VLANs, Switch e Roteamento OPNsense
+
+- **O Incidente:** O DHCP não chegava aos clientes via Wi-Fi (VLANs 20/50) e, quando chegava (após fix), não havia navegação.
+- **Diagnóstico e Soluções (Post-Mortem):**
+    1. **Proxmox Bridge Dropping Tags:** A bridge `vmbr0` (VLAN Aware) estava descartando pacotes taggeados (20, 50) antes de entregá-los à VM.
+        - *Correção:* Adicionado `bridge-vids 2-4094` em `/etc/network/interfaces` no Host.
+        - *Correção:* Adicionado `trunks=20;50` na configuração da interface de rede da VM (`/etc/pve/qemu-server/100.conf`).
+    2. **Conflito de Roteamento (Routing Loop):** A interface LAN (`192.168.0.250/24`) e WAN (`192.168.0.50/24`) estavam na mesma sub-rede. O kernel do OPNsense entrava em conflito de rota ao tentar responder a pacotes de outras VLANs, causando erro *"Provide a valid source address"* no Ping.
+        - *Solução Definitiva:* Alterado IP da LAN para `192.168.99.1/24` para isolar as redes.
+    3. **Hardware Offloading (VirtIO):** Pacotes DHCP chegavam corrompidos/descartados.
+        - *Ajuste:* Desativado Hardware CRC, TSO e LRO nas configurações do OPNsense.
+    4. **Firewall Block:** VLANs novas vêm com "Default Deny".
+        - *Ajuste:* Criadas regras de "Pass All" e configurado Outbound NAT Híbrido.
 ## 2025-12-25
 **Status:** 🔄 Troca de Hardware
 
