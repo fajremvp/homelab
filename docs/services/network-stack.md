@@ -1,8 +1,20 @@
-### 4. Rede, Segurança e Infraestrutura (Sempre ativos)
+### Rede, Segurança e Infraestrutura (Sempre ativos)
 
 * **OPNsense (Firewall):** `[VM Dedicada - VirtIO Bridge]`
     * **Justificativa:** Roteador principal da rede. Utiliza placas de rede virtuais (VirtIO) ligadas às Bridges físicas do Proxmox. Isso permite que o Host e a VM compartilhem a conexão física sem hardware extra.
     * **Ingress:** Configurado com **NAT Port Forwarding** puro (Portas 80/443 WAN -> IP do Traefik). O SSL é terminado no Traefik.
+ 
+* **Configurações de Virtualização (Obrigatório):**
+        - **System > Settings > Tunables:**
+            - `net.link.bridge.pfil_member`: 0
+            - `net.link.bridge.pfil_bridge`: 1
+        - **Interfaces > Settings:**
+            - Hardware CRC: **Disable** (Check)
+            - Hardware TSO: **Disable** (Check)
+            - Hardware LRO: **Disable** (Check)
+            - VLAN Hardware Filtering: **Disable** (Para compatibilidade com VirtIO/Proxmox).
+    * **NAT:** Modo **Hybrid Outbound NAT** ativado. Regras manuais criadas para garantir saída das VLANs (`10.10.x.0/24`) pela WAN.
+
 * **VPN 1: Acesso Remoto (Inbound - Tailscale (Plano Personal/Free)):** `[DockerHost]`
 	* **Serviço**: Utilizará o Tailscale Oficial (Plano Personal/Free).
 	* **Traffic Shaping (QoS):** Uso de **Limiters (Pipes)** no OPNsense atrelados a um Alias do IP do Bitcoin Node.
