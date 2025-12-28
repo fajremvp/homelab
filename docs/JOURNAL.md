@@ -14,7 +14,7 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
     - Validado isolamento: `ping` da VLAN 20 (Trusted) para 50 (IoT) falha como esperado (Bloqueio padrão).
     - Regras de Firewall: Criada regra temporária "Pass All" na VLAN 30 para permitir instalação de pacotes.
 - **Computação (VM DockerHost):**
-    - Criada VM ID `105` (Debian 12 Bookworm Minimal).
+    - Criada VM ID `105` (Debian 13 Minimal (somente com SSH Server e Standard system utilities)).
     - **Specs:** 2 vCores (Host), 8GB RAM (Static), 32GB Disk (VirtIO Block).
     - **Rede:** Interface VirtIO com **Tag 30** definida no Proxmox.
     - **Validação:**
