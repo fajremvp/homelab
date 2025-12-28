@@ -1,4 +1,30 @@
-### 5. Aplicações e Serviços (Sempre ativos)
+# DockerHost (Servidor de Aplicações)
+
+O `DockerHost` é a VM central responsável por rodar a maioria dos serviços containerizados do Homelab via Docker rodando sobre Debian e gerenciado via Ansible.
+
+## Especificações Técnicas da VM (Proxmox)
+Implementação realizada em: 2025-12-27.
+
+| Recurso | Configuração Escolhida | Detalhes / Justificativa |
+| :--- | :--- | :--- |
+| **ID / Nome** | `105` / `DockerHost` | Start at boot: **Sim**. Add to HA: **Sim**. |
+| **OS** | Debian GNU/Linux | ISO: `debian-13.2.0-amd64.netinst` (Rolling/Testing)*. |
+| **Kernel** | Linux 6.x | Guest Agent ativado para telemetria no host. |
+| **vCPU** | 2 Cores | Type: `host` (Repassa instruções AES-NI da CPU real). |
+| **RAM** | 8 GB | Ballooning: **Não** (Desativado para estabilidade de serviços Java/ZFS). |
+| **Disco** | 32 GB (SCSI) | Storage: `local-zfs`. <br> **Otimizações:** SSD Emulation (On), Discard (On), IO Thread (On), Async IO (Threads). |
+| **Rede** | `vmbr0` (VirtIO) | **VLAN Tag: 30** (Rede SERVER). Firewall do Proxmox: Desligado. |
+
+## Configuração do Sistema Operacional (Hardening Base)
+* **Particionamento:** Disco inteiro (`ext4`).
+* **Pacotes Instalados:** Apenas `SSH Server` e `Standard System Utilities`.
+* **Rede:**
+    * **IP:** Atribuído via DHCP (VLAN 30).
+    * **DNS:** Temporário (`1.1.1.1`) até implementação do AdGuard local.
+* **Usuário:** `fajre` (Sudoers).
+* **SSH:** Configurado na porta padrão (22) inicialmente.
+
+## Aplicações e Serviços (Sempre ativos)
 
 * **VM de Aplicações (DockerHost):** `[Debian Stable]`
     * **Justificativa:** Um "servidor" centralizado para rodar todos os aplicativos em contêineres Docker. Isso mantém o Host Proxmox limpo. (Uma VM oferece melhor isolamento; um LXC é mais leve).
@@ -25,7 +51,7 @@
 
 * **Resiliência de Boot**: Todos os containers críticos (Vaultwarden, Stalwart) devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
 
-### Serviços Sob Demanda (Não vão estar sempre ligados)
+## Serviços Sob Demanda (Não vão estar sempre ligados)
 
 * **Aplicações Sob Demanda (Docker):** `[DockerHost]`
     * **Justificativa:** Podem rodar no mesmo DockerHost dos serviços "Sempre Ativos", basta ligar e desligar os contêineres conforme necessário (`docker-compose up -d` e `docker-compose down`).
