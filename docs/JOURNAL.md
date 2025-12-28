@@ -4,6 +4,23 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2025-12-27
+**Status:** ✅ Sucesso
+
+**Foco:** Provisionamento do DockerHost e Segmentação VLAN 30
+
+- **Infraestrutura de Rede (VLAN 30 - SERVER):**
+    - Configurada interface lógica no OPNsense (`10.10.30.1/24`) com DHCP ativado (`.100` a `.200`).
+    - Validado isolamento: `ping` da VLAN 20 (Trusted) para 50 (IoT) falha como esperado (Bloqueio padrão).
+    - Regras de Firewall: Criada regra temporária "Pass All" na VLAN 30 para permitir instalação de pacotes.
+- **Computação (VM DockerHost):**
+    - Criada VM ID `105` (Debian 12 Bookworm Minimal).
+    - **Specs:** 2 vCores (Host), 8GB RAM (Static), 32GB Disk (VirtIO Block).
+    - **Rede:** Interface VirtIO com **Tag 30** definida no Proxmox.
+    - **Validação:**
+        - VM obteve IP `10.10.30.x` automaticamente.
+        - Conectividade externa (WAN) funcionando via NAT Híbrido.
+        - Acesso SSH verificado a partir da VLAN 20 (Trusted).
 ## 2025-12-26
 **Status:** ✅ Sucesso Crítico (Rede Funcional)
 
