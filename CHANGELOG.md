@@ -10,10 +10,11 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - 
 
 ---
-## [2025-12-27] - Deploy do DockerHost
+## [2025-12-27] - Provisionamento DockerHost
 ### Adicionado (Added)
-- **VLAN 30 (SERVER):** Implementada rede segregada para servidores de aplicação. Configurado DHCP e NAT Outbound no OPNsense.
-- **DockerHost:** Provisionada VM Debian 13 (ID 105) para atuar como host central de containers.
+- **VLAN 30 (SERVER):** Rede isolada para servidores de aplicação configurada no OPNsense.
+- **VM DockerHost:** Instância Debian (ID 105) implantada na VLAN 30 para hospedar containers.
+    - *Specs:* 2 vCPU, 8GB RAM, 32GB Storage (IO Thread enabled).
 ## [2025-12-26] - Correção de Infraestrutura de Rede
 ### Corrigido (Fixed)
 - **Routing Loop:** Resolvido conflito crítico de roteamento onde LAN e WAN compartilhavam a sub-rede `192.168.0.x`. LAN migrada para `192.168.99.0/24`.
