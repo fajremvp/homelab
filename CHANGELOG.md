@@ -7,9 +7,19 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ## [Unreleased]
 ### Planejado
-- 
+- Configurar DNS
 
 ---
+## [2025-12-29] - DockerHost Hardening
+### Adicionado (Added)
+- **Docker Engine:** Instalado Docker CE e Docker Compose v5 no DockerHost (VM 105).
+- **SSH Keys:** Implementada autenticação exclusiva por chave pública (Ed25519) no DockerHost.
+
+### Corrigido (Fixed)
+- **Firewall Policy:** Corrigida falta de regra de roteamento Inter-VLAN que impedia a rede TRUSTED de acessar a rede SERVER via SSH/ICMP. O mesmo feito com a VLAN 50 (IOT).
+
+### Alterado (Changed)
+- **SSH Config:** Desabilitada autenticação por senha e login de root no DockerHost para compliance com a política de segurança.
 ## [2025-12-28] - Correção de Driver OPNsense
 ### Corrigido (Fixed)
 - **VLAN Interface Loss:** Resolvido desaparecimento das interfaces VLAN (Trusted/Server/IoT) causado pela migração de driver `e1000` > `VirtIO`.
