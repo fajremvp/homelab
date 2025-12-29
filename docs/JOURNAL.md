@@ -12,8 +12,11 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 - **Hardening SSH:**
     - Chaves Ed25519 copiadas do Arch Linux para o DockerHost.
     - **Configuração de Segurança:** Editado `/etc/ssh/sshd_config` para:
-        - `PermitRootLogin no` (Bloqueio total de root).
-        - `PasswordAuthentication no` (Apenas chaves permitidas).
+        * `PermitRootLogin no` (Bloqueio total de login direto como root via SSH).
+        * `PasswordAuthentication no` (Autenticação por senha desativada; apenas chaves SSH).
+        * `PubkeyAuthentication yes` (Autenticação por chave pública habilitada).
+        * `ChallengeResponseAuthentication no` (Desativa métodos interativos/legados de autenticação).
+        * `UsePAM yes` (Mantém PAM ativo para controle de sessão e políticas do sistema).
     - **Validação:** Login verificado com sucesso via chave; tentativa de login por senha rejeitada como esperado.
 
 - **Instalação do Docker:**
