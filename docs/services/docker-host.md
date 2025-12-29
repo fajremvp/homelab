@@ -22,7 +22,11 @@ Implementação realizada em: 2025-12-27.
     * **IP:** Atribuído via DHCP (VLAN 30).
     * **DNS:** Temporário (`1.1.1.1`) até implementação do AdGuard local.
 * **Usuário:** `fajre` (Sudoers).
-* **SSH:** Configurado na porta padrão (22) inicialmente.
+* **SSH:**
+    * Porta: `22`.
+    * Autenticação: **Somente Chave Pública** (Senha desabilitada em 2025-12-29).
+    * Root Login: **Bloqueado**.
+* **Runtime:** Docker CE + Compose Plugin (Instalados).
 
 ## Aplicações e Serviços (Sempre ativos)
 
