@@ -4,6 +4,23 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2025-12-28
+**Status:** ⚠️ Resgate de Rede (Driver Migration)
+
+**Foco:** Recuperação das VLANs após mudança para VirtIO
+
+- **O Incidente:**
+    - Ao verificar a VM `DockerHost`, notei que ela não pegava IP (estava com APIPA `169.254.x.x`).
+    - No OPNsense, as interfaces **TRUSTED**, **SERVER** e **IOT** haviam desaparecido do painel de controle, restando apenas LAN e WAN.
+- **Diagnóstico:**
+    - A mudança do driver de rede da VM OPNsense (de `e1000` para `VirtIO`) alterou a nomenclatura das interfaces no BSD (de `em0` para `vtnet0/1`).
+    - Isso quebrou a associação "Parent Interface" das VLANs, tornando-as órfãs e desativadas.
+    - Identifiquei via MAC Address (`04:FD`) que a interface `vtnet1` (atualmente WAN) era, na verdade, a porta física configurada com Trunks no Proxmox.
+- **Solução:**
+    1. **Reparenting:** Reconfigurei as VLANs 20, 30 e 50 para usarem a interface correta (`vtnet1`) como pai.
+    2. **Re-assignment:** Re-adicionei as interfaces lógicas que haviam sumido.
+    3. **Re-IP:** Restaurei os IPs Estáticos (`10.10.x.1`) e serviços DHCP que foram limpos durante a falha.
+- **Resultado:** A VM DockerHost obteve o IP `10.10.30.102` imediatamente após o fix.
 ## 2025-12-27
 **Status:** ✅ Sucesso
 
