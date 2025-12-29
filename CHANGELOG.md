@@ -10,6 +10,10 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - 
 
 ---
+## [2025-12-28] - Correção de Driver OPNsense
+### Corrigido (Fixed)
+- **VLAN Interface Loss:** Resolvido desaparecimento das interfaces VLAN (Trusted/Server/IoT) causado pela migração de driver `e1000` > `VirtIO`.
+    - Realizado re-mapeamento (re-parenting) das VLANs para a interface `vtnet1` (Trunk) e reconfiguração dos endereços IP estáticos.
 ## [2025-12-27] - Provisionamento DockerHost
 ### Adicionado (Added)
 - **VLAN 30 (SERVER):** Rede isolada para servidores de aplicação configurada no OPNsense.
