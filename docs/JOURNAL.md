@@ -4,6 +4,33 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2025-12-29
+**Status:** ✅ Sucesso (Docker & Hardening)
+
+**Foco:** Configuração do DockerHost e Ajuste de Firewall
+
+- **Hardening SSH:**
+    - Chaves Ed25519 copiadas do Arch Linux para o DockerHost.
+    - **Configuração de Segurança:** Editado `/etc/ssh/sshd_config` para:
+        - `PermitRootLogin no` (Bloqueio total de root).
+        - `PasswordAuthentication no` (Apenas chaves permitidas).
+    - **Validação:** Login verificado com sucesso via chave; tentativa de login por senha rejeitada como esperado.
+
+- **Instalação do Docker:**
+    - Utilizado repositório oficial (método compatível com Debian Trixie/Bookworm).
+    - Engine e Plugin Compose (v5.0.0) instalados.
+    - Usuário adicionado ao grupo `docker` para execução sem root/sudo.
+    - **Teste de Sanidade:** `docker run hello-world` executado com sucesso (Pull da imagem via WAN OK, Execução OK).
+
+- **Incidente de Conectividade (Firewall):**
+    - *Sintoma:* O Arch Linux (VLAN 20) não conseguia pingar ou conectar via SSH no DockerHost (VLAN 30), resultando em Timeout.
+    - *Causa Raiz:* Esquecimento da política de "Default Deny". Embora a VLAN 30 tivesse permissão de saída (para internet), a VLAN 20 não tinha permissão explícita de **entrada/passagem** para a VLAN 30.
+    - *Solução:* Criada regra de Firewall na interface **TRUSTED**:
+        - **Action:** Pass
+        - **Source:** TRUSTED net
+        - **Destination:** Any (ou SERVER net)
+        - **Justificativa:** Permite que dispositivos de gerenciamento acessem os servidores.
+        - O mesmo foi feito com a VLAN 50 (IOT).
 ## 2025-12-28
 **Status:** ⚠️ Resgate de Rede (Driver Migration)
 
