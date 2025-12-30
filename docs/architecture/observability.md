@@ -1,4 +1,4 @@
-### 2.3. Estratégia de Observabilidade (The "All-Seeing Eye")
+## Estratégia de Observabilidade
 
 * **Filosofia:** "If it moves, measure it. If it logs, capture it." Soberania total dos dados de telemetria (sem SaaS externos). Foco no padrão moderno **OpenTelemetry**.
 * **A Stack (LGTM):**
