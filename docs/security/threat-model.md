@@ -1,7 +1,5 @@
 # Threat Model — LUKS & Swap
 
-## Escopo
-
 Este documento descreve o modelo de ameaça relacionado à criptografia de disco (LUKS) e à área de swap no servidor Proxmox.
 
 O foco é **proteção de dados em repouso (Data at Rest)** contra acesso físico não autorizado.
