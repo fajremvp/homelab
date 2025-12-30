@@ -26,10 +26,11 @@ Saída esperada para a interface da VM (ex: `tap100i1`):
 ```text
 tap100i1  1 PVID Egress Untagged
           20
+          30
           50
 ```
 
-Se as tags `20` / `50` não aparecerem, o Proxmox está bloqueando o tráfego na bridge.
+Se as tags `20` / `30` / `50` não aparecerem, o Proxmox está bloqueando o tráfego na bridge.
 Verificar `bridge-vids` no `/etc/network/interfaces`.
 
 #### Sniffer de Pacotes (Verificar se chega no OPNsense)
