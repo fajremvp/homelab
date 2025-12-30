@@ -1,13 +1,4 @@
-### Configuração de Firmware (BIOS) e Validação de Hardware
-
-* **Registro de Validação de Memória (Burn-in):**
-    * **Data do Teste:** 19/12/2025
-    * **Ferramenta:** MemTest86 V11.5 Free
-    * **Duração:** 06:17:03 (48/48 Testes completados)
-    * **Resultado:** **PASS (0 Erros)**
-    * **Telemetria:**
-        * Velocidade da RAM: 3192 MT/s (Confirmação de XMP Ativo)
-        * Temperatura Máx CPU: 48°C (Validação da montagem do Cooler AK400)
+## Configuração de Firmware (BIOS) e Validação de Hardware
 
 * **Configuração Obrigatória da BIOS (Gigabyte B760M):**
     * *Alterações aplicadas para garantir performance de ZFS, virtualização e segurança.*
@@ -24,3 +15,12 @@
     | **Secure Boot** | `Disabled` | Desativado temporariamente para permitir o carregamento de módulos de kernel não assinados (ZFS) e o bootloader customizado necessário para a criptografia LUKS manual. |
     | **Fast Boot** | `Disabled` | Garante a inicialização completa da stack USB no POST, essencial para que o teclado funcione no momento de digitar a senha do LUKS durante o boot. |
     | **ErP** | `Disabled` | Mantém a placa de rede em *standby* de baixa energia, permitindo o funcionamento futuro de *Wake-on-LAN* se necessário. |
+
+  * **Registro de Validação de Memória (Burn-in):**
+    * **Data do Teste:** 19/12/2025
+    * **Ferramenta:** MemTest86 V11.5 Free
+    * **Duração:** 06:17:03 (48/48 Testes completados)
+    * **Resultado:** **PASS (0 Erros)**
+    * **Telemetria:**
+        * Velocidade da RAM: 3192 MT/s (Confirmação de XMP Ativo)
+        * Temperatura Máx CPU: 48°C (Validação da montagem do Cooler AK400)
