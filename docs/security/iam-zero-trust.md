@@ -1,4 +1,4 @@
-### 2.2. Políticas de Identidade e Acesso (IAM & Zero Trust)
+## Políticas de Identidade e Acesso (IAM & Zero Trust)
 
 * **Princípios:** "Verify Explicitly" (Verifique explicitamente), "Use Least Privilege" (Menor privilégio possível) e "Assume Breach" (Assuma que já foi invadido). A identidade é o novo perímetro de segurança.
 
