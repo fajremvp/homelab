@@ -4,6 +4,28 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2025-12-30
+**Status:** ✅ Sucesso (DNS & Privacy)
+
+**Foco:** Implementação do AdGuard Home e Gestão de DNS
+- **Infraestrutura DNS (LXC Container):**
+    - Criado Container LXC `101 (AdGuard-Primary)` baseado em Alpine Linux (3.23) na VLAN 30.
+    - **Specs:** 1 Core, 256MB RAM, IP Estático `10.10.30.5`.
+    - **Software:** AdGuard Home instalado via script oficial.
+        - `curl -s -S -L https://raw.githubusercontent.com/AdguardTeam/AdGuardHome/master/scripts/install.sh | sh -s -- -v`, disponível [aqui](https://github.com/AdguardTeam/AdGuardHome
+).
+- **Configuração do Serviço (AdGuard):**
+    - **Upstreams:** Configurados servidores DNS-over-HTTPS (Cloudflare/Quad9) para garantir privacidade e evitar interceptação de porta 53 pelo ISP.
+    - **Reverse DNS:** Apontado para o OPNsense (`10.10.30.1`) para resolução correta de hostnames locais nos logs.
+- **Integração de Rede (OPNsense DHCP):**
+    - Alterado o servidor DNS entregue via DHCP para as VLANs **TRUSTED (20)** e **IOT (50)**:
+        - **De:** `1.1.1.1` e `8.8.8.8` (Externos (Cloudflare e Google, respectivamente).
+        - **Para:** `10.10.30.5` (Local (AdGuard)).
+    - **Política de Resiliência:** A VLAN **SERVER (30)** teve seu DNS mantido em `1.1.1.1` para evitar dependência cíclica (o DockerHost não deve depender de um container vizinho para resolver nomes durante o boot).
+- **Validação:**
+    - Cliente Arch Linux (VLAN 20) renovou DHCP e confirmou recebimento do DNS `10.10.30.5` via `/etc/resolv.conf`.
+    - Dashboard do AdGuard registrou queries vindas da rede TRUSTED e bloqueios ativos.
+    - O mesmo foi realizado com a VLAN 50.
 ## 2025-12-29
 **Status:** ✅ Sucesso (Docker & Hardening)
 
