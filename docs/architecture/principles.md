@@ -1,4 +1,4 @@
-### 7. Princípios de Operação
+## Princípios de Operação
 
 * **Backups com estratégia 3-2-1:**
     * **(3) Três Cópias:** Dados de produção no ZFS + 2 cópias de backup.
