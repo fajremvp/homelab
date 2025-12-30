@@ -1,5 +1,5 @@
-### 7.4. Recuperação de Energia (Power Recovery)
-* **BIOS**: Configurada com Restore on AC Power Loss = Power On. Assim que a energia voltar, o servidor inicia o boot imediatamente, sem depender de rede ou periféricos.
+## Recuperação de Energia (Power Recovery)
+* **BIOS**: Configurada com Restore on AC Power Loss = Power On. Assim que a energia voltar, o servidor inicia e fica aguardando desbloqueio via Dropbear.
 * **Switch**: Configurado para salvar VLANs na memória Flash, garantindo que a rede esteja pronta quando o SO do Proxmox terminar de carregar.
 * **Sequência de Desbloqueio (Cold Boot):**
      1. **Energia Volta:** Servidor liga (Restore on AC Loss).
@@ -7,12 +7,11 @@
      3. **Acesso Remoto (Via Pi - Bypass):**
          - O Pi (conectado direto ao Modem) sobe a VPN Tailscale automaticamente.
          - Conectar na VPN de Emergência -> SSH para o Pi.
-         - No Pi: Desbloquear a partição de dados (`cryptsetup open ...`).
+         - No Pi: Desbloquear a partição de dados (`cryptroot-unlock`).
          - No Pi: Usar a chave SSH resgatada para acessar o Proxmox (`ssh -p 2222 root@10.10.10.1`).
-         - Executar comando: `cryptroot-unlock` no Proxmox.
      4. **Boot:** O ZFS monta e os serviços (OPNsense, Vault, etc.) iniciam conforme a ordem de prioridade.
 
- 	- Atualmente:
+ 	- Atualmente: (Usando DHCP do modem, sem ip dado pelo OPNsense ainda (10.10.10...)
     	- **Initramfs:** Carrega o Dropbear SSH na porta 2222 via interface `enp4s0`.
 		- **Procedimento de Desbloqueio:**
     		1. No notebook Arch, garantir IP `10.10.10.99`.
