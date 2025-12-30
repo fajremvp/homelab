@@ -1,4 +1,4 @@
-Configuração Lógica do Host (Proxmox VE)
+## Configuração Lógica do Host (Proxmox VE)
 
   * **Parâmetros de Boot (GRUB):**
   	- intel_iommu=on iommu=pt: Para Passthrough de dispositivos PCI.
