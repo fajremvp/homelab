@@ -7,9 +7,16 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ## [Unreleased]
 ### Planejado
-- Configurar DNS
+- Traefik (Reverse proxy)
 
 ---
+## [2025-12-30] - DNS Local e AdBlocking
+### Adicionado (Added)
+- **AdGuard Home:** Implantado servidor DNS local (LXC ID 101) para filtragem de conteúdo e privacidade.
+    - *Features:* DNS-over-HTTPS upstream e resolução reversa local.
+
+### Alterado (Changed)
+- **DHCP Configuration:** Migrados clientes das VLANs TRUSTED e IOT para utilizarem exclusivamente o DNS Local (`10.10.30.5`), garantindo bloqueio de anúncios em toda a rede.
 ## [2025-12-29] - DockerHost Hardening
 ### Adicionado (Added)
 - **Docker Engine:** Instalado Docker CE e Docker Compose v5 no DockerHost (VM 105).
