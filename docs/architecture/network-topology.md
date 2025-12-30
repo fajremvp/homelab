@@ -1,4 +1,4 @@
-### 3. Topologia de Rede e Segmentação (VLANs)
+## Topologia de Rede e Segmentação (VLANs)
 
 * **Estratégia:** Segmentação física e lógica rigorosa (Micro-segmentação). O OPNsense atua como gateway único e firewall entre essas zonas. Todo tráfego inter-VLAN é negado por padrão ("Default Deny") e liberado apenas estritamente via regras de firewall.
 
