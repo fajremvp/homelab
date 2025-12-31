@@ -78,3 +78,18 @@ Após qualquer manutenção crítica (kernel, rede, storage):
   - `swapon --show`
 - Confirmar tempo sincronizado:
   - `chronyc tracking`
+
+## Recuperação e Substituição de Disco (ZFS Root)
+
+Este ambiente utiliza ZFS Mirror como root. Em caso de falha física de um SSD/NVMe do pool root, **não reinstalar o sistema**.
+
+### Procedimento Oficial (Referência)
+Guia completo para substituição de disco raiz mantendo boot, ZFS e criptografia:
+
+https://github.com/mr-manuel/proxmox/blob/main/zfs-replace-root-disk/README.md
+
+### Quando usar este guia
+- Disco do mirror entra em estado DEGRADED ou FAULTED
+- SMART acusa falha iminente
+- Substituição preventiva de SSD/NVMe
+- Erro de boot após perda de um dos discos do mirror
