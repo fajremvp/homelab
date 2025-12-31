@@ -1,53 +1,76 @@
-## Configuração Lógica do Host (Proxmox VE)
+# Estratégia de Configuração do Host (Proxmox VE)
 
-  * **Parâmetros de Boot (GRUB):**
-  	- intel_iommu=on iommu=pt: Para Passthrough de dispositivos PCI.
-  	- ip=10.10.10.1::10.10.10.254:255.255.255.0:proxmox:eno1:off : Crítico. Configura IP estático direto no Kernel. Garante que o Dropbear (SSH) esteja acessível para desbloqueio mesmo se o servidor DHCP (OPNsense/Pi) estiver offline.
-  * **Fixação de Interfaces (Anti-Morte Súbita):**
-      * Criação de regras de Link do Systemd (`/etc/systemd/network/10-wan.link`) vinculando os nomes das interfaces ao **MAC Address** físico.
-      * **Objetivo:** Evita que atualizações de Kernel troquem `eth0` por `eth1` e exponham o servidor à WAN.
-      * Nomes definidos para uso no arquivo interfaces: `eno1` (Onboard/LAN) e `enp1s0` (Intel/WAN).
-  * **Sincronização de Tempo (Soberania de Relógio):**
-      * O Proxmox deve ser configurado para usar o **IP do Raspberry Pi** (VLAN 10) como servidor NTP `Stratum 1` preferencial.
-      * Garante que TOTP, Logs e Bitcoin funcionem mesmo em boot sem internet ("Cold Start").
-  * **Independência de DNS:** O arquivo `/etc/hosts` terá entradas estáticas para infraestrutura crítica, garantindo comunicação intra-cluster sem DNS.
-  * **Criptografia e Performance (`/etc/crypttab`):**
-      - Configuração obrigatória para garantir throughput próximo ao nativo nos SSDs NVMe:
-      ```bash
-      # UUIDs dos SSDs (Exemplo)
-      luks-nvme0n1p3 UUID=xxxx-xxxx-xxxx-xxxx none luks,discard,initramfs,perf-no_read_workqueue,perf-no_write_workqueue
-      luks-nvme1n1p3 UUID=yyyy-yyyy-yyyy-yyyy none luks,discard,initramfs,perf-no_read_workqueue,perf-no_write_workqueue
-      ```
-  * **Swap de Emergência (ZFS):**
-      - **Guia:** [Enable swap with ZFS](https://github.com/mr-manuel/proxmox/blob/main/zfs-swap/README.md).
-      - **Configuração:** Swap configurado em ZVOL com `vm.swappiness` baixo (10) para evitar OOM Killer em casos extremos, sem desgastar o SSD desnecessariamente.
+Este documento define a configuração declarativa do Bare Metal. O objetivo é garantir que o Host seja resiliente a reboots, atualizações de kernel e falhas de rede, mantendo a segurança dos dados em repouso.
 
-  * **Configuração de Rede (`/etc/network/interfaces`):**
-      * **Porta Física 1 (eno1 - LAN/Trunk): Conectada ao Switch → Bridge `vmbr0` (VLAN-aware, IP 10.10.10.1 na VLAN 10).
-      * **Porta Física 2 (enp1s0 - WAN): Conectada ao Modem → Bridge `vmbr1` (Sem IP, modo transparente).
-      * **Código de Configuração:**
+## Parâmetros de Boot e Kernel
 
-<!-- end list -->
+A configuração de boot foi simplificada para evitar "Boot Loops" causados por hardcoding de rede.
+
+* **Bootloader (GRUB/ZFS Boot):**
+    * **Limpeza de Parâmetros:** Removi parâmetros complexos como `ip=...` direto no kernel line. A gestão de rede é delegada ao `initramfs` (fase inicial) e ao `networking.service` (fase final).
+    * **IOMMU:** Habilitado preferencialmente via BIOS. Parâmetros como `intel_iommu=on` são opcionais se a BIOS já expõe os grupos IOMMU corretamente para Passthrough.
+
+* **Desbloqueio Remoto (Dropbear no Initramfs):**
+    * **Estratégia Anti-Lockout:** O `initramfs.conf` está configurado com `IP=dhcp`.
+    * **Justificativa:** Isso garante que, se eu levar o servidor para outra casa ou mudar o roteador, ele pegará um IP novo automaticamente e permitirá o desbloqueio via SSH, sem ficar preso tentando acessar um Gateway estático inexistente.
+    * **Interface:** Definida como `DEVICE=enp4s0` (nome nativo do hardware) para garantir que o Dropbear suba a placa correta antes mesmo do sistema operacional renomeá-la.
+
+## Identidade de Rede e Interfaces
+
+Para evitar que uma atualização do Debian/Proxmox troque os nomes das placas (ex: `eth0` virar `eth1`) e evite que eu exponha a interface de gerenciamento à Internet, usei nomenclatura determinística.
+
+* **Fixação de Nomes (udev/systemd):**
+    * **Interface Física:** `nic0` (Renomeada a partir do MAC Address da placa onboard/LAN).
+    * **Interface Wireless:** `wlp5s0` (Mantida desligada/manual por segurança).
+
+* **Topologia de Gerenciamento (Estado Atual):**
+    * **IP de Acesso:** `192.168.0.200` (Rede Flat / WAN Nativa).
+    * **Justificativa Temporária:** Para recuperação de desastres e estabilidade inicial, o Proxmox está acessível na mesma faixa de IP do modem da operadora. Isso elimina a dependência do OPNsense (VM) para acessar o Host físico.
+    * **Bridge `vmbr0`:** Configurada como **VLAN Aware**. Isso permite que ela atue como um "Switch Virtual Inteligente", passando tráfego taggeado (VLAN 20, 30, 50) para as VMs, enquanto mantém o Host acessível na rede nativa.
+
+## Armazenamento e Criptografia (FDE)
+
+O sistema utiliza criptografia total de disco (Full Disk Encryption) sobre ZFS Mirror.
+
+* **Otimização NVMe (`/etc/crypttab`):**
+    * **Flags de Performance:** Recomenda-se o uso de `perf-no_read_workqueue` e `perf-no_write_workqueue`.
+    * **Efeito:** Essas flags instruem o kernel a bypassar filas de agendamento de criptografia, reduzindo a latência de leitura/escrita em SSDs NVMe de alta velocidade.
+    * **Discard/TRIM:** Habilitado (`discard`) para garantir que o SSD libere blocos não utilizados, preservando a vida útil e performance.
+
+* **Swap Seguro (ZFS ZVOL):**
+    * **Dispositivo:** `/dev/zd64` (16GB).
+    * **Segurança:** O Swap reside dentro do pool ZFS criptografado (herança). Isso impede que fragmentos de memória (senhas, chaves) vazem para o disco em texto plano.
+    * **Agressividade:** `vm.swappiness = 1`. O sistema só usará swap se a RAM estiver **absolutamente esgotada**, evitando degradação de performance do ZFS.
+
+## Independência de Infraestrutura
+
+* **Sincronização de Tempo (NTP):**
+    * O Host deve apontar para servidores NTP confiáveis (ex: `time.cloudflare.com` ou `ntp.br`). Em uma fase futura, pretendo apontar para o Raspberry Pi (GPS/RTC) para soberania total de tempo.
+* **Resolução de Nomes (`/etc/hosts`):**
+    * Hostnames críticos (como o próprio `homelab`) são definidos estaticamente para garantir que o cluster funcione mesmo sem o serviço de DNS (AdGuard) estar no ar.
+
+## Código de Referência da Rede (`/etc/network/interfaces`)
+
+Configuração validada em 30/12/2025 para operação estável:
 
 ```bash
-        # LAN Bridge (VLAN-Aware para todas as VLANs)
-        auto vmbr0
-        iface vmbr0 inet static
-            address 10.10.10.1/24
-            gateway 10.10.10.254  # IP do OPNsense
-            bridge-ports eno1     # Nome fixado via Systemd Link (Anti-Troca)
-            bridge-stp off
-            bridge-fd 0
-            bridge-vlan-aware yes
-            bridge-vids 10 20 30 40 50 60 99
-        
-        # WAN Bridge (SEM IP - Transparente para OPNsense)
-        auto vmbr1
-        iface vmbr1 inet manual
-            bridge-ports enp1s0   # Nome fixado via Systemd Link (Anti-Troca)
-            bridge-stp off
-            bridge-fd 0
-            # CRÍTICO: Sem endereço IP para não expor Proxmox à WAN
-```
+auto lo
+iface lo inet loopback
 
-* **Segurança da WAN:** A `vmbr1` atua como um "cabo virtual" transparente para o OPNsense, sem expor o Proxmox à internet.
+# Interface Física Renomeada (L2 Pura)
+iface nic0 inet manual
+
+# Interface Wi-Fi (Desativada)
+iface wlp5s0 inet manual
+
+# Bridge Principal (Gerenciamento + VM Traffic)
+auto vmbr0
+iface vmbr0 inet static
+    address 192.168.0.200/24
+    gateway 192.168.0.1
+    bridge-ports nic0
+    bridge-stp off
+    bridge-fd 0
+    bridge-vlan-aware yes
+    bridge-vids 2-4094
+    # bridge-vids 2-4094 garante que as VLANs criadas no OPNsense trafeguem livremente.
