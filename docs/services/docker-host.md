@@ -15,6 +15,26 @@ Implementação realizada em: 2025-12-27.
 | **Disco** | 32 GB (SCSI) | Storage: `local-zfs`. <br> **Otimizações:** SSD Emulation (On), Discard (On), IO Thread (On), Async IO (Threads). |
 | **Rede** | `vmbr0` (VirtIO) | **VLAN Tag: 30** (Rede SERVER). Firewall do Proxmox: Desligado. |
 
+## Estratégia de Ingress e Proxy Reverso (Traefik)
+Implementação realizada em: 2025-12-31.
+
+O DockerHost utiliza o **Traefik** como "Porteiro Único". Nenhuma aplicação expõe portas diretamente (ex: 3000, 8080) para a rede, exceto o próprio Traefik.
+
+* **Versão:** `Traefik v2.11` (LTS) - *Mantida por compatibilidade até fevereiro de 2026*.
+* **Portas Expostas:**
+    * `80` (HTTP): Redireciona forçadamente para HTTPS.
+    * `443` (HTTPS): Terminação SSL (Atualmente Autoassinado, futuro Let's Encrypt).
+    * `8080` (Dashboard): Exposto apenas internamente para debug.
+
+### ⚠️ Nota de Compatibilidade (Debian 13 Trixie)
+Devido ao Docker Engine v29+ no Debian Trixie exigir API `1.44+`, o Traefik falha na negociação automática de versão.
+**Regra Obrigatória:** Todo container do Traefik **DEVE** conter a variável de ambiente abaixo para funcionar:
+
+```yaml
+environment:
+  - DOCKER_API_VERSION=1.45 # Isso força o driver a ignorar a negociação legado e usar a API moderna.
+```
+
 ## Configuração do Sistema Operacional (Hardening Base)
 * **Particionamento:** Disco inteiro (`ext4`).
 * **Pacotes Instalados:** Apenas `SSH Server` e `Standard System Utilities`.
