@@ -10,6 +10,14 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Traefik (Reverse proxy)
 
 ---
+## [2025-12-31] - Ingress Controller
+### Adicionado (Added)
+- **Traefik v2.11:** Implantado como Proxy Reverso na porta 80/443 do DockerHost.
+    - *Configuração:* Dashboard na porta 8080 (LAN), Redirecionamento HTTP->HTTPS Global.
+- **DNS Rewrite:** Configurado `*.home` no AdGuard apontando para o DockerHost (`10.10.30.10`).
+
+### Corrigido (Fixed)
+- **Docker API Mismatch:** Resolvido erro "client version 1.24 is too old" no Debian 13 forçando `DOCKER_API_VERSION=1.45` nas variáveis de ambiente do container Traefik.
 ## [2025-12-30] - DNS Local e AdBlocking
 ### Adicionado (Added)
 - **AdGuard Home:** Implantado servidor DNS local (LXC ID 101) para filtragem de conteúdo e privacidade.
