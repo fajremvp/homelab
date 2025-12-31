@@ -1,6 +1,6 @@
 # 🏠 Homelab
 
-Repositório central de "Infrastructure as Code" (IaC) e documentação do meu laboratório doméstico.
+Repositório central de "Infrastructure as Code" (IaC) e documentação do meu homelab.
 Focado em aprendizado, soberania de dados e segurança.
 
 **Status:** 🚧 Em Construção
@@ -49,3 +49,7 @@ homelab/
     ├── nut-shutdown.sh          # Lógica de desligamento por bateria fraca.
     └── update-initramfs-hook.sh # Automação pós-update de Kernel.
 ```
+
+---
+
+## ✅ Todo List
