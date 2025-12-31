@@ -17,6 +17,8 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ### Alterado (Changed)
 - **DHCP Configuration:** Migrados clientes das VLANs TRUSTED e IOT para utilizarem exclusivamente o DNS Local (`10.10.30.5`), garantindo bloqueio de anúncios em toda a rede.
+- Documentação do repo melhor documentada e formatada.
+- Repo aberto.
 ## [2025-12-29] - DockerHost Hardening
 ### Adicionado (Added)
 - **Docker Engine:** Instalado Docker CE e Docker Compose v5 no DockerHost (VM 105).
