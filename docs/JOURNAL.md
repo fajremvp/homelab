@@ -26,6 +26,8 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
     - Cliente Arch Linux (VLAN 20) renovou DHCP e confirmou recebimento do DNS `10.10.30.5` via `/etc/resolv.conf`.
     - Dashboard do AdGuard registrou queries vindas da rede TRUSTED e bloqueios ativos.
     - O mesmo foi realizado com a VLAN 50.
+- Documentação do repo melhor documentada e formatada.
+- Repo aberto.
 ## 2025-12-29
 **Status:** ✅ Sucesso (Docker & Hardening)
 
