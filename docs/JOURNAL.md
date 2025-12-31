@@ -4,6 +4,25 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2025-12-31
+**Status:** ✅ Sucesso (Traefik & Ingress)
+
+**Foco:** Implementação do Proxy Reverso (Traefik) e Compatibilidade Docker API
+
+- **Desafio (Dependency Hell):**
+    - O Docker Engine no **Debian 13 (Trixie)** exige API mínima `1.44`.
+    - O **Traefik v3** tenta negociar versões antigas (`1.24`) por padrão e falha em ambientes *bleeding edge*.
+    - Tentativas de forçar a versão via flags (`--providers.docker.apiVersion`) ou variáveis (`DOCKER_API_VERSION`) no Traefik v3 falharam silenciosamente devido a mudanças recentes na lib interna.
+- **Solução (Downgrade Tático):**
+    - Revertido para **Traefik v2.11** (LTS).
+    - Injetada variável de ambiente `DOCKER_API_VERSION=1.45` diretamente no container.
+    - Isso forçou o cliente Docker interno do Traefik a falar a língua do Debian 13 sem negociação.
+- **Validação:**
+    - Acesso a `https://whoami.home` confirmado.
+    - Redirecionamento HTTP -> HTTPS (80 -> 443) ativo.
+    - **Header X-Real-IP:** O container recebe o IP real do cliente (`10.10.20.x`), confirmando que o roteamento Inter-VLAN está transparente.
+- **Observação:**
+    - Atualizar assim que possível para a versão mais recente (v2.11 ends Feb 01, 2026).
 ## 2025-12-30
 **Status:** ✅ Sucesso (DNS & Privacy)
 
