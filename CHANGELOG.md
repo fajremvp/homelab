@@ -12,6 +12,10 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 ---
 ## [2026-01-02] - Ingress Controller V3
 ### Adicionado (Added)
+- **Authentik (IdP):** Implantado stack completa de identidade (v2025.10.3) com PostgreSQL 16 e Redis 7.
+    - *ForwardAuth:* Configurado middleware global `authentik@docker` no Traefik.
+    - *Zero Trust:* Traefik Dashboard (`traefik.home`) agora exige autenticação centralizada, eliminando acesso direto inseguro.
+    - *Global Callback:* Implementada rota de roteamento `PathPrefix(/outpost.goauthentik.io/)` no Traefik para garantir o retorno de fluxos OAuth em qualquer subdomínio protegido.
 - **Socket Proxy:** Implementado `tecnativa/docker-socket-proxy` para mediar a comunicação entre o Traefik e o Docker Daemon, revogando acesso root direto ao socket.
 - **Log Rotation:** Configurado driver `json-file` com limite de 30MB (3x10MB) por container para prevenir exaustão de disco.
 - **Unattended Upgrades:** Ativadas atualizações automáticas de segurança no Debian 13.
@@ -28,6 +32,7 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ### Alterado (Changed)
 - **Filesystem Standard:** Padronizada estrutura de diretórios em `/opt/{traefik,services,auth,monitoring}` com permissões para o usuário não-root (`fajre`).
+- **Traefik Routing:** Corrigida falha de loop de redirecionamento (404) durante o callback de autenticação, adicionando regra explícita para o Outpost Embutido.
 ## [2025-12-31] - Ingress Controller
 ### Adicionado (Added)
 - **Traefik v2.11:** Implantado como Proxy Reverso na porta 80/443 do DockerHost.
