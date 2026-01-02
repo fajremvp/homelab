@@ -4,6 +4,21 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-02
+**Status:** ✅ Sucesso Definitivo (Traefik v3.6)
+
+**Foco:** Upgrade para Traefik v3.6 (Latest Stable) e Validação de Ingress
+
+- **Decisão Estratégica:**
+    - Optado por não manter a versão legado (v2.11) e migrar imediatamente para **Traefik v3.6** para evitar dívida técnica futura (EOL em Fev/2026).
+- **Implementação (The Fix):**
+    - Configurado container `traefik:v3.6`.
+    - Mantida a variável de ambiente `DOCKER_API_VERSION=1.45`.
+    - **Resultado:** A biblioteca client do Traefik v3 respeitou a variável e ignorou a negociação de versão falha, conectando-se perfeitamente ao Docker Engine do Debian 13.
+- **Validação Técnica (Headers):**
+    - `whoami` reportou `X-Forwarded-Proto: https` (Terminação SSL OK).
+    - `X-Real-Ip: 10.10.20.101` (Roteamento de VLANs transparente, sem mascaramento de IP).
+    - Logs do Traefik limpos, sem erros de API.
 ## 2025-12-31
 **Status:** ✅ Sucesso (Traefik & Ingress)
 
