@@ -16,23 +16,24 @@ Implementação realizada em: 2025-12-27.
 | **Rede** | `vmbr0` (VirtIO) | **VLAN Tag: 30** (Rede SERVER). Firewall do Proxmox: Desligado. |
 
 ## Estratégia de Ingress e Proxy Reverso (Traefik)
-Implementação realizada em: 2025-12-31.
+Implementação realizada em: 2026-01-02.
 
-O DockerHost utiliza o **Traefik** como "Porteiro Único". Nenhuma aplicação expõe portas diretamente (ex: 3000, 8080) para a rede, exceto o próprio Traefik.
+O DockerHost utiliza o **Traefik** como "Porteiro Único". Nenhuma aplicação expõe portas diretamente para a rede, exceto o próprio Traefik.
 
-* **Versão:** `Traefik v2.11` (LTS) - *Mantida por compatibilidade até fevereiro de 2026*.
+* **Versão:** `Traefik v3.6+` (Latest Stable).
 * **Portas Expostas:**
     * `80` (HTTP): Redireciona forçadamente para HTTPS.
     * `443` (HTTPS): Terminação SSL (Atualmente Autoassinado, futuro Let's Encrypt).
     * `8080` (Dashboard): Exposto apenas internamente para debug.
 
-### ⚠️ Nota de Compatibilidade (Debian 13 Trixie)
-Devido ao Docker Engine v29+ no Debian Trixie exigir API `1.44+`, o Traefik falha na negociação automática de versão.
+### ⚠️ Compatibilidade Debian 13 (Trixie)
+O Docker Engine v29+ (presente no Debian Trixie) rejeita conexões de clientes que tentam negociar APIs muito antigas (<1.44), comportamento padrão do Traefik.
 **Regra Obrigatória:** Todo container do Traefik **DEVE** conter a variável de ambiente abaixo para funcionar:
 
 ```yaml
 environment:
-  - DOCKER_API_VERSION=1.45 # Isso força o driver a ignorar a negociação legado e usar a API moderna.
+  # Instrui o driver Docker (Moby) a ignorar negociação e usar API 1.45 direto.
+  - DOCKER_API_VERSION=1.45
 ```
 
 ## Configuração do Sistema Operacional (Hardening Base)
