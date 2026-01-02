@@ -22,3 +22,4 @@
 | **Filesystem** | Volumes persistentes em `/opt/` devem pertencer a usuário não-root. | Evita uso desnecessário de `sudo` e protege arquivos de sistema contra erro humano. |
 | **Log Rotation** | Limite global de 30MB por container. | Prevenção de DoS por exaustão de disco (`no space left on device`). |
 | **Web Ingress (Zero Trust)** | Todo painel administrativo web (Traefik, Portainer, etc) deve ser protegido pelo Middleware **Authentik ForwardAuth**. Proibida exposição de portas de gestão (8080, 9000) diretamente na rede; o acesso deve ser exclusivamente via domínio HTTPS autenticado. | Elimina vetores de ataque em interfaces administrativas desprotegidas. |
+| **RBAC / Least Privilege** | O acesso a interfaces de gestão (Traefik, Portainer, etc) é restrito a membros do grupo `infra-admins` no IdP. Login simples não garante acesso (Autenticação ≠ Autorização). | Impede que usuários comuns ou contas de serviço acessem áreas críticas. |
