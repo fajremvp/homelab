@@ -21,3 +21,4 @@
 | **Docker Socket** | **Proibido montar `/var/run/docker.sock` em containers expostos.** Uso obrigatório de Socket Proxy com whitelist (GET only). | Impede que uma vulnerabilidade no Traefik/Portainer conceda acesso root ao Host. |
 | **Filesystem** | Volumes persistentes em `/opt/` devem pertencer a usuário não-root. | Evita uso desnecessário de `sudo` e protege arquivos de sistema contra erro humano. |
 | **Log Rotation** | Limite global de 30MB por container. | Prevenção de DoS por exaustão de disco (`no space left on device`). |
+| **Web Ingress (Zero Trust)** | Todo painel administrativo web (Traefik, Portainer, etc) deve ser protegido pelo Middleware **Authentik ForwardAuth**. Proibida exposição de portas de gestão (8080, 9000) diretamente na rede; o acesso deve ser exclusivamente via domínio HTTPS autenticado. | Elimina vetores de ataque em interfaces administrativas desprotegidas. |
