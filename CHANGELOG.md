@@ -26,6 +26,7 @@ e este projeto adere ao versionamento semântico (onde aplicável).
     - *Segurança:* Rodando como usuário não-privilegiado (UID 1000), sem acesso ao Docker Socket.
     - *Ingress:* Exposto via Traefik em `https://auth.home`.
     - *Middleware:* Configurado `authentik@docker` no Traefik para proteger futuras aplicações (Forward Auth).
+- *RBAC:* Implementada política de acesso baseada em grupo (`infra-admins`) usando expressão Python no Authentik para restringir o acesso a dashboards administrativos.
 
 ### Removido (Removed)
 - **Traefik v2.11:** Descontinuado uso da versão legado após validação do fix na v3.
