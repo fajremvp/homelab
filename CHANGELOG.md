@@ -17,6 +17,11 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - **Unattended Upgrades:** Ativadas atualizações automáticas de segurança no Debian 13.
 - **Traefik v3.6:** Atualizado Ingress Controller para a versão estável mais recente.
     - *Compatibility Fix:* Implementada variável de ambiente `DOCKER_API_VERSION=1.45` para contornar falha de negociação de API no Debian 13 (Trixie).
+- **Authentik Stack:** Implantado Sistema de Gestão de Identidade (IdP) versão `2025.10.3`.
+    - *Componentes:* Server, Worker, PostgreSQL 16 e Redis 7.
+    - *Segurança:* Rodando como usuário não-privilegiado (UID 1000), sem acesso ao Docker Socket.
+    - *Ingress:* Exposto via Traefik em `https://auth.home`.
+    - *Middleware:* Configurado `authentik@docker` no Traefik para proteger futuras aplicações (Forward Auth).
 
 ### Removido (Removed)
 - **Traefik v2.11:** Descontinuado uso da versão legado após validação do fix na v3.
