@@ -36,6 +36,13 @@ environment:
   - DOCKER_API_VERSION=1.45
 ```
 
+### Segurança do Ingress (Socket Proxy)
+O Traefik **NÃO** possui acesso direto ao socket do Docker (`/var/run/docker.sock`).
+Toda a comunicação passa por um container intermediário (`socket-proxy`) configurado para:
+* **Permitir:** Listagem de Containers, Serviços e Redes (`GET`).
+* **Bloquear:** Execução de comandos, criação de containers, kill ou stop (`POST`, `DELETE`).
+* **Endpoint:** O Traefik acessa a API via TCP: `tcp://socket-proxy:2375`.
+
 ## Configuração do Sistema Operacional (Hardening Base)
 * **Particionamento:** Disco inteiro (`ext4`).
 * **Pacotes Instalados:** Apenas `SSH Server` e `Standard System Utilities`.
@@ -48,6 +55,23 @@ environment:
     * Autenticação: **Somente Chave Pública** (Senha desabilitada em 2025-12-29).
     * Root Login: **Bloqueado**.
 * **Runtime:** Docker CE + Compose Plugin (Instalados).
+
+## Padrão de Diretórios e Persistência
+Para manter a organização e facilitar backups, o DockerHost segue estritamente a hierarquia abaixo em `/opt/`:
+
+| Caminho | Propósito | Exemplo de Conteúdo |
+| :--- | :--- | :--- |
+| `/opt/traefik` | Ingress & Edge | `docker-compose.yml`, `acme.json` |
+| `/opt/services` | Aplicações Gerais | `whoami/`, `stirling-pdf/`, `syncthing/` |
+| `/opt/auth` | Identidade e Segurança | `authentik/`, `vaultwarden/` |
+| `/opt/monitoring` | Observabilidade | `grafana/`, `prometheus/`, `crowdsec/` |
+| `/opt/utils` | Scripts e Ferramentas | Scripts de manutenção local |
+
+**Política de Logs:**
+O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs automaticamente.
+* **Driver:** `json-file`
+* **Max Size:** `10m`
+* **Max Files:** `3` (Total 30MB de retenção por container).
 
 ## Aplicações e Serviços (Sempre ativos)
 
