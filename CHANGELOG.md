@@ -10,6 +10,13 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Traefik (Reverse proxy)
 
 ---
+## [2026-01-02] - Ingress Controller V3
+### Adicionado (Added)
+- **Traefik v3.6:** Atualizado Ingress Controller para a versão estável mais recente.
+    - *Compatibility Fix:* Implementada variável de ambiente `DOCKER_API_VERSION=1.45` para contornar falha de negociação de API no Debian 13 (Trixie).
+
+### Removido (Removed)
+- **Traefik v2.11:** Descontinuado uso da versão legado após validação do fix na v3.
 ## [2025-12-31] - Ingress Controller
 ### Adicionado (Added)
 - **Traefik v2.11:** Implantado como Proxy Reverso na porta 80/443 do DockerHost.
