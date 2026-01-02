@@ -12,11 +12,17 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 ---
 ## [2026-01-02] - Ingress Controller V3
 ### Adicionado (Added)
+- **Socket Proxy:** Implementado `tecnativa/docker-socket-proxy` para mediar a comunicação entre o Traefik e o Docker Daemon, revogando acesso root direto ao socket.
+- **Log Rotation:** Configurado driver `json-file` com limite de 30MB (3x10MB) por container para prevenir exaustão de disco.
+- **Unattended Upgrades:** Ativadas atualizações automáticas de segurança no Debian 13.
 - **Traefik v3.6:** Atualizado Ingress Controller para a versão estável mais recente.
     - *Compatibility Fix:* Implementada variável de ambiente `DOCKER_API_VERSION=1.45` para contornar falha de negociação de API no Debian 13 (Trixie).
 
 ### Removido (Removed)
 - **Traefik v2.11:** Descontinuado uso da versão legado após validação do fix na v3.
+
+### Alterado (Changed)
+- **Filesystem Standard:** Padronizada estrutura de diretórios em `/opt/{traefik,services,auth,monitoring}` com permissões para o usuário não-root (`fajre`).
 ## [2025-12-31] - Ingress Controller
 ### Adicionado (Added)
 - **Traefik v2.11:** Implantado como Proxy Reverso na porta 80/443 do DockerHost.
