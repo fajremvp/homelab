@@ -80,16 +80,21 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
     * **Serviços rodando neste Host (Docker):**
     	* `Stalwart Mail Server`: A escolha definitiva. Servidor moderno escrito em **Rust** (memory-safe). Substitui Postfix/Dovecot/Rspamd por um binário único e eficiente. Suporta JMAP/IMAP/SMTP e consome apenas ~150MB de RAM. Também com aliases. Já aviso que não enviarei e-mails, somente receber (estou ciente da dificuldade de manter a famosa "reputação"). Uso de SMTP Relay externo ou e-mail comum que já uso (Tuta e Proton) caso haja bloqueio da porta 25 pelo ISP.
     	* `Nostr Relay (Strfry)`: Servidor de retransmissão de alta performance escrito em C++. Configurado com *whitelist* de escrita (apenas sua chave privada pode postar/fazer backup) e leitura pública. Garante soberania dos dados e resistência à censura. Será exposto também via Tor (Onion Service).
-        * `Vaultwarden` (Gerenciador de senhas)
-        * `Syncthing` (Sincronização)
-        * `Forgejo`(Pull Mirror): Servidor Git auto-hospedado. Será configurado como um "pull mirror" (somente leitura) que puxa automaticamente as mudanças do GitHub (usado como repositório primário/público).
-        * `Forgejo Actions`(CI/CD): Utilizado para rodar pipelines de teste locais (no homelab) sobre o código espelhado, permitindo validar integrações com outros serviços internos.
-        * `FreshRSS` (Fonte de informações descentralizadas e distribuídas)
-        * `Grafana + Prometheus + Loki` (Observabilidade: Métricas e Logs)
+      * `Authentik` (Identity Provider): Versão `2025.10.3`.
+            - **Função:** Centraliza autenticação (SSO) e segurança.
+            - **Integração:** Exposto via Traefik (`auth.home`).
+            - **Middleware:** Exporta o middleware `authentik@docker` para proteger outros containers (Zero Trust/Forward Auth).
+            - **Banco de Dados:** Utiliza PostgreSQL 16 e Redis 7 dedicados na rede interna.
+      * `Vaultwarden` (Gerenciador de senhas)
+      * `Syncthing` (Sincronização)
+      * `Forgejo`(Pull Mirror): Servidor Git auto-hospedado. Será configurado como um "pull mirror" (somente leitura) que puxa automaticamente as mudanças do GitHub (usado como repositório primário/público).
+      * `Forgejo Actions`(CI/CD): Utilizado para rodar pipelines de teste locais (no homelab) sobre o código espelhado, permitindo validar integrações com outros serviços internos.
+      * `FreshRSS` (Fonte de informações descentralizadas e distribuídas)
+      * `Grafana + Prometheus + Loki` (Observabilidade: Métricas e Logs)
         	- **Política:** Retenção de logs configurada para **7 dias** para evitar que o armazenamento de logs lote o SSD NVMe principal.
-        * `ntfy` (Servidor de Notificações): Alternativa soberana ao Discord/Slack. Recebe webhooks do Alertmanager/Grafana e envia push notifications para o celular.
-        * `Portfólio pessoal` (Servidor web, via Traefik (também disponível em .onion e IPFS))
-        * `Pequeno site` (Servidor web, via Traefik)
+      * `ntfy` (Servidor de Notificações): Alternativa soberana ao Discord/Slack. Recebe webhooks do Alertmanager/Grafana e envia push notifications para o celular.
+      * `Portfólio pessoal` (Servidor web, via Traefik (também disponível em .onion e IPFS))
+      * `Pequeno site` (Servidor web, via Traefik)
 
 * **Bitcoin Core (Full Node) (Sem depender de intermediários e terceiros):** `[VM Dedicada]`
     * **Justificativa:** Alto uso de I/O de disco e rede constante. Uma VM dedicada impede que ele cause latência ou sature os recursos de outros serviços críticos.
