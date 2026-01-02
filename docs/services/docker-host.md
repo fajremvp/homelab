@@ -80,11 +80,13 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
     * **Serviços rodando neste Host (Docker):**
     	* `Stalwart Mail Server`: A escolha definitiva. Servidor moderno escrito em **Rust** (memory-safe). Substitui Postfix/Dovecot/Rspamd por um binário único e eficiente. Suporta JMAP/IMAP/SMTP e consome apenas ~150MB de RAM. Também com aliases. Já aviso que não enviarei e-mails, somente receber (estou ciente da dificuldade de manter a famosa "reputação"). Uso de SMTP Relay externo ou e-mail comum que já uso (Tuta e Proton) caso haja bloqueio da porta 25 pelo ISP.
     	* `Nostr Relay (Strfry)`: Servidor de retransmissão de alta performance escrito em C++. Configurado com *whitelist* de escrita (apenas sua chave privada pode postar/fazer backup) e leitura pública. Garante soberania dos dados e resistência à censura. Será exposto também via Tor (Onion Service).
-      * `Authentik` (Identity Provider): Versão `2025.10.3`.
-            - **Função:** Centraliza autenticação (SSO) e segurança.
-            - **Integração:** Exposto via Traefik (`auth.home`).
-            - **Middleware:** Exporta o middleware `authentik@docker` para proteger outros containers (Zero Trust/Forward Auth).
-            - **Banco de Dados:** Utiliza PostgreSQL 16 e Redis 7 dedicados na rede interna.
+      * **Authentik (Identity Provider):** `[DockerHost]`
+          - **Local:** `/opt/auth/authentik`
+          - **Versão:** `2025.10.3` (Stable).
+          - **Banco de Dados:** PostgreSQL 16 e Redis 7 (Dedicados, rede `internal`).
+          - **Função:** Centraliza autenticação (SSO) e segurança Zero Trust.
+          - **Integração:** Exposto via Traefik (`auth.home`).
+          - **Middleware:** Exporta o middleware `authentik@docker` para o Traefik. Qualquer container que adicionar a label `middlewares=authentik@docker` torna-se imediatamente protegido por login, sem precisar implementar autenticação própria.
       * `Vaultwarden` (Gerenciador de senhas)
       * `Syncthing` (Sincronização)
       * `Forgejo`(Pull Mirror): Servidor Git auto-hospedado. Será configurado como um "pull mirror" (somente leitura) que puxa automaticamente as mudanças do GitHub (usado como repositório primário/público).
