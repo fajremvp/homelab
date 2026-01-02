@@ -4,6 +4,22 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-02 (Parte 4)
+**Status:** ✅ Sucesso (Hardening RBAC)
+
+**Foco:** Restrição de Acesso via Policy (Python)
+
+- **Objetivo:** Impedir que qualquer usuário logado no Authentik (mesmo sem privilégios) acesse o painel administrativo do Traefik. Apenas a equipe de infraestrutura deve ter acesso.
+- **Implementação:**
+    - Criado grupo `infra-admins` no Authentik e incluído o usuário administrador.
+    - Criada uma **Expression Policy** (Python) para validar a pertinência ao grupo:
+      ```python
+      return ak_is_group_member(request.user, name="infra-admins")
+      ```
+    - Vinculada a policy ao aplicativo `Traefik Dashboard` com prioridade 0.
+- **Validação:**
+    - Login com admin: **Sucesso** (Acesso liberado).
+    - Login com usuário comum: **Bloqueado** (Mensagem "Permission Denied" exibida pelo Authentik).
 ## 2026-01-02 (Parte 3)
 **Status:** ✅ Sucesso (Identity Provider & Zero Trust)
 
