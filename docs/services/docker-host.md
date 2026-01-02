@@ -24,7 +24,7 @@ O DockerHost utiliza o **Traefik** como "Porteiro Único". Nenhuma aplicação e
 * **Portas Expostas:**
     * `80` (HTTP): Redireciona forçadamente para HTTPS.
     * `443` (HTTPS): Terminação SSL (Atualmente Autoassinado, futuro Let's Encrypt).
-    * `8080` (Dashboard): Exposto apenas internamente para debug.
+    * `8080` (Dashboard): **Bloqueada**. O acesso direto foi removido; o dashboard agora é acessível exclusivamente via `https://traefik.home` (protegido por autenticação).
 
 ### ⚠️ Compatibilidade Debian 13 (Trixie)
 O Docker Engine v29+ (presente no Debian Trixie) rejeita conexões de clientes que tentam negociar APIs muito antigas (<1.44), comportamento padrão do Traefik.
