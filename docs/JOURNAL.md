@@ -4,6 +4,22 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-02 (Parte 3)
+**Status:** ✅ Sucesso (Identity Provider)
+
+**Foco:** Implementação do Authentik e Integração com Traefik
+
+- **Desafio (Routing Hell):**
+    - Após subir a stack, o acesso via `https://auth.home` falhava com timeout ou erro genérico.
+    - Diagnóstico via `curl` mostrou que a requisição era enviada mas nunca respondida.
+    - **Causa Raiz:** O container do Authentik possui duas redes (`internal` e `proxy`). O Traefik estava tentando rotear o tráfego usando o IP da rede `internal` (que ele não alcança), em vez da rede `proxy`.
+- **Solução:**
+    - Adicionado label `traefik.docker.network=proxy` no serviço do Authentik. Isso forçou o Traefik a usar o IP correto para a comunicação.
+- **Troubleshooting de Acesso:**
+    - Durante o setup inicial, precisei abrir um túnel SSH (`ssh -L 9000:localhost:9000`) para acessar a interface administrativa diretamente e criar o primeiro usuário, contornando erros de certificado/cache no navegador.
+- **Resultado Final:**
+    - Dashboard acessível em `https://auth.home`.
+    - Middleware `authentik@docker` registrado com sucesso no Traefik, pronto para proteger outros serviços (Zero Trust).
 ## 2026-01-02 (Parte 2)
 **Status:** ✅ Sucesso (Hardening)
 
