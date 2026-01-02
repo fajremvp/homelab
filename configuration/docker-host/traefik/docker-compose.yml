@@ -1,0 +1,53 @@
+services:
+  # Protege o socket do Docker contra ataques vindos do Traefik.
+  socket-proxy:
+    image: tecnativa/docker-socket-proxy
+    container_name: socket-proxy
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Monta o socket real (somente leitura)
+    environment:
+      - CONTAINERS=1 # Traefik precisa listar containers
+      - SERVICES=1   # Traefik precisa listar serviços
+      - NETWORKS=1   # Traefik precisa ver redes
+      # Todo o resto (POST, DELETE, EXEC) é bloqueado implicitamente.
+    networks:
+      - proxy
+
+  # TRAEFIK (Agora falando com o Proxy)
+  traefik:
+    image: "traefik:v3.6"
+    container_name: "traefik"
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      - socket-proxy
+    environment:
+      - DOCKER_API_VERSION=1.45 # Fix de compatibilidade Debian 13
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      # Aponta para o proxy via TCP, não para o arquivo local
+      - "--providers.docker.endpoint=tcp://socket-proxy:2375"
+      # Configurações de Entrada
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      # Acesso direto ao docker.sock foi retirado por segurança.
+      - ./data/acme.json:/acme.json
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
