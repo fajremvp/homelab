@@ -13,3 +13,11 @@
 | **Kernel / Sysctl** | Desabilitar IPv6 se não usado, desabilitar forwarding de pacotes (exceto se for router), proteção contra ataques ICMP e SYN flood. | Debian / Alpine. |
 | **CrowdSec** | Agente instalado em cada host enviando logs para o LAPI central. Detecta Brute Force local e reporta para bloqueio no OPNsense. | Todas as VMs expostas a serviços. |
 | **Talos Linux** | O hardening é nativo (Imutável, Ephemeral, Read-only FS). Acesso à API do cluster protegido por mTLS com rotação de certificados. | Nodes do Cluster. |
+
+### Diretrizes de Segurança para DockerHost
+
+| Componente | Regra / Política | Motivação |
+| :--- | :--- | :--- |
+| **Docker Socket** | **Proibido montar `/var/run/docker.sock` em containers expostos.** Uso obrigatório de Socket Proxy com whitelist (GET only). | Impede que uma vulnerabilidade no Traefik/Portainer conceda acesso root ao Host. |
+| **Filesystem** | Volumes persistentes em `/opt/` devem pertencer a usuário não-root. | Evita uso desnecessário de `sudo` e protege arquivos de sistema contra erro humano. |
+| **Log Rotation** | Limite global de 30MB por container. | Prevenção de DoS por exaustão de disco (`no space left on device`). |
