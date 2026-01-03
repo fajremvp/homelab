@@ -87,6 +87,12 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Função:** Centraliza autenticação (SSO) e segurança Zero Trust.
           - **Integração:** Exposto via Traefik (`auth.home`).
           - **Middleware:** Exporta o middleware `authentik@docker` para o Traefik. Qualquer container que adicionar a label `middlewares=authentik@docker` torna-se imediatamente protegido por login, sem precisar implementar autenticação própria.
+      * **HashiCorp Vault (Gerenciador de Segredos):** `[DockerHost]`
+          - **Local:** `/opt/auth/vault`
+          - **Versão:** `1.21.1` (Raft Storage).
+          - **Ingress:** `https://vault.home` (Protegido por Authentik).
+          - **Função:** Armazenamento seguro de segredos (API Keys, Senhas de Banco).
+          - **Política de Boot:** O serviço inicia selado. Requer intervenção manual (Unseal com 3 chaves) após cada reboot do host.
       * `Vaultwarden` (Gerenciador de senhas)
       * `Syncthing` (Sincronização)
       * `Forgejo`(Pull Mirror): Servidor Git auto-hospedado. Será configurado como um "pull mirror" (somente leitura) que puxa automaticamente as mudanças do GitHub (usado como repositório primário/público).
