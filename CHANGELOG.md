@@ -10,6 +10,12 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Traefik (Reverse proxy)
 
 ---
+## [2026-01-03] - Secret Management
+### Adicionado (Added)
+- **HashiCorp Vault (Secrets Manager):** Implantado Vault v1.21.1 (Stable) com storage Raft integrado.
+    - *Segurança:* Inicializado manualmente (Shamir's Secret Sharing 3/5).
+    - *Integração:* Exposto via Traefik (`vault.home`) e protegido por autenticação MFA/SSO via Authentik (Middleware ForwardAuth).
+    - *Fix de UI:* Configurado `api_addr` para `https://vault.home` para prevenir loops de redirecionamento locais.
 ## [2026-01-02] - Ingress Controller V3
 ### Adicionado (Added)
 - **Authentik (IdP):** Implantado stack completa de identidade (v2025.10.3) com PostgreSQL 16 e Redis 7.
