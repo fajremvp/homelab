@@ -4,6 +4,24 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-03
+**Status:** ✅ Sucesso (Secret Management)
+
+**Foco:** Implementação do HashiCorp Vault
+
+- **Decisão de Versão:**
+    - Optado por **Vault v1.21.1** (Latest Stable), garantindo correções de segurança recentes.
+- **Implementação:**
+    - Backend de armazenamento: **Raft** (Integrated Storage) - elimina dependência do Consul.
+    - Proteção de Ingress: Middleware `authentik@docker` aplicado no router do Vault. Apenas admins autenticados chegam na tela de login do cofre.
+- **Cerimônia de Inicialização (Unseal):**
+    - Executada inicialização com **Shamir's Secret Sharing**.
+    - **Configuração:** 5 Key Shares, Threshold de 3 chaves para desbloqueio.
+    - **Root Token:** Gerado e armazenado com segurança máxima (Bitwarden, depois para o Vaultwarden) junto com as 5 chaves de unseal.
+- **Estado Final:**
+    - Vault operacional em `https://vault.home`.
+    - Banco de dados criptografado em repouso.
+    - Requer desbloqueio manual (3 chaves) a cada reinicialização do container.
 ## 2026-01-02 (Parte 4)
 **Status:** ✅ Sucesso (Hardening RBAC)
 
