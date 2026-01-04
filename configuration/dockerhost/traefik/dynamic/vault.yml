@@ -1,0 +1,16 @@
+http:
+  routers:
+    vault:
+      rule: "Host(`vault.home`)"
+      service: "vault-service"
+      entryPoints:
+        - "websecure"
+      tls: {}
+      middlewares:
+        - "authentik@docker"
+
+  services:
+    vault-service:
+      loadBalancer:
+        servers:
+          - url: "http://10.10.40.10:8200"
