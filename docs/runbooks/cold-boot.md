@@ -19,9 +19,18 @@
     		3. No prompt do BusyBox, rodar: `cryptroot-unlock`.
     		4. Digitar a senha do LUKS e aguardar a queda da conexão.
 
-* **Ordem de Boot Automática (Startup Delays):**
-	1. OPNsense: Priority 1 (Delay 0s). A rede precisa subir primeiro.
-	2. Vault: Priority 2 (Delay 30s). Os segredos precisam estar disponíveis.
-	3. DockerHost: Priority 3 (Delay 60s). Depende da Rede e do Vault.
-	4. Bitcoin Node: Priority 4 (Delay 120s). Pesado, sobe por último.
-	* Nota: Cluster Kubernetes e VMs de Lab não têm auto-boot configurado (Acionamento Manual).
+### Ordem de Boot e Desligamento (Start/Shutdown Ordering)
+
+A orquestração de boot é crítica para evitar "Race Conditions" (Serviço A tenta conectar no Serviço B antes de B estar pronto).
+A configuração é definida em `Datacenter > Node > VM > Options > Start/Shutdown order`.
+
+| Prioridade | VM/LXC | Startup Delay | Shutdown Timeout | Justificativa da Dependência |
+| :--- | :--- | :--- | :--- | :--- |
+| **1** | **OPNsense (VM)** | `60s` | `120s` | **A Fundação (Rede).** Nada funciona sem roteamento/gateway. O delay de 60s garante que o Unbound, DHCP e Firewall carreguem totalmente antes de liberar o boot do próximo nível. |
+| **2** | **AdGuard Home (LXC)** | `15s` | `15s` | **Resolução de Nomes (DNS).** Leve e rápido (Alpine). Deve subir imediatamente após a rede para garantir que `vault.home` e `auth.home` sejam resolvíveis para o resto da infra. |
+| **3** | **Vault (VM)** | `30s` | `60s` | **Gestão de Segredos.** Deve estar "UP" (mesmo que selado) e acessível na porta 8200 antes que o Traefik tente iniciar. O delay permite que o serviço Vault suba e abra a porta TCP. |
+| **4** | **DockerHost (VM)** | `60s` | `180s` | **Camada de Aplicação.** Onde rodam Traefik, Authentik e Apps. Depende de Rede, DNS e Vault estarem estáveis. Shutdown longo configurado para permitir `docker stop` gracioso dos containers (evita corrupção de DB). |
+| **5** | **Bitcoin Node (VM)** | `0s` | `300s` | **Carga Pesada.** Sobe por último. Não tem dependentes. Shutdown estendido (5 min) pois o `bitcoind` demora para descarregar o cache de memória para o disco (flush) ao desligar. |
+
+* **Nota sobre Expansão:** Novos LXCs de serviço (ex: Unbound dedicado, Management) devem entrar na ordem **após** o AdGuard (Prioridade 2 ou 3) e **antes** do DockerHost, para garantir que serviços básicos estejam prontos antes das aplicações pesadas.
+* **Kubernetes/Lab:** `Start at boot: No`. Devem ser ligados manualmente apenas quando necessários para economizar recursos.
