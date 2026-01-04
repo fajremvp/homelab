@@ -18,6 +18,9 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 ### Alterado (Changed)
 - **Vault Migration:** Migrado serviço HashiCorp Vault de DockerHost para VM Dedicada.
     - *Network Flow:* Traefik (VLAN 30) -> Firewall (Passagem TCP/8200 Estrita) -> Vault VM (VLAN 40).
+- **Hardening de Host (Vault):**
+    - Implementado **UFW** com política *Default Deny*. Acesso SSH restrito a VLANs de gestão e API restrita ao DockerHost.
+    - **Isolamento Total:** Bloqueio de saída para internet aplicado no OPNsense (VLAN 40).
 - **Traefik Configuration:** Habilitado `file provider` (`--providers.file`) para gerenciar roteamento para serviços externos (Non-Docker).
 ## [2026-01-03] - Secret Management
 ### Adicionado (Added)
