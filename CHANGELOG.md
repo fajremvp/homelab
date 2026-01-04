@@ -7,9 +7,18 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ## [Unreleased]
 ### Planejado
-- Traefik (Reverse proxy)
+- Hardening da Vault VM
 
 ---
+## [2026-01-04] - Vault Architecture Refactor
+### Adicionado (Added)
+- **VLAN 40 (SECURE):** Implementada rede isolada no OPNsense para ativos de alta criticidade.
+- **VM Vault (ID 106):** Provisionada VM dedicada (Debian 13 Minimal) para hospedar o HashiCorp Vault, substituindo o container anterior.
+
+### Alterado (Changed)
+- **Vault Migration:** Migrado serviço HashiCorp Vault de DockerHost para VM Dedicada.
+    - *Network Flow:* Traefik (VLAN 30) -> Firewall (Passagem TCP/8200 Estrita) -> Vault VM (VLAN 40).
+- **Traefik Configuration:** Habilitado `file provider` (`--providers.file`) para gerenciar roteamento para serviços externos (Non-Docker).
 ## [2026-01-03] - Secret Management
 ### Adicionado (Added)
 - **HashiCorp Vault (Secrets Manager):** Implantado Vault v1.21.1 (Stable) com storage Raft integrado.
