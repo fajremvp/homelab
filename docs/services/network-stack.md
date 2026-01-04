@@ -50,11 +50,12 @@
     * **Split-Horizon:** O DNS público não terá registros apontando para seus IPs. A resolução de nomes (`*.home.seudominio.net` -> IP Local) será feita exclusivamente dentro da rede pelo **AdGuard Home**, garantindo invisibilidade externa.
 * **Authentik (Provedor de Identidade - SSO/IAM):** `[DockerHost]`
 	* **Justificativa:** Centraliza o gerenciamento de usuários (SSO) e o IAM para todos os serviços. Integra-se nativamente ao Traefik (via Forward Auth) para proteger aplicações que não possuem autenticação própria. Fornece OIDC, SAML, LDAP virtual e gerenciamento de MFA (WebAuthn/Passkeys), alinhando-se às práticas de mercado e "Zero Trust".
-* **HashiCorp Vault (Gerenciador de Segredos):** `[DockerHost]`
-    * **Justificativa:** Servidor central de segredos. Usará **Storage Raft Integrated** (permite snapshots atômicos para backup sem parar o serviço). Essencial para habilitar credenciais dinâmicas e de curta duração (Leasing).
-    * **Segurança:** Protegido por autenticação dupla:
-        1. **Authentik:** Protege o acesso à interface Web/API.
-        2. **Vault Seal:** O banco de dados permanece criptografado até que 3 das 5 chaves mestras sejam inseridas fisicamente por um administrador.
+* **HashiCorp Vault (Gerenciador de Segredos):** `[VM Dedicada - VLAN 40]`
+    * **Justificativa:** Servidor central de segredos. Isolamento total (Kernel e Rede) do DockerHost para impedir vazamento lateral.
+    * **Segurança:** Protegido por autenticação tripla:
+        1. **Rede:** Acessível apenas pela porta 8200 vinda exclusivamente do IP do DockerHost (Traefik).
+        2. **Aplicação:** Protegido por Authentik (Forward Auth) na borda HTTP.
+        3. **Dados:** Banco de dados criptografado (Sealed (3/5 chaves)) em repouso.
 * **CrowdSec (Defesa Ativa):**
     * **Agente ("Cérebro"):** `[DockerHost]` - Roda como container junto às aplicações. Lê os logs locais (Traefik, Autenticação) diretamente, sem complexidade de envio por rede.
     * **Bouncer ("Músculo"):** `[VM - OPNsense]` - Instala o plugin `os-crowdsec` no OPNsense, que lê as decisões do Agente e aplica os bloqueios no firewall.
