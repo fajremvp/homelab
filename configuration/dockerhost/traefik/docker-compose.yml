@@ -27,6 +27,8 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.endpoint=tcp://socket-proxy:2375"
+      - "--providers.file.directory=/etc/traefik/dynamic"
+      - "--providers.file.watch=true"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
@@ -38,16 +40,16 @@ services:
       - "443:443"
     volumes:
       - ./data/acme.json:/acme.json
+      - ./dynamic:/etc/traefik/dynamic
     networks:
       - proxy
     labels:
       - "traefik.enable=true"
-      # Roteador Principal (Requer /dashboard/ ou /api/)
+      # FIX DO DASHBOARD: Só aceita se for /api ou /dashboard
       - "traefik.http.routers.dashboard.rule=Host(`traefik.home`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls=true"
-      # Proteção: Authentik (ForwardAuth)
       - "traefik.http.routers.dashboard.middlewares=authentik@docker"
 
 networks:
