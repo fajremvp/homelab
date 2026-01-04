@@ -19,6 +19,15 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
     - Instalação nativa (apt) no Debian 13.
     - Configurado `api_addr = "https://vault.home"` para garantir que redirecionamentos de UI passem pelo Proxy reverso.
     - **Resultado:** Unseal realizado com sucesso, chaves salvas e interface protegida pelo Authentik.
+- **Hardening Final & Validação (Pós-Migração):**
+    - **Host Firewall (Defense in Depth):** Ativado UFW na VM Vault para não depender apenas do OPNsense.
+        - Regras aplicadas: `Allow 8200 from 10.10.30.10` e `Allow 22 from Trusted/Mgmt`.
+        - Teste de movimento lateral (SSH do DockerHost para Vault): **Bloqueado com sucesso**.
+    - **Isolamento de Internet:** Regra `Temp Install Vault` desativada no OPNsense.
+        - Teste: `ping 1.1.1.1` a partir do Vault falha (Timeout). A VM está isolada.
+    - **Troubleshooting de Rede:**
+        - Resolvido problema onde a VM não conectava à internet para updates iniciais.
+        - **Causa:** Falta de regra de **Outbound NAT** para a nova VLAN 40. Corrigido adicionando regra manual no OPNsense.
 ## 2026-01-03
 **Status:** ✅ Sucesso (Secret Management)
 
