@@ -87,12 +87,6 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Função:** Centraliza autenticação (SSO) e segurança Zero Trust.
           - **Integração:** Exposto via Traefik (`auth.home`).
           - **Middleware:** Exporta o middleware `authentik@docker` para o Traefik. Qualquer container que adicionar a label `middlewares=authentik@docker` torna-se imediatamente protegido por login, sem precisar implementar autenticação própria.
-      * **HashiCorp Vault (Gerenciador de Segredos):** `[DockerHost]`
-          - **Local:** `/opt/auth/vault`
-          - **Versão:** `1.21.1` (Raft Storage).
-          - **Ingress:** `https://vault.home` (Protegido por Authentik).
-          - **Função:** Armazenamento seguro de segredos (API Keys, Senhas de Banco).
-          - **Política de Boot:** O serviço inicia selado. Requer intervenção manual (Unseal com 3 chaves) após cada reboot do host.
       * `Vaultwarden` (Gerenciador de senhas)
       * `Syncthing` (Sincronização)
       * `Forgejo`(Pull Mirror): Servidor Git auto-hospedado. Será configurado como um "pull mirror" (somente leitura) que puxa automaticamente as mudanças do GitHub (usado como repositório primário/público).
@@ -103,10 +97,6 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
       * `ntfy` (Servidor de Notificações): Alternativa soberana ao Discord/Slack. Recebe webhooks do Alertmanager/Grafana e envia push notifications para o celular.
       * `Portfólio pessoal` (Servidor web, via Traefik (também disponível em .onion e IPFS))
       * `Pequeno site` (Servidor web, via Traefik)
-
-* **Bitcoin Core (Full Node) (Sem depender de intermediários e terceiros):** `[VM Dedicada]`
-    * **Justificativa:** Alto uso de I/O de disco e rede constante. Uma VM dedicada impede que ele cause latência ou sature os recursos de outros serviços críticos.
-    * **Armazenamento:** Montado no **SSD SATA Dedicado**. Isso protege o NVMe principal de desgaste e latência.
 
 * **Terraform / Ansible / Restic:** `[LXC Alpine - Gerenciamento]`
     * **Justificativa:** Centraliza as ferramentas de automação, IaC e backup. O **Terraform** será usado para *provisionar* a infraestrutura (VMs, LXCs) de forma declarativa. O **Ansible** será usado para *configurar* o software *dentro* dessas VMs (instalar pacotes, aplicar hardening). O **Restic** gerencia os scripts de backup de dados. Rodarão a partir de um LXC "admin" dedicado.
