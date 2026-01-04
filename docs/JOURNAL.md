@@ -4,6 +4,21 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-04
+**Status:** ✅ Sucesso (Refatoração de Segurança)
+
+**Foco:** Migração do Vault para VM Dedicada (Zero Trust Real)
+
+- **Correção de Rumo:**
+    - A implementação inicial (Container) violava a política de segmentação da VLAN 40.
+    - **Ação:** Destruí o container e provisionei a VM 106 (`Vault`) isolada na VLAN 40.
+- **Infraestrutura:**
+    - **OPNsense:** Criada VLAN 40 e regra de firewall permitindo apenas `Source: DockerHost` -> `Dest: Vault:8200`.
+    - **Traefik:** Configurado *File Provider* para rotear `vault.home` para `http://10.10.40.10:8200` via arquivo dinâmico.
+- **Vault Setup:**
+    - Instalação nativa (apt) no Debian 13.
+    - Configurado `api_addr = "https://vault.home"` para garantir que redirecionamentos de UI passem pelo Proxy reverso.
+    - **Resultado:** Unseal realizado com sucesso, chaves salvas e interface protegida pelo Authentik.
 ## 2026-01-03
 **Status:** ✅ Sucesso (Secret Management)
 
