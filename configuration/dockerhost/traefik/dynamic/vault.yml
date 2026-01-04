@@ -1,6 +1,17 @@
 http:
   routers:
-    vault:
+    # Router para API (Robôs/CLI/Apps)
+    vault-api:
+      rule: "Host(`vault.home`) && PathPrefix(`/v1`)"
+      service: "vault-service"
+      entryPoints:
+        - "websecure"
+      tls: {}
+      priority: 100
+      # SEM MIDDLEWARE AUTHENTIK AQUI (O Vault se protege sozinho)
+
+    # Router para UI (Humanos/Navegador)
+    vault-ui:
       rule: "Host(`vault.home`)"
       service: "vault-service"
       entryPoints:
