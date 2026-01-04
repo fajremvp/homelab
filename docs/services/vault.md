@@ -7,17 +7,17 @@ Implementação realizada em: 2026-01-04.
 
 | Recurso | Configuração | Justificativa |
 | :--- | :--- | :--- |
-| **ID / Hostname** | `106` / `vault` | Start at boot: **Sim** (Prioridade 3). |
+| **ID / Hostname** | `106` / `Vault` | Start at boot: **Sim** (Prioridade 3). |
 | **OS** | Debian 13 (Trixie) | Instalação "Minimal". Sem Docker. |
 | **vCPU** | 2 Cores | Type: `host` (AES-NI para criptografia rápida). |
-| **RAM** | 2 GB | Suficiente para o binário Go e cache do Raft. |
-| **Disco** | 32 GB (SCSI) | Storage: `local-zfs` (SSD). IO Thread On. |
+| **RAM** | 4 GB | Suficiente para o binário Go e cache do Raft. |
+| **Disco** | 20 GB (SCSI) | Storage: `local-zfs` (SSD). IO Thread On. |
 | **Rede** | `10.10.40.10` | **VLAN 40 (SECURE)**. Gateway: `10.10.40.1`. |
 
 ## Arquitetura de Segurança (Hardening)
 
 ### 1. Isolamento de Rede (Zero Trust)
-* **Internet:** Bloqueada por padrão no OPNsense. A VM não consegue iniciar conexões para fora (Regra `Temp Install Vault` desativada).
+* **Internet:** Bloqueada por padrão no OPNsense. A VM não consegue iniciar conexões para fora (Regra `Temp Install/Update Vault` desativada).
 * **Ingress (Entrada):**
     * Todo tráfego é **bloqueado** exceto portas explicitamente liberadas.
     * **Porta 8200 (API):** Aceita conexões **apenas** do DockerHost (`10.10.30.10`).
@@ -53,10 +53,10 @@ Unseal: Requer 3 de 5 chaves para descriptografar a chave mestre na memória RAM
 ### 5. Procedimento de Atualização (Manutenção)
 Como a VM não tem internet, o processo de apt update requer passos manuais:
 
-OPNsense: Ativar regra Temp Install Vault na VLAN SECURE.
+   - OPNsense: Ativar regra Temp Install Vault na VLAN SECURE.
 
-VM Vault: Editar /etc/resolv.conf para adicionar DNS temporário (1.1.1.1).
+   - VM Vault: Editar /etc/resolv.conf para adicionar DNS temporário (1.1.1.1).
 
-Executar updates.
+   - Executar updates.
 
-Reversão: Desativar regra no OPNsense.
+   - Reversão: Desativar regra no OPNsense.
