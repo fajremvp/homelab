@@ -1,0 +1,36 @@
+services:
+  vault:
+    image: hashicorp/vault:1.21.1
+    container_name: vault
+    restart: unless-stopped
+    cap_add:
+      - IPC_LOCK
+    environment:
+      # Endereço para uso da CLI LOCAL (dentro do container)
+      VAULT_ADDR: 'http://127.0.0.1:8200'
+      # Endereço público (para redirecionamentos e clientes externos)
+      VAULT_API_ADDR: 'https://vault.home'
+    volumes:
+      - ./config:/vault/config
+      - ./data:/vault/data
+      - ./logs:/vault/logs
+    command: server
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      
+      # Router Principal
+      - "traefik.http.routers.vault.rule=Host(`vault.home`)"
+      - "traefik.http.routers.vault.entrypoints=websecure"
+      - "traefik.http.routers.vault.tls=true"
+      - "traefik.http.services.vault.loadbalancer.server.port=8200"
+      
+      # Segurança: Authentik (RBAC)
+      # Exige que  esteja no grupo 'infra-admins' para ver a tela de login do Vault
+      - "traefik.http.routers.vault.middlewares=authentik@docker"
+
+networks:
+  proxy:
+    external: true
