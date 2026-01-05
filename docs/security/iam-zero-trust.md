@@ -6,7 +6,7 @@
 | :--- | :--- | :--- | :--- |
 | **Eu (Humano/Admin)** | **MFA Obrigatório** (Passkeys/YubiKey + Senha no Vaultwarden). Acesso via SSO (Authentik). | **Admin:** Acesso amplo, mas requer elevação explícita (sudo ou re-autenticação) para operações destrutivas. | Sessão Web: 12 horas.  Token CLI: 1 hora (máx). |
 | **Visitantes (Guest)** | Wi-Fi Guest (VLAN 50). Sem acesso a serviços internos. | **Nenhum:** Apenas acesso à internet com banda limitada (Throttling). Isolamento total via Firewall. | 24 horas (Rotativo). |
-| **CI/CD (Forgejo Actions)** | **AppRole (Vault)**. O runner se autentica no Vault para pegar segredos dinâmicos "Just-in-Time". | **Escopo Limitado:** Apenas leitura de repositórios e escrita no registry de containers. Sem acesso a SSH de servidores. | TTL: 15 minutos (Duração do Job). |
+| **DockerHost (App)** | **AppRole (Vault)**. Script de boot usa SecretID protegido em disco para pegar senhas de DB em RAM. | **Leitura Estrita:** Acesso apenas a `kv/data/authentik` e `kv/data/services`. | Token renovado a cada boot/deploy. |
 | **K8s (Kubernetes)** | **Service Accounts (K8s)** mapeadas para Roles do Vault via *External Secrets Operator*. | **Namespace Isolation:** O pod do "App A" só consegue decriptar segredos do namespace "App A". | Rotação automática a cada 1 hora. |
 | **Servidores (SSH)** | Chaves SSH Ed25519 (Armazenadas em YubiKey ou Vault). | **Sem Root:** Login apenas como usuário nominal não-privilegiado; escalação via `sudo` com log de auditoria. | N/A (Chave estática, protegida por passphrase). |
 
