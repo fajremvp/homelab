@@ -59,4 +59,19 @@ Como a VM não tem internet, o processo de apt update requer passos manuais:
 
    - Executar updates.
 
+## Integração Machine-to-Machine (AppRole)
+Implementado em: 2026-01-04.
+
+Para evitar hardcoding de senhas, o DockerHost se autentica no Vault como uma "máquina" usando o método AppRole.
+
+### Política de Acesso (ACL)
+Arquivo: `docker-host-ro.hcl`
+```hcl
+path "kv/data/authentik/*" {
+  capabilities = ["read"]
+}
+path "kv/data/services/*" {
+  capabilities = ["read"]
+}
+
    - Reversão: Desativar regra no OPNsense.
