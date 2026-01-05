@@ -99,9 +99,6 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
       * `Portfólio pessoal` (Servidor web, via Traefik (também disponível em .onion e IPFS))
       * `Pequeno site` (Servidor web, via Traefik)
 
-* **Terraform / Ansible / Restic:** `[LXC Alpine - Gerenciamento]`
-    * **Justificativa:** Centraliza as ferramentas de automação, IaC e backup. O **Terraform** será usado para *provisionar* a infraestrutura (VMs, LXCs) de forma declarativa. O **Ansible** será usado para *configurar* o software *dentro* dessas VMs (instalar pacotes, aplicar hardening). O **Restic** gerencia os scripts de backup de dados. Rodarão a partir de um LXC "admin" dedicado.
-
 * **Resiliência de Boot**: Todos os containers críticos (Vaultwarden, Stalwart) devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
 
 ## Serviços Sob Demanda (Não vão estar sempre ligados)
