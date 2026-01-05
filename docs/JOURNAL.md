@@ -28,6 +28,17 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
     - **Troubleshooting de Rede:**
         - Resolvido problema onde a VM não conectava à internet para updates iniciais.
         - **Causa:** Falta de regra de **Outbound NAT** para a nova VLAN 40. Corrigido adicionando regra manual no OPNsense.
+- **Integração Zero Trust (Vault + Authentik):**
+    - **Desafio:** O DockerHost precisava ler segredos sem intervenção humana, mas o Vault inicia trancado (Sealed) após reboot.
+    - **Solução:**
+        1.  **Identidade:** Configurei **AppRole** no Vault. O DockerHost possui um "crachá" (SecretID) protegido em `/etc/vault/dockerhost.secretid` (root-only).
+        2.  **Rede:** Ajustei o DNS do DockerHost para usar o AdGuard (`10.10.30.5`) via `systemd-resolved`, garantindo resolução de `vault.home` sem hacks manuais.
+        3.  **Automação:** Desenvolvi o script `start-with-vault.sh` que autentica, baixa a senha do PostgreSQL e sobe o stack.
+    - **Teste de Resiliência:**
+        - Realizado reinício físico do servidor (Cold Boot).
+        - O Vault subiu selado. O serviço `authentik-vault` entrou em loop de retry no DockerHost (comprovando resiliência).
+        - Após destrancar o Vault manualmente via SSH (lembrando de definir `export VAULT_ADDR='http://127.0.0.1:8200'`), o DockerHost detectou o sucesso automaticamente e subiu os containers do Authentik em menos de 10 segundos.
+    - **Resultado:** Infraestrutura resiliente a falhas de energia e sem segredos em texto puro no disco.
 ## 2026-01-03
 **Status:** ✅ Sucesso (Secret Management)
 
