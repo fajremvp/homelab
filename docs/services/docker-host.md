@@ -47,7 +47,7 @@ Toda a comunicação passa por um container intermediário (`socket-proxy`) conf
 * **Particionamento:** Disco inteiro (`ext4`).
 * **Pacotes Instalados:** Apenas `SSH Server` e `Standard System Utilities`.
 * **Rede:**
-    * **IP:** Atribuído via DHCP (VLAN 30).
+    * **IP:** Definido IP estático com o OPNsense (10.10.30.10) na (VLAN 30).
     * **DNS:** Configurado via `systemd-resolved` apontando para o AdGuard (`10.10.30.5`).
     * **Domínios:** Resolve `*.home` corretamente. Dependência de `/etc/hosts` removida.
 * **Usuário:** `fajre` (Sudoers).
