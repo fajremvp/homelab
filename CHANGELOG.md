@@ -14,6 +14,12 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Fazer uma bancadinha/rack pra deixar tudo
 
 ---
+## [2026-01-05] - Disaster Recovery Drill
+### Adicionado (Added)
+- **Policy RBAC:** Restaurada política de acesso `Require Infra Admin` (Python) para proteger dashboards administrativos após perda de banco de dados.
+
+### Validado (Verified)
+- **Cold Boot Resilience:** Confirmado que a infraestrutura recupera-se automaticamente após o desbloqueio manual do Vault, validando o script de retry do Systemd (`authentik-vault`).
 ## [2026-01-04] - Phase 2 Completion (Identity & Secrets)
 ### Adicionado (Added)
 - **Vault AppRole:** Implementada autenticação automatizada Machine-to-Machine para o DockerHost.
