@@ -4,6 +4,29 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-05
+**Status:** ✅ Sucesso (Disaster Recovery & Validation)
+
+**Foco:** Teste de Resiliência e Recuperação de Falha Humana
+
+- **O Incidente (Human Error):**
+    - Durante troubleshooting de acesso, executei `docker compose down -v` no stack do Authentik.
+    - **Impacto:** O flag `-v` deletou o volume persistente do PostgreSQL. O banco de dados de identidade foi zerado.
+    - **Sintomas:** Perda de usuários, grupos, policies e configurações de Providers. O Vault e Traefik permaneceram intactos, mas o "porteiro" (Authentik) perdeu a memória.
+- **A Recuperação (Cold Recovery):**
+    - Recriado usuário admin (`akadmin`).
+    - Recriados os Providers e Applications para Traefik e Vault.
+    - Restaurada a Policy Python (`infra-admins`) para RBAC.
+    - **Tempo de Recuperação:** ~15 minutos.
+- **Teste de Fogo (Reboot do Host):**
+    - Executado reboot total do servidor físico para validar a automação criada ontem.
+    - **Comportamento Observado:**
+        1.  Proxmox subiu e pediu senha LUKS (OK).
+        2.  VMs iniciaram na ordem correta (OPNsense -> DNS -> Vault -> DockerHost).
+        3.  **Resiliência:** O serviço `authentik-vault` no DockerHost falhou ao tentar conectar no Vault (que estava Selado). O Systemd entrou em loop de retry (OK).
+        4.  **Intervenção:** Realizado Unseal manual do Vault via SSH.
+        5.  **Sucesso:** Imediatamente após o Unseal, o script do DockerHost obteve a senha do banco e subiu o Authentik automaticamente.
+- **Conclusão:** A arquitetura de *AppRole* com injeção de segredos em RAM provou-se resiliente a reboots e segura. O incidente reforçou a necessidade de **não usar** `-v` em produção e a urgência de configurar backups automatizados do banco PostgreSQL.
 ## 2026-01-04
 **Status:** ✅ Sucesso (Refatoração de Segurança)
 
