@@ -7,7 +7,11 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ## [Unreleased]
 ### Planejado
-- Primeira aplicação?
+- Primeira aplicação (...?...)
+- Mexer no Pi (Comprar cabos jumper do tipo FÊMEA-FÊMEA, pra ligar o módulo RTC (não fechou o case)
+- Esperar o Nobreak chegar
+- Organizar cabos
+- Fazer uma bancadinha/rack pra deixar tudo
 
 ---
 ## [2026-01-04] - Phase 2 Completion (Identity & Secrets)
