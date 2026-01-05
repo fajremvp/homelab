@@ -48,7 +48,8 @@ Toda a comunicação passa por um container intermediário (`socket-proxy`) conf
 * **Pacotes Instalados:** Apenas `SSH Server` e `Standard System Utilities`.
 * **Rede:**
     * **IP:** Atribuído via DHCP (VLAN 30).
-    * **DNS:** Temporário (`1.1.1.1`) até implementação do AdGuard local.
+    * **DNS:** Configurado via `systemd-resolved` apontando para o AdGuard (`10.10.30.5`).
+    * **Domínios:** Resolve `*.home` corretamente. Dependência de `/etc/hosts` removida.
 * **Usuário:** `fajre` (Sudoers).
 * **SSH:**
     * Porta: `22`.
