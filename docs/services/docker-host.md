@@ -113,3 +113,15 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
         * `HedgeDoc`(Anotações e brainstorming em grupo)
         * `Jitsi Meet`(Alternativa ao Meet (para no máximo umas 8 pessoas, somente chamada de áudio, sem video, talvez no máximo so alguém compartilhando a tela))
         * `Servidor de Minecraft`(Survival Vanilla para jogar com até 3 amigos)
+
+## Gestão de Segredos (Vault Integration)
+O DockerHost não armazena senhas de banco de dados em arquivos de texto (`.env` ou `docker-compose.yml`).
+
+* **Mecanismo:** Script de Boot (`start-with-vault.sh`).
+* **Trigger:** Serviço Systemd `authentik-vault.service`.
+* **Fluxo:**
+    1. Lê `SecretID` protegido em `/etc/vault/`.
+    2. Autentica no Vault (`vault.home`).
+    3. Exporta variáveis de ambiente (ex: `POSTGRES_PASSWORD`) para a RAM.
+    4. Executa `docker compose up`.
+* **Resiliência:** Se o Vault estiver selado (pós-reboot), o serviço entra em loop de reinício até que o cofre esteja disponível.
