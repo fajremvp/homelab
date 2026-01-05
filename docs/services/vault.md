@@ -75,3 +75,11 @@ path "kv/data/services/*" {
 }
 
    - Reversão: Desativar regra no OPNsense.
+```
+
+### Mecanismo de Autenticação
+   - RoleID: Identificador fixo (público dentro da infra) atribuído ao DockerHost.
+   - SecretID: Credencial (semelhante a senha) gerada pelo Vault.
+      - Armazenamento: Arquivo /etc/vault/dockerhost.secretid no DockerHost.
+      - Permissão: 0600 (Somente root lê).
+      - O start-with-vault.sh lê este arquivo para obter o token de sessão.
