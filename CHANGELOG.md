@@ -7,9 +7,21 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ## [Unreleased]
 ### Planejado
-- Hardening da Vault VM
+- Primeira aplicação?
 
 ---
+## [2026-01-04] - Phase 2 Completion (Identity & Secrets)
+### Adicionado (Added)
+- **Vault AppRole:** Implementada autenticação automatizada Machine-to-Machine para o DockerHost.
+    - Criada Policy `docker-host-ro` (Leitura estrita em `kv/data/*`).
+    - Credenciais de robô (`SecretID`) armazenadas em arquivo protegido (`/etc/vault/` com permissão 600).
+- **DNS Persistente:** Configurado `systemd-resolved` no DockerHost para utilizar o AdGuard (`10.10.30.5`) de forma definitiva, eliminando dependência de `/etc/hosts`.
+- **Automação de Boot (Systemd):** Criado serviço `authentik-vault.service`.
+    - *Função:* Busca a senha do banco no Vault via script (`start-with-vault.sh`) e injeta na memória RAM antes de iniciar o Docker Compose.
+    - *Resiliência:* Configurado com `Restart=on-failure` para aguardar o desbloqueio (Unseal) do Vault após quedas de energia.
+
+### Alterado (Changed)
+- **Authentik Hardening:** Removida a senha do banco de dados (`POSTGRES_PASSWORD`) do arquivo `.env` e `docker-compose.yml`. A senha agora existe apenas na memória RAM durante a execução.
 ## [2026-01-04] - Vault Architecture Refactor
 ### Adicionado (Added)
 - **VLAN 40 (SECURE):** Implementada rede isolada no OPNsense para ativos de alta criticidade.
