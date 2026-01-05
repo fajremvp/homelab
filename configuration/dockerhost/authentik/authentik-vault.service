@@ -1,0 +1,22 @@
+[Unit]
+Description=Authentik Stack (Injected by Vault)
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/auth/authentik
+
+# O script que busca a senha e dá 'docker compose up'
+ExecStart=/opt/auth/authentik/start-with-vault.sh
+
+# Para desligar, vou usar o down padrão
+ExecStop=/usr/bin/docker compose down
+
+# Resiliência: Se o Vault estiver fora (selado), tenta de novo
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target
