@@ -17,6 +17,10 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 ## [2026-01-05] - Disaster Recovery Drill
 ### Adicionado (Added)
 - **Policy RBAC:** Restaurada política de acesso `Require Infra Admin` (Python) para proteger dashboards administrativos após perda de banco de dados.
+- **Vaultwarden:** Implementado gerenciador de senhas self-hosted.
+    - *Backend:* SQLite (Single-file).
+    - *Segurança:* Integração AppRole para injeção de `ADMIN_TOKEN`.
+    - *Roteamento:* Rota `/admin` protegida por Authentik; API aberta para clientes móveis.
 
 ### Validado (Verified)
 - **Cold Boot Resilience:** Confirmado que a infraestrutura recupera-se automaticamente após o desbloqueio manual do Vault, validando o script de retry do Systemd (`authentik-vault`).
