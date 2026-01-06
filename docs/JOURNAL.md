@@ -5,7 +5,7 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
 ## 2026-01-05
-**Status:** ✅ Sucesso (Disaster Recovery & Validation)
+**Status:** ✅ Sucesso (Disaster Recovery & Validation) e adição do primeiro serviço (Vaultwarden)
 
 **Foco:** Teste de Resiliência e Recuperação de Falha Humana
 
@@ -21,12 +21,28 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 - **Teste de Fogo (Reboot do Host):**
     - Executado reboot total do servidor físico para validar a automação criada ontem.
     - **Comportamento Observado:**
-        1.  Proxmox subiu e pediu senha LUKS (OK).
+        1.  Proxmox subiu e pediu senha LUKS (OK), desbloqueio realizado via SSH do Dropbear.
         2.  VMs iniciaram na ordem correta (OPNsense -> DNS -> Vault -> DockerHost).
         3.  **Resiliência:** O serviço `authentik-vault` no DockerHost falhou ao tentar conectar no Vault (que estava Selado). O Systemd entrou em loop de retry (OK).
         4.  **Intervenção:** Realizado Unseal manual do Vault via SSH.
         5.  **Sucesso:** Imediatamente após o Unseal, o script do DockerHost obteve a senha do banco e subiu o Authentik automaticamente.
 - **Conclusão:** A arquitetura de *AppRole* com injeção de segredos em RAM provou-se resiliente a reboots e segura. O incidente reforçou a necessidade de **não usar** `-v` em produção e a urgência de configurar backups automatizados do banco PostgreSQL.
+- **Deploy de Aplicação (Vaultwarden):**
+    - **Objetivo:** Hospedar gerenciador de senhas soberano para validar a arquitetura de segredos (AppRole) e substituir dependência de nuvem.
+    - **Decisões Técnicas:**
+        - **Database:** Escolhido **SQLite** para reduzir complexidade e facilitar backup (arquivo único), em vez de adicionar overhead com PostgreSQL.
+        - **Ingress:** Configuração híbrida no Traefik:
+            1.  `vaultwarden.home/` (API/Web): Acesso público (interno) para compatibilidade com Apps Mobile.
+            2.  `vaultwarden.home/admin`: Protegido por Middleware Authentik (`infra-admins` only).
+    - **Automação:**
+        - Criado script `start-with-vault.sh` específico.
+        - O DockerHost autentica no Vault via AppRole, busca o `ADMIN_TOKEN` e injeta no container.
+        - **Validação de Segurança:** O token não existe em texto plano no disco (apenas o SecretID com permissão 600).
+    - **Testes:**
+        - **Web/Browser Extension:** Sucesso total. Login, sincronização e acesso ao Admin (via Authentik) funcionando.
+        - **Mobile (Android):** O App Bitwarden recusou conexão devido ao certificado autoassinado (SSL Handshake Error).
+            - *Workaround:* Validado via extensão. A correção definitiva virá com a implementação de CA confiável no Android ou Let's Encrypt.
+    - **Backup:** Procedimento de backup semanal (JSON Criptografado) mantido.
 ## 2026-01-04
 **Status:** ✅ Sucesso (Refatoração de Segurança)
 
