@@ -7,7 +7,6 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ## [Unreleased]
 ### Planejado
-- Primeira aplicação (...?...)
 - Mexer no Pi (Comprar cabos jumper do tipo FÊMEA-FÊMEA, pra ligar o módulo RTC (não fechou o case)
 - Esperar o Nobreak chegar
 - Organizar cabos
