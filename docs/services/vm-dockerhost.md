@@ -88,7 +88,13 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Função:** Centraliza autenticação (SSO) e segurança Zero Trust.
           - **Integração:** Exposto via Traefik (`auth.home`).
           - **Middleware:** Exporta o middleware `authentik@docker` para o Traefik. Qualquer container que adicionar a label `middlewares=authentik@docker` torna-se imediatamente protegido por login, sem precisar implementar autenticação própria.
-      * `Vaultwarden` (Gerenciador de senhas)
+      * `Vaultwarden` (Gerenciador de senhas):
+          - **Local:** `/opt/services/vaultwarden`
+          - **Banco de Dados:** SQLite (Arquivo único em `./data`, foco em facilidade de backup).
+          - **Integração Vault:** Usa AppRole dedicado para injetar o `ADMIN_TOKEN` na inicialização.
+          - **Ingress:**
+              - `/`: Acesso direto (necessário para Apps Mobile/Desktop).
+              - `/admin`: Protegido via Authentik Middleware (Apenas `infra-admins`).
       * `Syncthing` (Sincronização)
       * `Forgejo`(Pull Mirror): Servidor Git auto-hospedado. Será configurado como um "pull mirror" (somente leitura) que puxa automaticamente as mudanças do GitHub (usado como repositório primário/público).
       * `Forgejo Actions`(CI/CD): Utilizado para rodar pipelines de teste locais (no homelab) sobre o código espelhado, permitindo validar integrações com outros serviços internos.
