@@ -4,6 +4,27 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-07
+**Status:** ✅ Sucesso (Automação & Management Plane)
+
+**Foco:** Criação da Torre de Controle (Ansible) e Saneamento de Rede
+
+- **Infraestrutura de Rede (VLAN 10 - MGMT):**
+    - Criada VLAN 10 no OPNsense (`10.10.10.1/24`) atribuída à interface `vtnet1` (Trunk), agrupando-a com as redes TRUSTED/SERVER.
+    - **Decisão Arquitetural:** Mantida a separação física/lógica onde a VLAN 40 (Vault) reside na `vtnet0` (LAN Dedicada) e as demais na `vtnet1` (Trunk), respeitando o isolamento de segurança.
+    - **Troubleshooting (Bloqueio L2):** O container na VLAN 10 não conseguia comunicar com o Gateway.
+        - *Causa:* A interface de rede da VM OPNsense no Proxmox (`net1`) possuía um filtro de VLANs (`trunks=20;30;50`) que bloqueava a tag 10.
+        - *Correção:* Editado `/etc/pve/qemu-server/100.conf` para incluir a VLAN 10 na lista de permitidos.
+- **Management Node (LXC 102):**
+    - Criado Container Alpine Linux (102 - Management) na VLAN 10.
+    - **Configuração:** IP Estático `10.10.10.10`, acesso SSH via chave.
+    - **Tooling:** Instalado Ansible (Core 2.17+), Restic, Terraform e Git.
+- **Automação (Ansible):**
+    - **Bootstrap:** Repositório `homelab` clonado em `/opt/homelab`.
+    - **Conectividade:** Chave SSH do Container autorizada no DockerHost (`10.10.30.10`).
+    - **Correção no DockerHost:** O Debian Minimal não possuía `sudo`. Instalado pacote manualmente e configurado `NOPASSWD` para o usuário de automação, destravando a execução de playbooks com `become: yes`.
+    - **Primeiro Run:** Executado playbook `hardening_debian.yml` com sucesso.
+        - *Ação:* Atualização do OS, instalação de ferramentas (fail2ban, htop, ncdu) e remoção intencional do UFW (para evitar conflito com Docker/Traefik).
 ## 2026-01-05
 **Status:** ✅ Sucesso (Disaster Recovery & Validation) e adição do primeiro serviço (Vaultwarden)
 
