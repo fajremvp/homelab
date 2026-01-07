@@ -13,6 +13,19 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Fazer uma bancadinha/rack pra deixar tudo
 
 ---
+## [2026-01-07] - Automation Foundation
+### Adicionado (Added)
+- **VLAN 10 (MGMT):** Rede dedicada para gerenciamento de infraestrutura (`10.10.10.0/24`) implementada no OPNsense e Proxmox.
+- **LXC Management (ID 102):** Container Alpine Linux configurado como controlador central (Ansible/Terraform).
+    - *Network:* Static IP `10.10.10.10`, Tag VLAN 10.
+    - *Security:* Firewall Proxmox ativado, isolado na rede de gestão.
+- **Ansible Setup:**
+    - Configurado `ansible.cfg` com defaults seguros e inventário automático.
+    - Criado Playbook `hardening_debian.yml` para padronização de segurança em servidores Debian.
+- **DockerHost Prep:** Instalado pacote `sudo` e configuradas permissões de elevação sem senha para o usuário operacional, permitindo automação remota.
+
+### Corrigido (Fixed)
+- **VLAN Filtering:** Corrigida configuração da VM OPNsense no Proxmox que descartava silenciosamente pacotes da VLAN 10 na interface trunk (`net1`).
 ## [2026-01-05] - Disaster Recovery Drill
 ### Adicionado (Added)
 - **Policy RBAC:** Restaurada política de acesso `Require Infra Admin` (Python) para proteger dashboards administrativos após perda de banco de dados.
