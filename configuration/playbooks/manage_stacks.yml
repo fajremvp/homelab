@@ -1,20 +1,19 @@
 ---
-- name: Gerenciamento Total dos Stacks Docker
+- name: Gerenciamento Total dos Stacks Docker (Híbrido Systemd/Compose)
   hosts: dockerhost
   become: yes
   vars:
     base_dir: "/opt/services"
-    # Authentik fica numa pasta separada por legado
-    auth_dir: "/opt/auth" 
+    auth_dir: "/opt/auth"
 
   tasks:
-    # --- PREPARAÇÃO ---
+    # --- 1. PREPARAÇÃO ---
     - name: Garantir dependências python do Docker
       apt:
         name: python3-docker
         state: present
 
-    # --- ESTRUTURA ---
+    # --- 2. ESTRUTURA DE DIRETÓRIOS ---
     - name: Criar diretórios base
       file:
         path: "{{ item }}"
@@ -28,32 +27,20 @@
         - "{{ base_dir }}/whoami"
         - "{{ auth_dir }}/authentik"
 
-    # --- SINCRONIZAÇÃO (GIT -> SERVER) ---
-    - name: Deploy Traefik
+    # --- 3. SINCRONIZAÇÃO (GIT -> SERVER) ---
+    - name: Deploy Configs (Traefik, Vaultwarden, Whoami)
       copy:
-        src: "../dockerhost/traefik/"
-        dest: "{{ base_dir }}/traefik/"
+        src: "../dockerhost/{{ item.src }}/"
+        dest: "{{ base_dir }}/{{ item.dest }}/"
         owner: fajre
         group: docker
         mode: '0644'
+      loop:
+        - { src: 'traefik', dest: 'traefik' }
+        - { src: 'vaultwarden', dest: 'vaultwarden' }
+        - { src: 'whoami', dest: 'whoami' }
 
-    - name: Deploy Vaultwarden
-      copy:
-        src: "../dockerhost/vaultwarden/"
-        dest: "{{ base_dir }}/vaultwarden/"
-        owner: fajre
-        group: docker
-        mode: '0644'
-
-    - name: Deploy Whoami
-      copy:
-        src: "../dockerhost/whoami/"
-        dest: "{{ base_dir }}/whoami/"
-        owner: fajre
-        group: docker
-        mode: '0644'
-
-    - name: Deploy Authentik
+    - name: Deploy Configs (Authentik)
       copy:
         src: "../dockerhost/authentik/"
         dest: "{{ auth_dir }}/authentik/"
@@ -61,29 +48,57 @@
         group: docker
         mode: '0644'
 
-    # --- PERMISSÕES ---
-    - name: Tornar scripts executáveis
+    # --- 4. PERMISSÕES E SCRIPTS ---
+    - name: Tornar scripts start-with-vault executáveis
       shell: "find {{ base_dir }} {{ auth_dir }} -name '*.sh' -exec chmod +x {} \\;"
       changed_when: false
 
-    # --- APLICAÇÃO (DOCKER COMPOSE) ---
-    # Isso garante que os containers estejam rodando com a config atual
-    - name: Start/Update Traefik
+    # --- 5. INSTALAÇÃO DOS SERVIÇOS SYSTEMD (Para Apps com Vault) ---
+    
+    # Authentik Service
+    - name: Instalar Authentik Systemd Service
+      copy:
+        src: "../dockerhost/authentik/authentik-vault.service"
+        dest: "/etc/systemd/system/authentik-vault.service"
+        mode: '0644'
+      notify: Reload Systemd
+
+    # Vaultwarden Service
+    - name: Instalar Vaultwarden Systemd Service
+      copy:
+        src: "../dockerhost/vaultwarden/vaultwarden-vault.service"
+        dest: "/etc/systemd/system/vaultwarden-vault.service"
+        mode: '0644'
+      notify: Reload Systemd
+
+    # --- 6. ATIVAÇÃO DOS SERVIÇOS ---
+
+    # Grupo A: Docker Compose Puro (Sem segredos do Vault)
+    - name: Start/Update Traefik (Direto)
       community.docker.docker_compose_v2:
         project_src: "{{ base_dir }}/traefik"
         state: present
 
-    - name: Start/Update Vaultwarden
-      community.docker.docker_compose_v2:
-        project_src: "{{ base_dir }}/vaultwarden"
-        state: present
-
-    - name: Start/Update Authentik
-      community.docker.docker_compose_v2:
-        project_src: "{{ auth_dir }}/authentik"
-        state: present
-
-    - name: Start/Update Whoami
+    - name: Start/Update Whoami (Direto)
       community.docker.docker_compose_v2:
         project_src: "{{ base_dir }}/whoami"
         state: present
+
+    # Grupo B: Via Systemd (Com injeção de segredos)
+    # Não usamos docker_compose aqui. O Systemd chama o script que chama o docker.
+    - name: Habilitar e Iniciar Authentik com Vault
+      service:
+        name: authentik-vault
+        state: started
+        enabled: yes
+
+    - name: Habilitar e Iniciar Vaultwarden com Vault
+      service:
+        name: vaultwarden-vault
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: Reload Systemd
+      systemd:
+        daemon_reload: yes
