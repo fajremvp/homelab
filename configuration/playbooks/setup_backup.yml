@@ -1,0 +1,36 @@
+---
+- name: Setup do Sistema de Backup (Restic)
+  hosts: dockerhost
+  become: yes
+
+  tasks:
+    - name: Instalar Restic
+      apt:
+        name: restic
+        state: latest
+        update_cache: yes
+
+    - name: Garantir diretório de scripts de backup
+      file:
+        path: /opt/backup/scripts
+        state: directory
+        owner: fajre
+        group: fajre
+        mode: '0700'
+
+    - name: Garantir diretório de credenciais (Seguro)
+      file:
+        path: /etc/restic
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+
+    - name: Verificar instalação
+      command: restic version
+      register: restic_version
+      changed_when: false
+
+    - name: Mostrar versão instalada
+      debug:
+        msg: "Restic instalado: {{ restic_version.stdout }}"
