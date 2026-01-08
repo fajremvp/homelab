@@ -1,0 +1,89 @@
+---
+- name: Gerenciamento Total dos Stacks Docker
+  hosts: dockerhost
+  become: yes
+  vars:
+    base_dir: "/opt/services"
+    # Authentik fica numa pasta separada por legado
+    auth_dir: "/opt/auth" 
+
+  tasks:
+    # --- PREPARAÇÃO ---
+    - name: Garantir dependências python do Docker
+      apt:
+        name: python3-docker
+        state: present
+
+    # --- ESTRUTURA ---
+    - name: Criar diretórios base
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: fajre
+        group: docker
+        mode: '0755'
+      loop:
+        - "{{ base_dir }}/traefik"
+        - "{{ base_dir }}/vaultwarden"
+        - "{{ base_dir }}/whoami"
+        - "{{ auth_dir }}/authentik"
+
+    # --- SINCRONIZAÇÃO (GIT -> SERVER) ---
+    - name: Deploy Traefik
+      copy:
+        src: "../dockerhost/traefik/"
+        dest: "{{ base_dir }}/traefik/"
+        owner: fajre
+        group: docker
+        mode: '0644'
+
+    - name: Deploy Vaultwarden
+      copy:
+        src: "../dockerhost/vaultwarden/"
+        dest: "{{ base_dir }}/vaultwarden/"
+        owner: fajre
+        group: docker
+        mode: '0644'
+
+    - name: Deploy Whoami
+      copy:
+        src: "../dockerhost/whoami/"
+        dest: "{{ base_dir }}/whoami/"
+        owner: fajre
+        group: docker
+        mode: '0644'
+
+    - name: Deploy Authentik
+      copy:
+        src: "../dockerhost/authentik/"
+        dest: "{{ auth_dir }}/authentik/"
+        owner: fajre
+        group: docker
+        mode: '0644'
+
+    # --- PERMISSÕES ---
+    - name: Tornar scripts executáveis
+      shell: "find {{ base_dir }} {{ auth_dir }} -name '*.sh' -exec chmod +x {} \\;"
+      changed_when: false
+
+    # --- APLICAÇÃO (DOCKER COMPOSE) ---
+    # Isso garante que os containers estejam rodando com a config atual
+    - name: Start/Update Traefik
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/traefik"
+        state: present
+
+    - name: Start/Update Vaultwarden
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/vaultwarden"
+        state: present
+
+    - name: Start/Update Authentik
+      community.docker.docker_compose_v2:
+        project_src: "{{ auth_dir }}/authentik"
+        state: present
+
+    - name: Start/Update Whoami
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/whoami"
+        state: present
