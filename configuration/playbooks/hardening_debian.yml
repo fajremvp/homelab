@@ -1,0 +1,25 @@
+---
+- name: Hardening Inicial do DockerHost
+  hosts: dockerhost
+  become: yes  # Usa sudo para virar root
+
+  tasks:
+    - name: Atualizar cache do APT e fazer Upgrade do sistema
+      apt:
+        update_cache: yes
+        upgrade: dist
+        cache_valid_time: 3600
+
+    - name: Instalar ferramentas essenciais de administração e segurança
+      apt:
+        name:
+          - curl
+          - wget
+          - git
+          - htop
+          - fail2ban  # Proteção contra brute-force no SSH (Porta 22)
+          - ncdu      # Analisador de disco
+          - fastfetch  # Para checar status visualmente
+        state: present
+
+    # REMOVIDO: UFW (Causa conflito com redes Docker e é redundante com Firewall Proxmox/OPNsense)
