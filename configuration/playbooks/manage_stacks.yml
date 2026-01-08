@@ -85,7 +85,7 @@
         state: present
 
     # Grupo B: Via Systemd (Com injeção de segredos)
-    # Não usamos docker_compose aqui. O Systemd chama o script que chama o docker.
+    # Sem docker_compose aqui. O Systemd chama o script que chama o docker.
     - name: Habilitar e Iniciar Authentik com Vault
       service:
         name: authentik-vault
