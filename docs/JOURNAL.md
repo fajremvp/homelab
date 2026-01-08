@@ -4,6 +4,23 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-08
+**Status:** ✅ Sucesso (Infrastructure as Code)
+
+**Foco:** Consolidação do DockerHost e Migração para GitOps
+
+- **Centralização de Configuração:**
+    - Realizada a importação ("Adoption") de todas as configurações manuais do DockerHost para o repositório Git.
+    - Estrutura padronizada em `configuration/dockerhost/{serviço}`.
+- **Automação (Ansible):**
+    - Criado playbook `manage_stacks.yml` que atua como "Fonte da Verdade".
+    - O playbook gerencia a sincronização de arquivos, permissões e execução dos containers.
+- **Gestão de Segredos:**
+    - Implementada lógica híbrida no Ansible:
+        - Serviços simples (Traefik, Whoami) iniciados via módulo Docker direto.
+        - Serviços críticos (Authentik, Vaultwarden) gerenciados via Systemd Units (`authentik-vault.service`) para garantir a injeção de segredos do Vault via script `start-with-vault.sh`.
+- **Resultado:**
+    - O servidor DockerHost agora é gerenciado remotamente. Alterações são feitas no Git e aplicadas via Ansible, garantindo consistência e eliminando "Snowflake Servers".
 ## 2026-01-07
 **Status:** ✅ Sucesso (Automação & Management Plane)
 
