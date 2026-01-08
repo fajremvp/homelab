@@ -13,6 +13,13 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Fazer uma bancadinha/rack pra deixar tudo
 
 ---
+## [2026-01-08] - GitOps Migration
+### Adicionado (Added)
+- **Playbook `manage_stacks.yml`:** Automação centralizada para deploy e manutenção de stacks Docker.
+- **Config Import:** Importadas configurações de produção (Traefik, Authentik, Vaultwarden) para o controle de versão.
+
+### Alterado (Changed)
+- **Deployment Strategy:** Substituída a gestão manual (`docker compose up`) por gestão via Ansible + Systemd para serviços críticos, garantindo reinício automático e integração com Vault.
 ## [2026-01-07] - Automation Foundation
 ### Adicionado (Added)
 - **VLAN 10 (MGMT):** Rede dedicada para gerenciamento de infraestrutura (`10.10.10.0/24`) implementada no OPNsense e Proxmox.
