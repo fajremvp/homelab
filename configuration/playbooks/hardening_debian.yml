@@ -1,25 +1,81 @@
 ---
-- name: Hardening Inicial do DockerHost
-  hosts: dockerhost
-  become: yes  # Usa sudo para virar root
+- name: Hardening Completo do Debian (DockerHost & Vault)
+  hosts: dockerhost, vault
+  become: yes
 
   tasks:
-    - name: Atualizar cache do APT e fazer Upgrade do sistema
+    # --- ATUALIZAÇÕES E PACOTES ---
+    - name: Atualizar cache e sistema (Dist-Upgrade)
       apt:
         update_cache: yes
         upgrade: dist
         cache_valid_time: 3600
 
-    - name: Instalar ferramentas essenciais de administração e segurança
+    - name: Instalar ferramentas essenciais de administração
       apt:
         name:
           - curl
           - wget
           - git
           - htop
-          - fail2ban  # Proteção contra brute-force no SSH (Porta 22)
-          - ncdu      # Analisador de disco
-          - fastfetch  # Para checar status visualmente
+          - ncdu       # Analisador de disco (Útil para logs cheios)
+          - fastfetch  # Tem que ter :D
+          - sudo
+          - vim
+          - fail2ban   # Proteção contra brute-force
+          - unattended-upgrades # Patch de segurança automático (Journal 2026-01-02)
+          - apt-listchanges
         state: present
 
-    # REMOVIDO: UFW (Causa conflito com redes Docker e é redundante com Firewall Proxmox/OPNsense)
+    # --- CONFIGURAÇÃO SSH (Baseado no Journal 2025-12-29) ---
+    - name: Hardening SSH - Desativar Login Root
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+      notify: Restart SSH
+
+    - name: Hardening SSH - Desativar Autenticação por Senha
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+      notify: Restart SSH
+
+    - name: Hardening SSH - Forçar Pubkey
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PubkeyAuthentication'
+        line: 'PubkeyAuthentication yes'
+        state: present
+      notify: Restart SSH
+
+    - name: Hardening SSH - Desativar ChallengeResponse
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?ChallengeResponseAuthentication'
+        line: 'ChallengeResponseAuthentication no'
+        state: present
+      notify: Restart SSH
+
+    # --- SERVIÇOS DE SEGURANÇA ---
+    - name: Garantir que Fail2Ban esteja rodando
+      service:
+        name: fail2ban
+        state: started
+        enabled: yes
+
+    - name: Configurar Unattended Upgrades (Ativar atualizações de segurança)
+      copy:
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+
+  handlers:
+    - name: Restart SSH
+      service:
+        name: ssh
+        state: restarted

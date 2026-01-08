@@ -1,0 +1,59 @@
+---
+- name: Hardening dos LXCs Alpine
+  hosts: management, adguard
+  become: yes
+
+  tasks:
+    # --- PACOTES (APK) ---
+    - name: Atualizar repositórios e pacotes do Alpine
+      apk:
+        update_cache: yes
+        upgrade: yes
+
+    - name: Instalar ferramentas essenciais
+      apk:
+        name:
+          - curl
+          - wget
+          - git
+          - htop
+          - ncdu
+          - fastfetch # Tem que ter :D
+          - sudo
+          - vim
+          - openssh
+          - bash
+          - shadow # Necessário para gestão de usuários/senhas
+        state: present
+
+    # --- SSH HARDENING (Alpine) ---
+    - name: Hardening SSH - Desativar Login Root
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+      notify: Restart SSH
+
+    - name: Hardening SSH - Desativar Autenticação por Senha
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+      notify: Restart SSH
+
+    # --- USUÁRIOS E SUDO ---
+    # Garante que o usuário fajre possa usar sudo sem senha para não quebrar automações futuras
+    - name: Configurar sudo sem senha para grupo wheel
+      lineinfile:
+        path: /etc/sudoers
+        regexp: '^# %wheel ALL=\(ALL\) NOPASSWD: ALL'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+
+  handlers:
+    - name: Restart SSH
+      service:
+        name: sshd
+        state: restarted
