@@ -1,5 +1,5 @@
 ---
-- name: Configurar Backup Automático com Restic
+- name: Configurar Backup Automático com Restic (Auditado)
   hosts: all
   become: yes
   vars:
@@ -49,7 +49,7 @@
           restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
       when: "'dockerhost' in group_names"
 
-    # VAULT
+    # VAULT (Snapshot Versionado + Auto-Renovação)
     - name: Script Backup Vault
       copy:
         dest: "/usr/local/bin/backup-daily.sh"
@@ -63,8 +63,7 @@
           export VAULT_ADDR='http://127.0.0.1:8200'
           
           echo "--> [Vault] Renovando Token..."
-          # Renova o token por mais 30 dias.
-          # Se o backup rodar todo dia, o token nunca morre.
+          # Renova o token por mais 30 dias
           if ! vault token renew > /dev/null 2>&1; then
              echo "ERRO CRÍTICO: Não foi possível renovar o token do Vault. Verifique se ele expirou."
              exit 1
@@ -125,6 +124,7 @@
       when: "'management' in group_names"
 
     # --- 4. AGENDAMENTO ---
+    # Correção: Lógica inline para evitar erro de indentação YAML
     - name: Configurar Cronjob
       cron:
         name: "Backup Diario Restic"
@@ -132,10 +132,4 @@
         hour: "4"
         job: "/usr/local/bin/backup-daily.sh >> /var/log/backup-restic.log 2>&1"
       vars:
-        cron_min: >-
-          {{
-            '00' if 'dockerhost' in group_names else
-            '15' if 'vault' in group_names else
-            '30' if 'adguard' in group_names else
-            '45'
-        }}
+        cron_min: "{{ '00' if 'dockerhost' in group_names else '15' if 'vault' in group_names else '30' if 'adguard' in group_names else '45' }}"
