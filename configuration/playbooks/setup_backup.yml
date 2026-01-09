@@ -60,15 +60,22 @@
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
           SNAP_FILE="{{ vault_snap_dir }}/raft-${TIMESTAMP}.snap"
           
-          echo "--> [Vault] Gerando Snapshot Raft..."
           export VAULT_ADDR='http://127.0.0.1:8200'
           
-          # Snapshot usando Token dedicado
+          echo "--> [Vault] Renovando Token..."
+          # Renova o token por mais 30 dias.
+          # Se o backup rodar todo dia, o token nunca morre.
+          if ! vault token renew > /dev/null 2>&1; then
+             echo "ERRO CRÍTICO: Não foi possível renovar o token do Vault. Verifique se ele expirou."
+             exit 1
+          fi
+
+          echo "--> [Vault] Gerando Snapshot Raft..."
           vault operator raft snapshot save "$SNAP_FILE"
           
           if [ $? -eq 0 ]; then
             echo "--> [Vault] Enviando para B2..."
-            # Backup: Snapshot + Certificados TLS + Configuração (/etc/vault.d)
+            # Backup do Snapshot + Configs (TLS, HCL)
             restic backup "$SNAP_FILE" /opt/vault/tls /etc/vault.d \
               --tag "vault"
             
