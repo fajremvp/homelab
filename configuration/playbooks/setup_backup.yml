@@ -1,36 +1,134 @@
 ---
-- name: Setup do Sistema de Backup (Restic)
-  hosts: dockerhost
+- name: Configurar Backup Automático com Restic
+  hosts: all
   become: yes
+  vars:
+    vault_snap_dir: "/opt/vault/snapshots"
 
   tasks:
-    - name: Instalar Restic
+    # --- 1. INSTALAÇÃO ---
+    - name: Instalar Restic (Debian)
       apt:
         name: restic
-        state: latest
-        update_cache: yes
+        state: present
+      when: ansible_os_family == "Debian"
 
-    - name: Garantir diretório de scripts de backup
+    - name: Instalar Restic (Alpine)
+      apk:
+        name: restic
+        state: present
+      when: ansible_os_family == "Alpine"
+
+    # --- 2. DIRETÓRIOS (Vault) ---
+    - name: Criar diretório de snapshots locais
       file:
-        path: /opt/backup/scripts
+        path: "{{ vault_snap_dir }}"
         state: directory
-        owner: fajre
-        group: fajre
         mode: '0700'
-
-    - name: Garantir diretório de credenciais (Seguro)
-      file:
-        path: /etc/restic
-        state: directory
         owner: root
-        group: root
+      when: "'vault' in group_names"
+
+    # --- 3. SCRIPTS DE BACKUP ---
+
+    # DOCKERHOST
+    - name: Script Backup DockerHost
+      copy:
+        dest: "/usr/local/bin/backup-daily.sh"
         mode: '0700'
+        content: |
+          #!/bin/bash
+          source /etc/restic-env.sh
+          echo "--> [DockerHost] Backup iniciado..."
+          
+          # Backup de serviços e autenticação
+          restic backup /opt/services /opt/auth \
+            --exclude="*.log" \
+            --exclude="*.sqlite3-wal" \
+            --tag "dockerhost"
+          
+          restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
+      when: "'dockerhost' in group_names"
 
-    - name: Verificar instalação
-      command: restic version
-      register: restic_version
-      changed_when: false
+    # VAULT
+    - name: Script Backup Vault
+      copy:
+        dest: "/usr/local/bin/backup-daily.sh"
+        mode: '0700'
+        content: |
+          #!/bin/bash
+          source /etc/restic-env.sh
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          SNAP_FILE="{{ vault_snap_dir }}/raft-${TIMESTAMP}.snap"
+          
+          echo "--> [Vault] Gerando Snapshot Raft..."
+          export VAULT_ADDR='http://127.0.0.1:8200'
+          
+          # Snapshot usando Token dedicado
+          vault operator raft snapshot save "$SNAP_FILE"
+          
+          if [ $? -eq 0 ]; then
+            echo "--> [Vault] Enviando para B2..."
+            # Backup: Snapshot + Certificados TLS + Configuração (/etc/vault.d)
+            restic backup "$SNAP_FILE" /opt/vault/tls /etc/vault.d \
+              --tag "vault"
+            
+            restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
+            
+            # Limpeza local de snapshots antigos (>7 dias)
+            find {{ vault_snap_dir }} -type f -name "*.snap" -mtime +7 -delete
+          else
+            echo "ERRO CRÍTICO: Snapshot do Vault falhou!"
+            exit 1
+          fi
+      when: "'vault' in group_names"
 
-    - name: Mostrar versão instalada
-      debug:
-        msg: "Restic instalado: {{ restic_version.stdout }}"
+    # ADGUARD
+    - name: Script Backup AdGuard
+      copy:
+        dest: "/usr/local/bin/backup-daily.sh"
+        mode: '0700'
+        content: |
+          #!/bin/sh
+          . /etc/restic-env.sh
+          echo "--> [AdGuard] Backup iniciado..."
+          
+          restic backup /opt/AdGuardHome \
+            --exclude="*.log" \
+            --tag "adguard"
+          
+          restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
+      when: "'adguard' in group_names"
+
+    # MANAGEMENT
+    - name: Script Backup Management
+      copy:
+        dest: "/usr/local/bin/backup-daily.sh"
+        mode: '0700'
+        content: |
+          #!/bin/sh
+          . /etc/restic-env.sh
+          echo "--> [Management] Backup iniciado..."
+          
+          # Backup do repositório Git central e chaves SSH
+          restic backup /opt/homelab /root/.ssh \
+            --exclude=".git" \
+            --tag "management"
+          
+          restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
+      when: "'management' in group_names"
+
+    # --- 4. AGENDAMENTO ---
+    - name: Configurar Cronjob
+      cron:
+        name: "Backup Diario Restic"
+        minute: "{{ cron_min }}"
+        hour: "4"
+        job: "/usr/local/bin/backup-daily.sh >> /var/log/backup-restic.log 2>&1"
+      vars:
+        cron_min: >-
+          {{
+            '00' if 'dockerhost' in group_names else
+            '15' if 'vault' in group_names else
+            '30' if 'adguard' in group_names else
+            '45'
+        }}
