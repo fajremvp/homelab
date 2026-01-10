@@ -16,3 +16,11 @@
 ### Relacionados/Ligados ao AdGuard (melhor explicado em network-stack.md):
 
     * Traefik - Split-Horizon
+
+## Backup e Persistência
+Implementado em: 2026-01-09.
+
+Apesar de ser um serviço leve, o AdGuard possui configurações de bloqueio e logs importantes.
+* **Backup Automático:** Restic (Diário às 04:30).
+* **Alvo:** Diretório `/opt/AdGuardHome` (Inclui binário, `AdGuardHome.yaml` e banco de dados de estatísticas).
+* **Restauro:** Em caso de falha, basta reinstalar o container Alpine base e rodar `restic restore`.
