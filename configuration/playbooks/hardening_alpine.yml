@@ -26,6 +26,26 @@
           - shadow # Necessário para gestão de usuários/senhas
         state: present
 
+    # --- TIMEZONE (Alpine) ---
+    - name: Configurar Timezone (Instalar tzdata e ajustar localtime)
+      block:
+        - name: Instalar pacote tzdata
+          apk:
+            name: tzdata
+            state: present
+            update_cache: yes
+
+        - name: Copiar arquivo de zona para localtime
+          copy:
+            src: "/usr/share/zoneinfo/America/Sao_Paulo"
+            dest: "/etc/localtime"
+            remote_src: yes
+
+        - name: Definir timezone em texto
+          copy:
+            content: "America/Sao_Paulo\n"
+            dest: "/etc/timezone"
+
     # --- SSH HARDENING (Alpine) ---
     - name: Hardening SSH - Desativar Login Root
       lineinfile:

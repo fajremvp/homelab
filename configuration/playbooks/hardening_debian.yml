@@ -27,6 +27,11 @@
           - apt-listchanges
         state: present
 
+    # --- TIMEZONE ---
+    - name: Configurar Timezone para America/Sao_Paulo
+      timezone:
+        name: America/Sao_Paulo
+
     # --- CONFIGURAÇÃO SSH (Baseado no Journal 2025-12-29) ---
     - name: Hardening SSH - Desativar Login Root
       lineinfile:
