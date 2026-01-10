@@ -128,3 +128,16 @@ O DockerHost não armazena senhas de banco de dados em arquivos de texto (`.env`
     3. Exporta variáveis de ambiente (ex: `POSTGRES_PASSWORD`) para a RAM.
     4. Executa `docker compose up`.
 * **Resiliência:** Se o Vault estiver selado (pós-reboot), o serviço entra em loop de reinício até que o cofre esteja disponível.
+
+## Estratégia de Backup (Restic)
+Implementado em: 2026-01-09.
+
+O DockerHost realiza backups diários, criptografados e incrementais para o Backblaze B2.
+
+* **Ferramenta:** Restic (via script `/usr/local/bin/backup-daily.sh`).
+* **Agendamento:** Todo dia às 04:00 (Cron).
+* **Escopo de Backup:**
+    * `/opt/services` (Traefik, Whoami, etc).
+    * `/opt/auth` (Authentik, Vaultwarden).
+* **Exclusões:** Logs (`*.log`), arquivos temporários de banco (`*.sqlite3-wal`) e caches.
+* **Retenção:** 7 dias, 4 semanas, 6 meses.
