@@ -83,3 +83,20 @@ path "kv/data/services/*" {
       - Armazenamento: Arquivo /etc/vault/dockerhost.secretid no DockerHost.
       - Permissão: 0600 (Somente root lê).
       - O start-with-vault.sh lê este arquivo para obter o token de sessão.
+
+## Estratégia de Backup (Restic + Raft Snapshot)
+Implementado em: 2026-01-09.
+
+O Vault não pode ter seus arquivos copiados "a quente". O backup exige um snapshot consistente do banco Raft.
+
+### Mecanismo
+* **Agendamento:** Diário às 04:15 (Cron).
+* **Script:** `/usr/local/bin/backup-daily.sh`.
+* **Fluxo:**
+    1. **Auto-Renovação:** O script renova seu próprio token (`vault token renew`) para garantir operação perpétua sem intervenção humana.
+    2. **Snapshot:** Executa `vault operator raft snapshot save` gerando um arquivo local `/opt/vault/snapshots/raft-YYYYMMDD.snap`.
+    3. **Upload:** O Restic criptografa e envia este snapshot + configurações (`/etc/vault.d`) para o Backblaze B2.
+    4. **Retenção:** Mantém 7 dias, 4 semanas, 6 meses.
+* **Segurança:**
+    * Utiliza Token dedicado com policy limitada (`sys/storage/raft/snapshot`).
+    * O Token Root **NÃO** é utilizado para backup.
