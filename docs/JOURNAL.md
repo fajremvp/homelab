@@ -4,6 +4,42 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-09
+**Status:** ✅ Sucesso (GitOps, Hardening & Disaster Recovery)
+
+**Foco:** Transformação da infraestrutura em Código (IaC), Segurança e Implementação de Backup Criptografado
+
+- **Migração para GitOps (DockerHost):**
+    - **Adoção de Infraestrutura:** Importadas configurações reais (`/opt/services/*`) via SCP para o repositório Git, padronizando a estrutura em `configuration/dockerhost/{serviço}`.
+    - **Automação (Ansible):** Criado playbook `manage_stacks.yml` atuando como "Fonte da Verdade".
+    - **Lógica Híbrida:** - Serviços simples (Traefik, Whoami) iniciados via módulo Docker direto.
+        - Serviços críticos (Authentik, Vaultwarden) migrados para **Systemd Units** (`.service`) para garantir a injeção de segredos via script `start-with-vault.sh`.
+
+- **Hardening e Segurança:**
+    - **Segregação de OS:** Criados playbooks distintos: `hardening_debian.yml` (DockerHost, Vault) e `hardening_alpine.yml` (Management, AdGuard).
+    - **Lockout Incident (Aprendizado):** - *Erro:* O script Alpine definiu `PermitRootLogin no`. Como o Ansible conecta como root, houve bloqueio de acesso ao AdGuard.
+        - *Solução:* Acesso via Console Proxmox, alteração manual para `prohibit-password` e correção definitiva no playbook.
+
+- **Backup do Firewall (OPNsense):**
+    - **Plugin:** Implementado `os-git-backup`.
+    - **Fix de Compatibilidade:** Gerado par de chaves **RSA (PEM Legacy)** e ajustada URL para `ssh://github.com/...` para contornar rejeição de chaves Ed25519 pelo plugin.
+    - **Resultado:** Backup automático e versionado da configuração XML para repositório privado a cada alteração.
+
+- **Backup de Dados (Restic + Backblaze B2):**
+    - **Arquitetura Distribuída:** Cada host possui seu próprio repositório isolado e criptografado no Bucket B2 (`b2:bucket:/host`).
+    - **Controle de Acesso de Rede (OPNsense):**
+        - Configurado **Schedule** `HorarioBackupVault` (03:59 - 04:30) com validade até o fim de 2026.
+        - Criada regra de firewall na VLAN 40 permitindo saída de dados apenas nesta janela temporal, mantendo o Vault isolado (Air-gapped) no restante do dia.
+    - **Vault Strategy:** Criada Policy específica e Token periódico com **Auto-Renovação** via script diário. Snapshots (`raft-YYYYMMDD.snap`) são gerados localmente antes do upload.
+    - **Automação:** Playbook `setup_backup.yml` auditado e Cronjobs distribuídos para evitar gargalo de rede.
+
+- **Disaster Recovery (Fire Drill):**
+    - **Simulação:** Arquivo `docker-compose.yml` do serviço `whoami` deletado intencionalmente no DockerHost.
+    - **Execução:**
+        - *Falha Inicial:* Uso de `sudo` dropou as variáveis de ambiente do Restic.
+        - *Correção:* Execução como root nativo carregando `source /etc/restic-env.sh`.
+        - Comando: `restic restore <snapshot_id> --target / --include ...`
+    - **Resultado:** Arquivo recuperado com sucesso, permissões mantidas. Backup validado.
 ## 2026-01-08
 **Status:** ✅ Sucesso (Infrastructure as Code)
 
