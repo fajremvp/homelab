@@ -10,6 +10,7 @@
 | **K8s (Kubernetes)** | **Service Accounts (K8s)** mapeadas para Roles do Vault via *External Secrets Operator*. | **Namespace Isolation:** O pod do "App A" só consegue decriptar segredos do namespace "App A". | Rotação automática a cada 1 hora. |
 | **Servidores (SSH)** | Chaves SSH Ed25519 (Armazenadas em YubiKey ou Vault). | **Sem Root:** Login apenas como usuário nominal não-privilegiado; escalação via `sudo` com log de auditoria. | N/A (Chave estática, protegida por passphrase). |
 | **Vaultwarden (Service)** | Senha Mestre (Local) + 2FA App. | **Híbrido:** API Pública (Apps funcionam sem SSO). Painel Admin requer SSO Authentik. | Sessão App: Configurável. |
+| **Vault Backup (Script)** | **Token Periódico** (Auto-renovável). Script renova o token diariamente antes do snapshot. | **Policy Específica:** `sys/storage/raft/snapshot` (Permite apenas tirar foto do DB). Não lê segredos. | 30 dias / 720h (Rolling). Renovado a cada execução. |
 
 * **Regras de Machine-to-Machine (M2M):**
     * **Proibido Hardcoded Credentials:** Nenhum código, script ou arquivo `.env` comitado pode conter senhas ou chaves de API reais. Deve-se usar injeção de variáveis de ambiente via Vault.
