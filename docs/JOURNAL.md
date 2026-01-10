@@ -40,6 +40,14 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
         - *Correção:* Execução como root nativo carregando `source /etc/restic-env.sh`.
         - Comando: `restic restore <snapshot_id> --target / --include ...`
     - **Resultado:** Arquivo recuperado com sucesso, permissões mantidas. Backup validado.
+- **Correção de Timezone (Sincronização de Relógios):**
+    - Identificada discrepância de horários entre Hosts (EST/UTC) e Proxmox (-03).
+    - **Ação:** Integrada a correção diretamente nos playbooks de hardening, eliminando a necessidade de scripts avulsos.
+    - **Configuração:**
+        - Timezone definido para `America/Sao_Paulo` em todos os nós.
+        - **Alpine:** Instalação automática do pacote `tzdata` e link manual do `/etc/localtime`.
+        - **Debian:** Configuração via módulo nativo `timezone`.
+    - **Resultado:** Logs e Backups agora possuem timestamps consistentes (-03 BRT).
 ## 2026-01-08
 **Status:** ✅ Sucesso (Infrastructure as Code)
 
