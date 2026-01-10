@@ -13,6 +13,17 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Fazer uma bancadinha/rack pra deixar tudo
 
 ---
+## [2026-01-09] - Backup Strategy & GitOps
+### Adicionado (Added)
+- **Restic Backup:** Implementada solução de backup criptografado (Client-side) para Backblaze B2 em todos os hosts (DockerHost, Vault, AdGuard, Management).
+- **Vault Snapshot:** Script de automação para snapshot do banco Raft antes do backup, com rotação automática de tokens.
+- **OPNsense Schedules:** Implementado agendamento de firewall `HorarioBackupVault` (03:59-04:30) para permitir backup do Vault mantendo isolamento no resto do dia.
+- **OPNsense Git Backup:** Configurado plugin para versionamento automático da configuração do firewall.
+- **Hardening Playbooks:** Adicionado suporte a Alpine Linux (`hardening_alpine.yml`) e corrigida política de SSH para evitar lockout (`prohibit-password`).
+
+### Alterado (Changed)
+- **Infrastructure Management:** Migração completa do DockerHost para modelo GitOps. Configurações manuais foram importadas para o Git e agora são aplicadas via Ansible (`manage_stacks.yml`).
+- **Security Policy:** Refinado hardening SSH para permitir automação via Ansible (Root via Key Only) em conformidade com Debian e Alpine.
 ## [2026-01-08] - GitOps Migration
 ### Adicionado (Added)
 - **Playbook `manage_stacks.yml`:** Automação centralizada para deploy e manutenção de stacks Docker.
