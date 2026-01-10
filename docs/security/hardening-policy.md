@@ -5,7 +5,7 @@
 
 | Componente | Regra / Política | Aplicação |
 | :--- | :--- | :--- |
-| **Acesso SSH** | Autenticação **somente via Chave Ed25519** (PasswordAuthentication `no`). Usuário `root` bloqueado (PermitRootLogin `no`). Porta padrão alterada (Obscuridade como camada extra). | Todas as VMs/LXCs (Exceto Talos). |
+| **Acesso SSH** | Autenticação **somente via Chave** (PasswordAuthentication `no`). Root permitido **apenas com chave** (PermitRootLogin `prohibit-password`) para automação Ansible. Porta 22 padrão. | Todas as VMs/LXCs (Exceto Talos). |
 | **Bastion Host** | NENHUMA máquina expõe SSH para a internet ou VLANs não confiáveis. Acesso administrativo é exclusivo via **VPN (WireGuard)** ou console do Proxmox na VLAN MGMT. | Geral. |
 | **Sudo / Privilégios** | Acesso `sudo` restrito ao usuário admin, exigindo senha. Logs de auditoria de comandos habilitados. | Debian / Alpine. |
 | **Firewall de Host** | Além do OPNsense (borda), cada host roda seu próprio firewall (`nftables` ou `ufw`) negando tudo exceto o essencial ("Defense in Depth"). | Todas as VMs. |
