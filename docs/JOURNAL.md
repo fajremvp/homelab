@@ -4,6 +4,26 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-10
+**Status:** ✅ Sucesso (Hardening & Optimization)
+
+**Foco:** Rotação de Credenciais, Otimização de DNS e Correção de Custos de Backup
+
+- **Rotação de Credenciais (Security Sprint):**
+    - Substituídas todas as senhas fracas/compartilhadas por senhas únicas.
+    - **Escopo:** Proxmox Host, OPNsense, DockerHost, Vault VM, Management LXC, AdGuard LXC, AdGuard Home (serviço) e Vaultwarden.
+    - **Armazenamento:** Todas as credenciais salvas no Vaultwarden.
+- **Correção de Provisionamento Alpine:**
+    - Identificado que o serviço SSH não iniciava automaticamente após instalação via Ansible em containers Alpine (OpenRC).
+    - **Fix:** Adicionada tarefa explícita `service: name=sshd state=started enabled=yes` no playbook `hardening_alpine.yml`.
+- **Otimização do AdGuard Home:**
+    - **Performance:** Upstream DNS alterado para "Parallel Requests" (Quad9 + Cloudflare) e ativado "Optimistic Caching" para respostas instantâneas.
+    - **Privacidade/Segurança:** Ativado DNSSEC e desabilitada resolução IPv6 (foco em estabilidade IPv4 na LAN).
+    - **Bloqueio:** Adicionada lista `OISD Big` (famosa por zero false-positives) e ativada lista `AdAway`.
+    - **Logs:** Retenção reduzida para 7 dias (Query) e 7 dias (Stats) para privacidade e economia de disco.
+- **Backblaze B2 (Cost Management):**
+    - Ajustada política de ciclo de vida do bucket para `Keep only the last version of the file`.
+    - **Justificativa:** O Restic já gerencia o versionamento e snapshots internamente. A configuração padrão do B2 ("Keep all versions") manteria arquivos deletados pelo `prune` cobrando armazenamento eternamente.
 ## 2026-01-09
 **Status:** ✅ Sucesso (GitOps, Hardening & Disaster Recovery)
 
