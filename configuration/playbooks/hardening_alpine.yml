@@ -64,13 +64,20 @@
       notify: Restart SSH
 
     # --- USUÁRIOS E SUDO ---
-    # Garante que o usuário fajre possa usar sudo sem senha para não quebrar automações futuras
     - name: Configurar sudo sem senha para grupo wheel
       lineinfile:
         path: /etc/sudoers
         regexp: '^# %wheel ALL=\(ALL\) NOPASSWD: ALL'
         line: '%wheel ALL=(ALL) NOPASSWD: ALL'
         validate: 'visudo -cf %s'
+
+    # --- SERVIÇOS (Correção para Alpine) ---
+    # Alpine Linux (OpenRC) tem que mandar o serviço viver, diferente do (Systemd) que geralmente já inicia e habilita o serviço sozinho
+    - name: Garantir que SSHD inicie no boot e esteja rodando
+      service:
+        name: sshd
+        state: started
+        enabled: yes
 
   handlers:
     - name: Restart SSH
