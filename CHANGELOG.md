@@ -11,8 +11,17 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Esperar o Nobreak chegar
 - Organizar cabos
 - Fazer uma bancadinha/rack pra deixar tudo
+- Ajustar o Fail2Ban nas VMs
 
 ---
+## [2026-01-10] - Security & DNS Tuning
+### Alterado (Changed)
+- **Credential Policy:** Executada rotação global de senhas para padrões de alta complexidade em toda a infraestrutura (Host, VMs, LXCs, Apps), eliminando senhas fracas e repetitíveis.
+- **AdGuard Configuration:** Otimizado para performance (Parallel Requests, Optimistic Cache, DNSSEC) e ampliada a cobertura de bloqueio com a lista `OISD Big`.
+- **Backblaze Lifecycle:** Alterada política do bucket para "Keep only the last version" para compatibilidade correta com o garbage collection (`prune`) do Restic e prevenção de custos excessivos.
+
+### Corrigido (Fixed)
+- **Alpine SSH:** Corrigido playbook `hardening_alpine.yml` para garantir que o serviço `sshd` seja explicitamente habilitado e iniciado no boot, resolvendo falha de conexão ("Connection Refused") em novos containers.
 ## [2026-01-09] - Backup Strategy & GitOps
 ### Adicionado (Added)
 - **Restic Backup:** Implementada solução de backup criptografado (Client-side) para Backblaze B2 em todos os hosts (DockerHost, Vault, AdGuard, Management).
