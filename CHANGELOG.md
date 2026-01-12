@@ -11,9 +11,16 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Esperar o Nobreak chegar
 - Organizar cabos
 - Fazer uma bancadinha/rack pra deixar tudo
-- Ajustar o Fail2Ban nas VMs
 
 ---
+## [2026-01-11] - Host Hardening & Defense in Depth
+### Adicionado (Added)
+- **Proxmox Hardening:** Criado playbook `hardening_proxmox.yml` dedicado ao Host Físico, implementando Fail2Ban para a interface web (porta 8006) e proteção SSH.
+- **Fail2Ban (Debian):** Implementada configuração agressiva (`mode = aggressive`) com backend `systemd` e whitelist de IPs confiáveis (Management + Trusted Network) para evitar lockout.
+
+### Alterado (Changed)
+- **SSH Policy:** Substituído parâmetro legado `ChallengeResponseAuthentication` por `KbdInteractiveAuthentication` no Debian 12+, eliminando warnings de depreciação.
+- **Update Strategy:** Alterada estratégia de atualização automática do Ansible de `dist-upgrade` para `safe-upgrade` em servidores Debian, mitigando risco de quebra de dependências críticas (ex: Docker/ZFS).
 ## [2026-01-10] - Security & DNS Tuning
 ### Alterado (Changed)
 - **Credential Policy:** Executada rotação global de senhas para padrões de alta complexidade em toda a infraestrutura (Host, VMs, LXCs, Apps), eliminando senhas fracas e repetitíveis.
