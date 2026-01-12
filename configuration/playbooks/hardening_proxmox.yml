@@ -1,0 +1,73 @@
+---
+- name: Hardening do Proxmox VE (Host Físico)
+  hosts: proxmox
+  become: yes
+
+  tasks:
+    # TIMEZONE
+    - name: Configurar Timezone para America/Sao_Paulo
+      timezone:
+        name: America/Sao_Paulo
+
+    # FERRAMENTAS BASE
+    - name: Instalar ferramentas essenciais
+      apt:
+        name:
+          - htop
+          - fail2ban
+          - ncdu
+          - git
+          - tree
+          - fastfetch # Tem que ter :D
+        state: present
+        update_cache: yes
+
+    # FILTRO FAIL2BAN
+    - name: Filtro do Fail2Ban para Proxmox
+      copy:
+        dest: /etc/fail2ban/filter.d/proxmox.conf
+        content: |
+          [Definition]
+          failregex = 
+              pvedaemon\[.*authentication failure; rhost=<HOST> user=.* msg=.*
+              pveproxy\[.*authentication failure; rhost=<HOST> user=.* msg=.*
+          ignoreregex =
+        mode: '0644'
+
+    # JAIL FAIL2BAN (Backend Systemd + Retry Agressivo)
+    - name: Ativar Jail do Proxmox no Fail2Ban
+      copy:
+        dest: /etc/fail2ban/jail.d/proxmox.conf
+        content: |
+          [proxmox-web]
+          enabled = true
+          port = 8006
+          filter = proxmox
+          backend = systemd
+          journalmatch = _SYSTEMD_UNIT=pveproxy.service + _SYSTEMD_UNIT=pvedaemon.service
+          maxretry = 3
+          findtime = 600
+          bantime = 3600
+        mode: '0644'
+      notify: Restart Fail2Ban
+
+    # SSH HARDENING
+    # Permitir Root (necessário pro Proxmox) mas SÓ com chave.
+    - name: Hardening SSH - Permitir Root apenas com Chave
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin prohibit-password'
+        state: present
+      notify: Restart SSH
+
+  handlers:
+    - name: Restart Fail2Ban
+      service:
+        name: fail2ban
+        state: restarted
+
+    - name: Restart SSH
+      service:
+        name: ssh
+        state: restarted
