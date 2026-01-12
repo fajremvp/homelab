@@ -4,6 +4,25 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-11
+**Status:** ✅ Sucesso (Host Hardening & Defense in Depth)
+
+**Foco:** Proteção contra Brute-Force (Fail2Ban) e Refinamento de SSH
+
+- **Hardening do Proxmox (Host Físico):**
+    - Criado playbook dedicado `hardening_proxmox.yml`.
+    - **Proteção Web UI:** Implementado Fail2Ban monitorando logs do `pvedaemon` e `pveproxy` (Regex duplo) para bloquear tentativas de login na porta 8006.
+    - **Backend Otimizado:** Configurado para ler logs diretamente do `systemd/journald` em vez de arquivos de texto.
+    - **SSH:** Configurado `PermitRootLogin prohibit-password` (Apenas Chave).
+- **Hardening Debian (DockerHost & Vault):**
+    - Refatorado playbook `hardening_debian.yml` para padrões de produção.
+    - **Fail2Ban:** Configurado com `mode = aggressive` no SSH para detectar falhas de pré-autenticação.
+    - **Whitelist de Rede:** Adicionada regra `ignoreip` para a rede de Gestão (10.10.10.x) e Trusted (10.10.20.x), prevenindo que automações ou erros de digitação causem auto-lockout.
+    - **SSH Moderno:** Substituído parâmetro legado `ChallengeResponseAuthentication` por `KbdInteractiveAuthentication no` (Padrão Debian 12+).
+    - **Estabilidade:** Alterada política de atualização de `dist-upgrade` para `safe-upgrade` para evitar remoção acidental de pacotes críticos.
+- **Validação:**
+    - Testes de conexão confirmaram que chaves SSH continuam funcionando.
+    - Status do Fail2Ban validado em todos os nós (`jail sshd` ativo e backend systemd carregado).
 ## 2026-01-10
 **Status:** ✅ Sucesso (Hardening & Optimization)
 
