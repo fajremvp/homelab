@@ -5,10 +5,10 @@
 
   tasks:
     # --- ATUALIZAÇÕES E PACOTES ---
-    - name: Atualizar cache e sistema (Dist-Upgrade)
+    - name: Atualizar cache e sistema (Safe Upgrade)
       apt:
         update_cache: yes
-        upgrade: dist
+        upgrade: safe # Alterado de 'dist' para 'safe' para evitar quebra de dependências críticas
         cache_valid_time: 3600
 
     - name: Instalar ferramentas essenciais de administração
@@ -23,7 +23,7 @@
           - sudo
           - vim
           - fail2ban   # Proteção contra brute-force
-          - unattended-upgrades # Patch de segurança automático (Journal 2026-01-02)
+          - unattended-upgrades # Patch de segurança automático
           - apt-listchanges
         state: present
 
@@ -32,7 +32,7 @@
       timezone:
         name: America/Sao_Paulo
 
-    # --- CONFIGURAÇÃO SSH (Baseado no Journal 2025-12-29) ---
+    # --- CONFIGURAÇÃO SSH ---
     - name: Hardening SSH - Desativar Login Root
       lineinfile:
         path: /etc/ssh/sshd_config
@@ -57,13 +57,48 @@
         state: present
       notify: Restart SSH
 
-    - name: Hardening SSH - Desativar ChallengeResponse
+    # Parâmetro Moderno (Debian 12/13) - Substitui ChallengeResponse
+    - name: Hardening SSH - Desativar KbdInteractiveAuthentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?KbdInteractiveAuthentication'
+        line: 'KbdInteractiveAuthentication no'
+        state: present
+      notify: Restart SSH
+
+    # Mantido para compatibilidade com versões antigas, se houver
+    - name: Hardening SSH - Desativar ChallengeResponse (Legacy)
       lineinfile:
         path: /etc/ssh/sshd_config
         regexp: '^#?ChallengeResponseAuthentication'
         line: 'ChallengeResponseAuthentication no'
         state: present
       notify: Restart SSH
+
+    # --- CONFIGURAÇÃO FAIL2BAN ---
+    - name: Configurar Fail2Ban (jail.local)
+      copy:
+        dest: /etc/fail2ban/jail.local
+        content: |
+          [DEFAULT]
+          # Banir por 1 hora (3600s)
+          bantime = 1h
+          # Janela de tempo para contar falhas (10 min)
+          findtime = 10m
+          # Máximo de tentativas antes do ban
+          maxretry = 3
+          # Usar Systemd (Obrigatório para Debian 12+)
+          backend = systemd
+          # Whitelist: Localhost + Management + Rede Trusted
+          # Trade-off: Whitelist da rede evita lockout acidental no homelab
+          ignoreip = 127.0.0.1/8 10.10.10.10 10.10.20.0/24
+
+          [sshd]
+          enabled = true
+          mode    = aggressive
+          port    = ssh
+        mode: '0644'
+      notify: Restart Fail2Ban
 
     # --- SERVIÇOS DE SEGURANÇA ---
     - name: Garantir que Fail2Ban esteja rodando
@@ -83,4 +118,9 @@
     - name: Restart SSH
       service:
         name: ssh
+        state: restarted
+
+    - name: Restart Fail2Ban
+      service:
+        name: fail2ban
         state: restarted
