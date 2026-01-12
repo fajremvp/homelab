@@ -37,9 +37,10 @@ To                         Action      From
 22/tcp                     ALLOW IN    10.10.10.0/24 (MGMT)
 8200/tcp                   ALLOW IN    10.10.30.10   (DOCKERHOST)
 ```
-
 ### 3. Sistema Operacional
 SSH: Autenticação por senha desativada. Apenas chaves Ed25519.
+
+Defesa Ativa: Fail2Ban monitorando logs de autenticação SSH (Systemd Backend). Whitelist configurada para IPs de administração.
 
 Updates: unattended-upgrades configurado para aplicar patches de segurança automaticamente (quando a internet é liberada temporariamente).
 
