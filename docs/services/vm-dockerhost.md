@@ -55,6 +55,9 @@ Toda a comunicação passa por um container intermediário (`socket-proxy`) conf
     * Porta: `22`.
     * Autenticação: **Somente Chave Pública** (Senha desabilitada em 2025-12-29).
     * Root Login: **Bloqueado**.
+* **Defesa Ativa (Fail2Ban):**
+    * **Jail SSH:** Ativa com `mode = aggressive`. Backend via Systemd.
+    * **Whitelist:** Rede de Gestão (`10.10.10.x`) e Trusted (`10.10.20.x`) ignoradas para evitar auto-bloqueio acidental.
 * **Runtime:** Docker CE + Compose Plugin (Instalados).
 
 ## Padrão de Diretórios e Persistência
