@@ -1,0 +1,30 @@
+loki.write "local_loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+loki.source.journal "journal_logs" {
+  max_age = "12h"
+  path    = "/var/log/journal"
+  labels  = {component = "system_logs"}
+  forward_to = [loki.write.local_loki.receiver]
+}
+
+discovery.docker "linux" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "docker_logs" {
+  targets = discovery.docker.linux.targets
+  rule {
+    source_labels = ["__meta_docker_container_id"]
+    target_label  = "__path__"
+    replacement   = "/var/lib/docker/containers/${1}/${1}-json.log"
+  }
+}
+
+loki.source.file "docker_logs" {
+  targets    = discovery.relabel.docker_logs.output
+  forward_to = [loki.write.local_loki.receiver]
+}

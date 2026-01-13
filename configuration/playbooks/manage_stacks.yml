@@ -5,6 +5,7 @@
   vars:
     base_dir: "/opt/services"
     auth_dir: "/opt/auth"
+    mon_dir: "opt/monitoring"
 
   tasks:
     # --- 1. PREPARAÇÃO ---
@@ -97,6 +98,39 @@
         name: vaultwarden-vault
         state: started
         enabled: yes
+
+    # --- MONITORAMENTO ---
+    - name: Criar diretório de Monitoring
+      file:
+        path: "{{ mon_dir }}"
+        state: directory
+        owner: fajre
+        group: docker
+        mode: '0750'
+
+    - name: Sincronizar configs de Monitoring
+      synchronize:
+        src: "../dockerhost/monitoring/"
+        dest: "{{ mon_dir }}/"
+        delete: no
+        recursive: yes
+        rsync_opts:
+          - "--exclude=.env" 
+
+    - name: Gerar .env do Monitoring
+      copy:
+        dest: "{{ mon_dir }}/.env"
+        content: |
+          GRAFANA_PASSWORD={{ grafana_password }}
+        owner: fajre
+        group: docker
+        mode: '0600'
+      force: no 
+
+    - name: Start/Update Monitoring Stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ mon_dir }}"
+        state: present
 
   handlers:
     - name: Reload Systemd

@@ -1,0 +1,124 @@
+services:
+  # --- CÉREBRO DE MÉTRICAS ---
+  prometheus:
+    image: prom/prometheus:v3.9.1
+    container_name: prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - monitoring
+
+  # --- CÉREBRO DE LOGS ---
+  loki:
+    image: grafana/loki:3.6.3
+    container_name: loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki/local-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    networks:
+      - monitoring
+
+  # --- VISUALIZAÇÃO ---
+  grafana:
+    image: grafana/grafana:12.3.1
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:?err_password_not_set}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=https://grafana.home
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - monitoring
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.home`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.middlewares=authentik@docker"
+
+  # --- ALERTAS ---
+  alertmanager:
+    image: prom/alertmanager:v0.30.0
+    container_name: alertmanager
+    restart: unless-stopped
+    command: --config.file=/etc/alertmanager/config.yml
+    volumes:
+      - ./alertmanager/config.yml:/etc/alertmanager/config.yml:ro
+    networks:
+      - monitoring
+
+  # --- AGENTE DE LOGS (ALLOY) ---
+  alloy:
+    image: grafana/alloy:v1.12.1
+    container_name: alloy
+    restart: unless-stopped
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro # Requer driver json-file
+      - /var/log/journal:/var/log/journal:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Metadata Discovery
+    networks:
+      - monitoring
+
+  # --- EXPORTER DE CONTAINERS ---
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
+    container_name: cadvisor
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - monitoring
+
+  # --- NOTIFICAÇÕES (NTFY) ---
+  ntfy:
+    image: binwiederhier/ntfy:v2.15.0
+    container_name: ntfy
+    restart: unless-stopped
+    command: serve
+    environment:
+      - NTFY_BASE_URL=https://ntfy.home
+      - NTFY_CACHE_FILE=/var/cache/ntfy/cache.db
+      - NTFY_AUTH_FILE=/var/cache/ntfy/auth.db
+      - NTFY_AUTH_DEFAULT_ACCESS=deny-all # Exige usuário/token
+    volumes:
+      - ntfy_cache:/var/cache/ntfy
+      - ntfy_config:/etc/ntfy
+    networks:
+      - monitoring
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ntfy.rule=Host(`ntfy.home`)"
+      - "traefik.http.routers.ntfy.entrypoints=websecure"
+      - "traefik.http.routers.ntfy.tls=true"
+
+networks:
+  monitoring:
+    external: false
+
+volumes:
+  prometheus_data:
+  loki_data:
+  grafana_data:
+  ntfy_cache:
+  ntfy_config:

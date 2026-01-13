@@ -114,6 +114,30 @@
           APT::Periodic::Update-Package-Lists "1";
           APT::Periodic::Unattended-Upgrade "1";
 
+    # --- DOCKER CONFIG (CRÍTICO PARA O ALLOY) ---     
+    - name: Garantir Log Driver json-file no Docker
+      copy:
+        dest: /etc/docker/daemon.json
+        content: |
+          {
+            "log-driver": "json-file",
+            "log-opts": {
+              "max-size": "10m",
+              "max-file": "3"
+            }
+          }
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart Docker
+
+    # --- MONITORAMENTO NATIVO ---
+    - name: Instalar Node Exporter (Sistema)
+      apt:
+        name: prometheus-node-exporter
+        state: present
+        update_cache: yes
+
   handlers:
     - name: Restart SSH
       service:
@@ -123,4 +147,9 @@
     - name: Restart Fail2Ban
       service:
         name: fail2ban
+        state: restarted
+
+    - name: Restart Docker
+      service:
+        name: docker
         state: restarted

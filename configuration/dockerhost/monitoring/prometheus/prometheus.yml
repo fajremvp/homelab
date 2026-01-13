@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter (IP fixo da VM, como definido no hosts.ini)
+  - job_name: 'dockerhost-node'
+    static_configs:
+      - targets: ['10.10.30.10:9100']
+
+  # cAdvisor
+  - job_name: 'dockerhost-cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
