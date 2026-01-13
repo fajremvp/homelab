@@ -1,24 +1,95 @@
-## Estratégia de Observabilidade
+# Estratégia de Observabilidade
 
-* **Filosofia:** "If it moves, measure it. If it logs, capture it." Soberania total dos dados de telemetria (sem SaaS externos). Foco no padrão moderno **OpenTelemetry**.
-* **A Stack (LGTM):**
-    * **Visualização:** `Grafana` (Dashboard único para tudo).
-    * **Métricas:** `Prometheus` (Padrão de mercado para time-series).
-    * **Logs:** `Loki` (Agregação eficiente, indexação apenas de metadados).
-    * **Coletor Unificado:** `Grafana Alloy` (Substituto moderno do Promtail/Telegraf, compatível com OTel).
+## Filosofia
 
-| Camada | Ferramenta de Coleta (Agente) | O que é monitorado | Destino |
-| :--- | :--- | :--- | :--- |
-| **Hardware/OS** | **Node Exporter** | CPU, RAM, Disco, IOPS, Temperatura. Instalado via Ansible em *todos* os hosts. | Prometheus |
-| **Logs & Traces** | **Grafana Alloy** | Arquivos em `/var/log/*`, `journald` e Traces de aplicações. Substitui o antigo Promtail. | Loki / Tempo |
-| **Docker** | **Cadvisor** | Consumo de recursos (CPU/RAM) isolado por container. | Prometheus |
-| **Rede (SNMP)** | **SNMP Exporter** | Tráfego de portas do Switch e Roteador OPNsense (Interface WAN/LAN). | Prometheus |
-| **Kubernetes** | **Kube-Prometheus-Stack** | Pacote completo (Operator) que já instala métricas de Pods, Nodes e Serviços. | Prometheus |
-| **Energia (UPS)** | **NUT Exporter** | Carga da bateria, voltagem e tempo restante. | Prometheus |
+Começar pelo essencial.
+Estabilidade, previsibilidade e soberania total dos dados têm prioridade sobre complexidade e modismos.
 
-* **Alerting (Ação):**
-    * **Ferramenta:** `Alertmanager` (Prometheus) gerenciando a deduplicação e roteamento.
-    * **Canal Crítico:** **ntfy (Self-hosted)**.
-        * *Justificativa:* Notificações Push imediatas no Android/iOS sem depender de Big Tech. Simples (HTTP POST), permite envio de anexos (ex: log de erro) e ações rápidas ("Clique aqui para reiniciar container").
-    * **Canal Informativo:** E-mail (Via Stalwart local).
-    * **Regras Exemplo:** "Disco > 90%", "Temperatura > 80°C", "Falhas de SSH (CrowdSec) > 10/min".
+Nada de SaaS externo. Nada de stack pesada sem necessidade.
+
+---
+
+## Stack Adotada (LGTM)
+
+- **Visualização:** Grafana
+- **Métricas:** Prometheus
+- **Logs:** Loki
+- **Coleta de Logs:** Grafana Alloy
+
+---
+
+## Arquitetura de Coleta
+
+| Camada | Ferramenta | Tipo | O que monitora | Justificativa técnica |
+|------|-----------|------|---------------|----------------------|
+| Hardware / OS | Node Exporter | Serviço systemd | CPU, RAM, disco, IO, temperatura | Rodar nativo garante acesso real ao kernel e evita distorções de containers |
+| Containers | cAdvisor | Container | Uso de CPU/RAM/IO por container | Node Exporter não detalha consumo individual |
+| Logs | Grafana Alloy | Container | Journald e logs Docker via arquivo | Leitura direta de disco é mais rápida e estável que API Docker |
+| Rede (hardware) | SNMP Exporter | Container | Switch e AP | Única opção para dispositivos proprietários |
+
+---
+
+## Alertas
+
+- **Gerenciamento:** Alertmanager
+- **Canal Crítico:** ntfy (self-hosted)
+- **Canal Informativo:** e-mail (Stalwart)
+
+---
+
+## Roadmap de Implementação
+
+### Fase 1 – Núcleo de Observabilidade (ATUAL)
+
+**Objetivo:** ter visibilidade total do DockerHost.
+
+- Subir stack central:
+  - Prometheus
+  - Loki
+  - Grafana
+  - Alloy
+  - Alertmanager
+- Instalar `node_exporter` no DockerHost (fora do Docker)
+- Coletar:
+  - Métricas do host
+  - Métricas de containers
+  - Logs Docker
+  - Logs do sistema (SSH, sudo)
+
+**Resultado:** detectar falhas antes de downtime.
+
+---
+
+### Fase 2 – Expansão de Agentes
+
+**Objetivo:** monitorar todas as VMs e nós Linux.
+
+- Instalar `node_exporter` via Ansible em:
+  - Proxmox Host
+  - VM Vault
+  - LXCs
+  - Raspberry Pi
+- Adicionar targets no Prometheus
+
+**Resultado:** saúde completa da infraestrutura lógica.
+
+---
+
+### Fase 3 – Infraestrutura Física e Defesa
+
+**Objetivo:** visibilidade de rede e segurança.
+
+- SNMP:
+  - Switch
+  - Access Point
+- CrowdSec:
+  - Métricas de ataques e banimentos
+- UPS:
+  - NUT + exporter
+
+---
+
+### Fase 4 – Refinamento
+
+- Dashboards específicos (ZFS, backups, latência)
+- Alertas ajustados para evitar ruído
