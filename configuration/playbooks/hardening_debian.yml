@@ -17,6 +17,7 @@
           - curl
           - wget
           - git
+          - rsync
           - htop
           - ncdu       # Analisador de disco (Útil para logs cheios)
           - fastfetch  # Tem que ter :D
