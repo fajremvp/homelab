@@ -16,6 +16,7 @@
           - curl
           - wget
           - git
+          - rsync
           - htop
           - ncdu
           - fastfetch # Tem que ter :D
