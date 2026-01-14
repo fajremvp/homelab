@@ -129,7 +129,7 @@
         owner: root
         group: root
         mode: '0644'
-        when: "'dockerhost' in group_names" # Só faz no DockerHost, Vault não tem docker
+      when: "'dockerhost' in group_names" # Só faz no DockerHost, Vault não tem docker
       notify: Restart Docker
 
     # --- MONITORAMENTO NATIVO ---
