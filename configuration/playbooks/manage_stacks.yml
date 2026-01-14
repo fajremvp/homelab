@@ -2,6 +2,12 @@
 - name: Gerenciamento Total dos Stacks Docker (Híbrido Systemd/Compose)
   hosts: dockerhost
   become: yes
+
+  vars_prompt:
+    - name: grafana_password
+      prompt: "Digite a senha de Admin do Grafana"
+      private: yes  # Isso esconde o que for digitado
+
   vars:
     base_dir: "/opt/services"
     auth_dir: "/opt/auth"
