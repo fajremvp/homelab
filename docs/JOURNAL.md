@@ -4,6 +4,39 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-14
+**Status:** ✅ Sucesso (Observability Phase 1 & PKI Pivot)
+
+**Foco:** Implementação do Núcleo de Observabilidade, Pivotagem de PKI e Hardening de Rede.
+
+- **Arquitetura de Observabilidade (LGM Stack):**
+    - Implantado stack central no DockerHost via Ansible:
+        - **Prometheus (v3.9):** Scrape local (15 dias de retenção).
+        - **Loki (v3.6):** Recebendo logs. Configurado `max_streams_per_user` para evitar OOM.
+        - **Grafana (v12.3):** Autenticação delegada ao Authentik (ForwardAuth).
+        - **Alloy:** Agente unificado. Lê logs do host via `journald` e containers via arquivos `json-file`.
+        - **Ntfy:** Gateway de notificações push (Self-hosted).
+    - **Docker Logging:** Driver alterado globalmente para `json-file` (rotação 3x10MB) para permitir leitura direta de disco pelo Alloy, reduzindo overhead no daemon.
+
+- **Pivotagem de PKI (SSL/TLS):**
+    - **Erro Conceitual:** Assumiu-se inicialmente que o Traefik gerenciava uma PKI interna (Step-CA). Os logs revelaram o uso de "Default Certs" autoassinados, rejeitados pelo Android.
+    - **Solução Pragmática:** Implementada CA Local via `mkcert` (Trust-on-device).
+        - Gerado certificado Wildcard `*.home` e IP SAN `10.10.30.10`.
+        - **Security Decision:** Chaves privadas (`.key`) transferidas via SCP (Out-of-band), estritamente fora do Git.
+        - **Trust:** `rootCA.pem` instalada manualmente no Android e Arch Linux.
+
+- **Resolução de Roteamento (Traefik 504 Timeout):**
+    - **Incidente:** Gateway Timeout ao acessar Ntfy via Ingress.
+    - **Causa:** Ambivalência de roteamento em containers multi-rede (`monitoring` vs `proxy`).
+    - **Correção:** Fixada rede de saída via label `traefik.docker.network=proxy` e porta de serviço explícita `loadbalancer.server.port=80`.
+
+- **Hardening de Automação (Ansible):**
+    - **Segurança:** Implementado `vars_prompt` para inserção de segredos em runtime, evitando vazamento em histórico de shell.
+    - **Dependências:** Adicionado `rsync` ao `hardening_debian.yml` para viabilizar módulo `synchronize`.
+    - **Escopo:** Restrita a configuração de Docker apenas ao grupo `dockerhost`, preservando a integridade da VM Vault (Pure Debian).
+
+- **Backup:**
+    - Diretório `/opt/monitoring` incluído na política de backup do Restic. Snapshot validado.
 ## 2026-01-11
 **Status:** ✅ Sucesso (Host Hardening & Defense in Depth)
 
