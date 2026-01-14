@@ -131,7 +131,7 @@
         owner: fajre
         group: docker
         mode: '0600'
-      force: no 
+        force: no 
 
     - name: Start/Update Monitoring Stack
       community.docker.docker_compose_v2:
