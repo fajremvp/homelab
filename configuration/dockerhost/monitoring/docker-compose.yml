@@ -40,6 +40,7 @@ services:
       - grafana_data:/var/lib/grafana
     networks:
       - monitoring
+      - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.grafana.rule=Host(`grafana.home`)"
@@ -106,6 +107,7 @@ services:
       - ntfy_config:/etc/ntfy
     networks:
       - monitoring
+      - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ntfy.rule=Host(`ntfy.home`)"
@@ -115,6 +117,8 @@ services:
 networks:
   monitoring:
     external: false
+  proxy:
+    external: true
 
 volumes:
   prometheus_data:
