@@ -7,12 +7,22 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ## [Unreleased]
 ### Planejado
-- Mexer no Pi (Comprar cabos jumper do tipo FÊMEA-FÊMEA, pra ligar o módulo RTC (não fechou o case)
-- Esperar o Nobreak chegar
+- Instalar o Pi e Nobrek
 - Organizar cabos
 - Fazer uma bancadinha/rack pra deixar tudo
 
 ---
+## [2026-01-14] - Observability Phase 1 & PKI Overhaul
+### Adicionado (Added)
+- **Monitoring Stack:** Implementado Prometheus, Loki, Grafana, Alloy e Ntfy no DockerHost.
+- **SECURITY:** Implementada CA Local confiável para domínios `*.home` (Mkcert), substituindo certificados padrão do Traefik e habilitando suporte a Android.
+- **Ansible Hardening:** Adicionado `rsync` às dependências e `vars_prompt` para entrada segura de senhas.
+- **Backup:** Incluído diretório `/opt/monitoring` na política de backup do Restic.
+
+### Corrigido (Fixed)
+- **Traefik Routing:** Resolvido erro 504 Gateway Timeout no Ntfy forçando a rede `proxy` e porta `80` via labels explícitas.
+- **Ansible Scope:** Corrigido bug onde o playbook tentava configurar Docker na VM Vault (que não possui Docker).
+- **Log Driver:** Alterado driver do Docker para `json-file` para permitir ingestão de logs pelo Alloy sem latência de socket.
 ## [2026-01-11] - Host Hardening & Defense in Depth
 ### Adicionado (Added)
 - **Proxmox Hardening:** Criado playbook `hardening_proxmox.yml` dedicado ao Host Físico, implementando Fail2Ban para a interface web (porta 8006) e proteção SSH.
