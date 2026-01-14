@@ -40,7 +40,6 @@ services:
       - "443:443"
     volumes:
       - ./data/acme.json:/acme.json
-      - ./dynamic:/etc/traefik/dynamic
       - ./certs:/etc/traefik/certs:ro
       - ./dynamic:/etc/traefik/dynamic:ro
     networks:
