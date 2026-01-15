@@ -29,7 +29,7 @@
 
 | ID | Nome | CIDR | Descrição / Quem habita |
 |:---|:-----|:-----|:------------------------|
-| 1 | INFRA_WAN (Native) | 192.168.0.x | Tráfego Externo/Nativo. Rede do modem da operadora. Habitantes: Modem, WAN do OPNsense e Proxmox Host (.200) e Dropbear SSH (Boot/Unlock). |
+| N/A | ISP/MODEM/LAN | 192.168.0.x | Tráfego Externo/Nativo. Rede do modem da operadora. Habitantes: Modem, Raspiberry Pi, WAN do OPNsense e Proxmox Host (.200) e Dropbear SSH (Boot/Unlock). |
 | 10 | MGMT (Management) | 10.10.10.0/24 | "A Torre de Controle". Acesso restrito. Regra de Ouro: IPs Estáticos obrigatórios. Não dependem de DHCP. Porta de Emergência: Uma porta física do switch será configurada como "Untagged VLAN 10". Etiqueta Física (Protocolo de Crise): Colar uma etiqueta no switch contendo: "IP Emergência: 10.10.10.99 / GW: 10.10.10.1". Garante acesso rápido via notebook. Nota: O Proxmox migrará para cá apenas quando houver acesso Out-of-Band (Pi). Habitantes: LXC Management. |
 | 20 | TRUSTED (Home) | 10.10.20.0/24 | "Dispositivos Pessoais". Rede de confiança média-alta. Habitantes: Notebook Arch, Celular (via AP Porta 2). Acesso permitido à Internet e a serviços na VLAN SERVER. |
 | 30 | SERVER (Services) | 10.10.30.0/24 | "Produção". Onde rodam os serviços estáveis. Habitantes: VM DockerHost (Stalwart, Nostr, Vaultwarden, Forgejo), LXC AdGuard-Primary e futura VM do Bitcoin Node. Isolados, acessíveis apenas via portas específicas (ex: 443 via Traefik). |
@@ -53,6 +53,9 @@
 | SERVER (30) | WAN | HTTPS/DNS | Updates e serviços. |
 | SECURE (40) | WAN | - | BLOQUEADO (Exceto janela de backup e atualizações manuais). |
 | IOT (50) | LOCAL | - | BLOQUEADO (Acesso somente à Internet). Dispositivos IoT usam AdGuard (10.10.30.5). |
+| Raspberry Pi | Proxmox (Dropbear) | TCP/SSH 2222 | Acesso de emergência para desbloqueio de disco (Via VPN). |
+| Proxmox | Raspberry Pi | TCP 3493 (NUT) | Leitura de status de bateria. |
+
 
 ## Estrutura de Interfaces (OPNsense)
    - Para referência de manutenção (Drivers VirtIO).
