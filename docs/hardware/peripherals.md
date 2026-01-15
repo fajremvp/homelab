@@ -104,10 +104,13 @@
 
 ### Acessórios e Expansão (Instalados)
 
-#### Fonte de Alimentação Dedicada (U1002)
-- **Especificação:** 5V / 3.0A (USB-C).
-- **Cabo:** 18AWG (Bitola grossa para evitar *voltage drop*).
-- **Recurso:** Botão Liga/Desliga físico (evita desgaste do conector USB-C em hard reboots).
+#### Fonte de Alimentação Dedicada — CanaKit (Oficial-equivalente)
+- **Especificação:** 5V / 3.5A (USB-C, sem Power Delivery).
+- **Marca:** CanaKit (Referência internacional para Raspberry Pi).
+- **Cabo:** 18 AWG espesso, comprimento ~1,5 m (5 pés).
+- **Certificação:** UL Listed.
+- **Recursos Elétricos:** Filtro de ruído integrado para estabilidade sob carga contínua.
+- **Justificativa Técnica:** Fonte comprovadamente estável para Raspberry Pi 4 com SSD USB 3.0, eliminando eventos de undervoltage e throttling sob carga.
 
 #### Chassis e Refrigeração (Case ABS)
 - **Material:** ABS Plástico (Não bloqueia sinais Wi-Fi/Bluetooth).
@@ -160,3 +163,9 @@
 ### Placa de Rede PCIe - HP NC364T (Quad-Port)
 - **Status:** Removida do sistema em 2025-12-22.
 - **Motivo:** Incompatibilidade de drivers e redundância técnica após implementação de VLAN Trunking (802.1Q) no Switch TP-Link.
+
+### Fonte Compatível Com Raspberry Pi4 Tipo C 5v 3a Botão U1002
+- **Status:** Removida do sistema em 2026-01-15.
+- Fonte genérica com histórico real de undervoltage em Pi 4 + SSD.
+- Não é confiável para operação 24/7 com carga USB contínua (SSD + UPS).
+- **Motivo:** Produto não veio com o USB tipo C.
