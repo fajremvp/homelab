@@ -4,6 +4,33 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-15
+**Status:** ⏸️ Pausa Forçada (Hardware Bloqueante)
+
+**Foco:** Provisionamento do Raspberry Pi, Teste de Carga do Nobreak e Gestão de Crise de Hardware.
+
+- **Incidente Elétrico (Nobreak):**
+    - **Ação:** (Agi sem pensar) Realizado teste de carga conectando uma chaleira elétrica (~1850W) nas tomadas do Nobreak Ragtech.
+    - **Resultado:** O equipamento entrou em estado de alarme imediato (Bip contínuo/rápido), indicando **Sobrecarga (Overload)**.
+    - **Diagnóstico:** A potência da carga resistiva excedeu largamente a capacidade nominal (840W) do inversor.
+    - **Correção:** Carga removida. Nobreak conectado à rede elétrica sem dispositivos de saída para ciclo de carga inicial de 24 horas (recomendação do manual).
+
+- **Provisionamento do Pi (Software):**
+    - Instalado `rpi-imager` no Arch Linux.
+    - Gravada imagem **Raspberry Pi OS Lite (64-bit)** no SSD via USB 3.0.
+    - **Configuração Headless:** Definido hostname `rpi`, usuário `fajre` e SSH habilitado via configurações avançadas do Imager.
+    - Excelente programa, btw.
+
+- **Incidente de Suprimentos (Fonte do Pi):**
+    - A fonte adquirida ("Kit Gamer U1002") chegou com conector incompatível (P4/Micro-B em vez de USB-C). Devolução iniciada.
+    - **Workaround Falho:** Tentativa de boot utilizando carregador de celular (Xiaomi).
+    - **Sintoma:** O Pi ligou, mas o monitor exibiu erros de I/O cíclicos: `scsi host0: uas_eh_device_reset_handler`.
+    - **Causa Raiz:** **Brownout**. O carregador não suportou o pico de corrente exigido pelo SSD via USB 3.0, causando queda de tensão e desligamento do controlador de disco.
+    - **Ação:** Comprada fonte **CanaKit 3.5A** (Padrão oficial) com filtro de ruído. Instalação suspensa até a chegada (Sexta-feira, 16/01).
+
+- **Decisão Arquitetural (Segurança):**
+    - Formalizada a decisão de **NÃO utilizar criptografia LUKS** no Raspberry Pi.
+    - **Justificativa:** O Pi é um dispositivo de recuperação de desastres. Exigir senha de boot criaria um deadlock ("Ovo e Galinha") onde o dispositivo necessário para liberar o acesso remoto estaria ele mesmo inacessível, e também não há nada tão sensível para esconder (Split Storage, ver melhor a explicação em docs/services/rpi.md Segurança será garantida por isolamento de rede e ACLs na VPN.
 ## 2026-01-14
 **Status:** ✅ Sucesso (Observability Phase 1 & PKI Pivot)
 

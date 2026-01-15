@@ -10,8 +10,20 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Instalar o Pi e Nobrek
 - Organizar cabos
 - Fazer uma bancadinha/rack pra deixar tudo
+- Nova fonte do RPi chegar
 
 ---
+## [2026-01-15] - Hardware Provisioning & Power Safety
+### Adicionado (Added)
+- **Tooling:** Adicionado `rpi-imager` à lista de ferramentas de administração no Arch Linux.
+- **Hardware Spec:** Definida fonte **CanaKit 3.5A** como padrão para o Raspberry Pi 4 para suportar SSDs NVMe/SATA via USB sem *undervoltage*.
+
+### Alterado (Changed)
+- **Security Policy:** Removido requisito de LUKS (Split Storage) para o nó de gerenciamento (Raspberry Pi) para evitar complicações.
+- **Hardware Status:** Nobreak Ragtech colocado em ciclo de carga inicial (24h) antes da conexão de cargas críticas.
+
+### Removido (Removed)
+- **Hardware:** Fonte Genérica "U1002" removida do inventário por incompatibilidade física e técnica.
 ## [2026-01-14] - Observability Phase 1 & PKI Overhaul
 ### Adicionado (Added)
 - **Monitoring Stack:** Implementado Prometheus, Loki, Grafana, Alloy e Ntfy no DockerHost.

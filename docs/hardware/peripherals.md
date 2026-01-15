@@ -110,7 +110,7 @@
 - **Cabo:** 18 AWG espesso, comprimento ~1,5 m (5 pés).
 - **Certificação:** UL Listed.
 - **Recursos Elétricos:** Filtro de ruído integrado para estabilidade sob carga contínua.
-- **Justificativa Técnica:** Fonte comprovadamente estável para Raspberry Pi 4 com SSD USB 3.0, eliminando eventos de undervoltage e throttling sob carga.
+- **Justificativa Técnica:** Fonte comprovadamente estável para Raspberry Pi 4 com SSD USB 3.0, eliminando eventos de undervoltage e throttling sob carga. Além disso, fontes comuns de celular (ou genéricas de 3A) causam queda de tensão (*Brownout*) ao alimentar SSDs via USB 3.0, resultando em erros de I/O (`uas_eh_device_reset_handler`) e corrupção de dados. A amperagem extra (3.5A) oferece a margem necessária para estabilidade 24/7.
 
 #### Chassis e Refrigeração (Case ABS)
 - **Material:** ABS Plástico (Não bloqueia sinais Wi-Fi/Bluetooth).
@@ -168,4 +168,4 @@
 - **Status:** Removida do sistema em 2026-01-15.
 - Fonte genérica com histórico real de undervoltage em Pi 4 + SSD.
 - Não é confiável para operação 24/7 com carga USB contínua (SSD + UPS).
-- **Motivo:** Produto não veio com o USB tipo C.
+- **Motivo:** Produto entregue com conector incompatível (Não era USB-C) e qualidade duvidosa para missão crítica.
