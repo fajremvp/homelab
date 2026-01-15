@@ -10,14 +10,13 @@
 - **Wi-Fi:** Totalmente desabilitado (2.4 GHz e 5 GHz).
   - *Motivo:* Eliminar vetores de ataque sem fio e evitar interferência com o Access Point dedicado.
 - **DHCP:** Ativado.
-  - Fornece endereços IP para a WAN do OPNsense e para o Raspberry Pi.
-- **DMZ:** IP da interface WAN do OPNsense configurado como DMZ.
-  - *Objetivo:* Evitar Double NAT e garantir encaminhamento direto de tráfego.
+  - Fornece endereços IP para o Dropbear, a WAN do OPNsense e para o Raspberry Pi.
 
 ### Topologia de Cabos (Router-on-a-Stick)
-- **Porta LAN 1:** Conectada ao Raspberry Pi (VPN de emergência).
-- **Porta LAN 2:** Conectada à **Porta 8** do Switch TP-Link (VLAN 90 - WAN_FIBRA).
+- **Porta LAN 1:** Conectada à **Porta 8** do Switch TP-Link.
+- **Porta LAN 2:** (Livre).
 - **Porta LAN 3:** (Livre).
+- **Porta LAN 4:** Conectada ao Raspiberry Pi.
 
 ---
 
