@@ -41,3 +41,13 @@ O Raspberry Pi atua como um nó de borda (Edge Node), fisicamente separado da in
 
 ### Cenário: Comprometimento Remoto
 * **Mitigação:** O Pi não expõe portas para a internet (exceto o túnel VPN de saída). A gestão é feita via SSH restrito à chave Ed25519 do administrador.
+
+## Notas de Configuração (Debian 13 / RPi OS)
+
+### Relógio de Hardware (RTC)
+Diferente de versões antigas, o Debian 13 exige configuração via Device Tree.
+- **Config:** `/boot/firmware/config.txt` deve conter `dtoverlay=i2c-rtc,ds3231`.
+- **Limpeza:** O pacote `fake-hwclock` deve ser removido para evitar conflitos de tempo no boot.
+
+### Rede
+O gerenciamento de rede é feito exclusivamente via **NetworkManager** (`nmcli`). O arquivo `/etc/dhcpcd.conf` é obsoleto e ignorado.
