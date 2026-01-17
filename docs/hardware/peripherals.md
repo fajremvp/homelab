@@ -136,6 +136,8 @@
 - **Interface:** USB 3.0 (até 6 Gbps).
 - **Material:** Acrílico transparente.
 - **Compatibilidade:** SSD SATA 2.5".
+- **Chipset:** JMicron (`ID 152d:0583`).
+- **Compatibilidade:** Requer `usb-storage.quirks=152d:0583:u` no Kernel do Linux para operar de forma estável (Modo UAS desativado).
 
 ### Estratégia de Segurança (Split Storage)
 1.  **Conexão Física:** O Pi conecta-se direto ao Modem (não ao Switch interno).
@@ -170,11 +172,6 @@
 - **Motivo:** Produto entregue com conector incompatível (Não era USB-C) e qualidade duvidosa para missão crítica.
 
 ### UPS (Nobreak) — Ragtech M2 1200VA / 840W (Senoidal Puro)
-- **Status:** Descontinuado / Em processo de devolução (KaBuM).
-- **Período de uso:** 2026-01 (testes).
-- **Motivo técnico do descarte:**
-  - Protocolo de comunicação USB **proprietário e incompatível** com NUT/Linux.
-  - Testes confirmaram resposta binária inválida (`0xCA`) para comandos padrão (Q1/I).
-  - Impossibilita shutdown gracioso e monitoramento de bateria.
-- **Impacto:** Inadequado para homelab com ZFS, Bitcoin node e serviços 24/7.
-- **Destino:** Devolução ao fornecedor dentro do prazo legal.
+- **Status:** Devolução iniciada em 2026-01-17.
+- **Motivo:** Incompatibilidade com Linux/NUT.
+- **Diagnóstico:** O chipset Microchip (`04d8:000a`) utiliza um protocolo binário proprietário (resposta `0xca` para comandos padrão), impedindo o monitoramento aberto sem engenharia reversa instável.
