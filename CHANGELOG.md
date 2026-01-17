@@ -7,12 +7,22 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ## [Unreleased]
 ### Planejado
-- Instalar o Pi e Nobrek
+
 - Organizar cabos
 - Fazer uma bancadinha/rack pra deixar tudo
-- Nova fonte do RPi chegar
+- Encontrar um novo Nobreak
 
 ---
+## [2026-01-17] - UPS Protocol Analysis & RPi Stabilization
+### Adicionado (Added)
+- **RPi Storage Quirk:** Implementado parâmetro de kernel `usb-storage.quirks` para mitigar falhas do controlador JMicron UAS, estabilizando o boot do SSD via USB 3.0.
+- **RPi RTC:** Configurado módulo DS3231 no Debian 13 (Trixie) utilizando Device Tree Overlays e removendo o `fake-hwclock`.
+
+### Alterado (Changed)
+- **RPi Network:** Migração da configuração de rede estática para `nmcli` (NetworkManager), alinhando com o padrão do OS moderno.
+
+### Removido (Removed)
+- **UPS Integration:** Removidas configurações e drivers do NUT para o Ragtech M2 após confirmação de incompatibilidade de protocolo (Lock-in proprietário). Equipamento marcado para devolução.
 ## [2026-01-15] - Hardware Provisioning & Power Safety
 ### Adicionado (Added)
 - **Tooling:** Adicionado `rpi-imager` à lista de ferramentas de administração no Arch Linux.
