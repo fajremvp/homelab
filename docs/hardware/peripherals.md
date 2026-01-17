@@ -20,18 +20,17 @@
 
 ---
 
-## UPS (Nobreak) — Ragtech M2 1200VA / 840W (Senoidal Puro)
+## UPS (Nobreak) — Em Definição
+
+### Status Atual
+- Equipamento anterior devolvido por incompatibilidade de software.
+- **Requisito Mandatório:** Compatibilidade nativa com NUT (Network UPS Tools) no Linux via USB (HID ou Serial Padrão).
+- **Candidatos em Análise:** APC (Linha Back-UPS) ou NHS (Linha Senoidal), visando autonomia estendida (2 baterias) e suporte a shutdown gracioso.
 
 ### Função Crítica
 - Proteção elétrica do servidor e equipamentos de rede.
 - **Essencial para fontes com PFC ativo** (evita dano elétrico e instabilidade).
 - Integração com gerenciamento de energia via **USB → Raspberry Pi (NUT Server)**.
-
-### Especificações Técnicas
-- **Potência:** 1200 VA / 840 W (Real).
-- **Forma de onda:** Senoidal pura.
-- **Tensão:** Entrada e Saída 220V (Monovolt).
-- **Bateria:** 1 × 12V / 7Ah (Substituível).
 
 ### Recursos
 - **Proteções:** Sub/Sobretensão, Surtos, Sobrecarga, Curto-circuito, Sobretemperatura.
@@ -169,3 +168,13 @@
 - Fonte genérica com histórico real de undervoltage em Pi 4 + SSD.
 - Não é confiável para operação 24/7 com carga USB contínua (SSD + UPS).
 - **Motivo:** Produto entregue com conector incompatível (Não era USB-C) e qualidade duvidosa para missão crítica.
+
+### UPS (Nobreak) — Ragtech M2 1200VA / 840W (Senoidal Puro)
+- **Status:** Descontinuado / Em processo de devolução (KaBuM).
+- **Período de uso:** 2026-01 (testes).
+- **Motivo técnico do descarte:**
+  - Protocolo de comunicação USB **proprietário e incompatível** com NUT/Linux.
+  - Testes confirmaram resposta binária inválida (`0xCA`) para comandos padrão (Q1/I).
+  - Impossibilita shutdown gracioso e monitoramento de bateria.
+- **Impacto:** Inadequado para homelab com ZFS, Bitcoin node e serviços 24/7.
+- **Destino:** Devolução ao fornecedor dentro do prazo legal.
