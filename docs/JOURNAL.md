@@ -4,6 +4,53 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-17
+**Status:** 🔄 Pivotagem de Hardware (UPS)
+
+**Foco:** Engenharia Reversa do Protocolo do Nobreak e Decisão de Devolução.
+
+- **Diagnóstico Profundo do Nobreak (Ragtech M2):**
+    - **Identificação:** Chipset Microchip detectado (`ID 04d8:000a`). Interface serial emulada em `/dev/ttyACM0`.
+    - **Tentativas de Driver (NUT):**
+        - `nutdrv_qx`: Testados dialetos `megatec`, `krauler` e `voltronic`. Resultado: `Device not supported`.
+        - `blazer_ser`: Testadas velocidades 2400, 9600 e 460800 baud. Resultado: Timeout/No supported UPS detected.
+    - **Autópsia (Python Script):**
+        - Criado script para envio de comandos brutos (Raw Serial) com sinal DTR/RTS forçado.
+        - **Resultado:** O dispositivo respondeu com o byte `\xca` (Hex 202) para qualquer comando padrão ASCII (`Q1`, `I`).
+    - **Conclusão Técnica:** A Ragtech implementou um protocolo binário proprietário/fechado neste lote de chips, incompatível com os padrões abertos (Megatec/Voltronic) utilizados pelo NUT.
+
+- **Decisão de Negócios:**
+    - O uso de scripts de terceiros ("gambiarras" em Python) para traduzir o protocolo foi considerado, mas descartado por violar o princípio de confiabilidade para infraestrutura crítica.
+    - **Ação:** Iniciado processo de devolução do produto por arrependimento.
+    - **Próximos Passos:** Aquisição de um novo Nobreak (APC ou NHS) com compatibilidade nativa Linux comprovada.
+
+- **Limpeza do Raspberry Pi:**
+    - Removidos pacotes de diagnóstico (`python3-serial`, `nut-client`).
+    - Removidas regras Udev e configurações do NUT.
+    - O Pi permanece operante como nó de gerenciamento, aguardando o novo UPS.
+
+## 2026-01-16
+**Status:** ✅ Sucesso (Recuperação do Management Node)
+
+**Foco:** Reinstalação do Raspberry Pi, Correção de I/O e Configuração de RTC.
+
+- **Recuperação do Raspberry Pi (OS & Storage):**
+    - **Problema:** Boot loop e erros de I/O (`uas_eh_device_reset_handler`) persistiam mesmo com a nova fonte.
+    - **Causa Raiz:** Incompatibilidade do driver UAS (USB Attached SCSI) do Kernel Linux com o controlador JMicron (`152d:0583`) do case SSD.
+    - **Solução (Quirks):** Adicionado `usb-storage.quirks=152d:0583:u` ao `/boot/cmdline.txt`, forçando o modo "Bulk-Only Transport" (mais lento, porém estável).
+    - **Resultado:** Sistema estável, boot rápido e zero erros de I/O.
+
+- **Configuração de Rede (Debian 13/Bookworm):**
+    - Abandonado `dhcpcd` (obsoleto). Configurado IP Estático `192.168.0.5` utilizando **NetworkManager** (`nmcli`).
+
+- **Relógio de Hardware (RTC DS3231):**
+    - **Desafio:** O Debian 13 mudou a localização dos arquivos de configuração e removeu scripts antigos de hwclock.
+    - **Implementação:**
+        1. Ativado I2C via `raspi-config`.
+        2. Adicionado overlay `dtoverlay=i2c-rtc,ds3231` em `/boot/firmware/config.txt`.
+        3. Removido pacote `fake-hwclock` para evitar conflitos.
+        4. Sincronização realizada via `hwclock -w`.
+    - **Validação:** `hwclock -r` retorna a data correta persistente, garantindo logs precisos mesmo sem internet.
 ## 2026-01-15
 **Status:** ⏸️ Pausa Forçada (Hardware Bloqueante)
 
