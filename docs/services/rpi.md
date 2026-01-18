@@ -28,6 +28,11 @@ O Raspberry Pi atua como um nó de borda (Edge Node), fisicamente separado da in
 * **Função:** Failover. Se o AdGuard principal (LXC no Proxmox) cair, os clientes DHCP alternam para este IP.
 * **Privacidade:** Logs de consulta desativados ou mantidos estritamente em RAM (`querylog_enabled: false`), garantindo que o Pi não retenha histórico de navegação.
 
+### 4. Observabilidade (Node Exporter)
+* **Função:** Expõe métricas de hardware (CPU, RAM, Temperatura, Disco) para o Prometheus central.
+* **Porta:** 9100/TCP.
+* **Segurança:** Apenas leitura. Firewall configurado para aceitar conexões vindas do DockerHost.
+
 ---
 
 ## Modelo de Ameaça (Threat Model)
