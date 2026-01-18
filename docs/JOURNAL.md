@@ -4,6 +4,28 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-18
+**Status:** ✅ Sucesso (Hardening & Edge Observability)
+
+**Foco:** Segurança do Raspberry Pi e Integração com Prometheus Central
+
+- **Hardening do Raspberry Pi (Management Node):**
+    - **Integração Ansible:** Adicionado grupo `[rpi]` ao inventário e configurada troca de chaves SSH com o controlador.
+    - **Playbook Dedicado:** Criado `hardening_rpi.yml`, derivado do padrão Debian, mas adaptado para hardware físico.
+        - *Ajuste Tático:* Removido pacote `libraspberrypi-bin` que não está disponível nos repositórios padrão do Debian 13 (Trixie), evitando falha de provisionamento.
+    - **Resultados:**
+        - SSH configurado para aceitar **apenas chaves** (Senha removida).
+        - Fail2Ban ativo protegendo a porta 22 contra ataques na rede interna/VPN.
+        - Timezone sincronizado para `America/Sao_Paulo`.
+
+- **Expansão da Observabilidade (Prometheus):**
+    - **Agente:** Instalado `prometheus-node-exporter` no Raspberry Pi via Ansible.
+    - **Coleta (Scrape):** Configurado Prometheus no DockerHost para ler métricas do Pi (`192.168.0.5:9100`).
+    - **Troubleshooting (Config Reload):**
+        - *Sintoma:* O Ansible atualizou o arquivo `prometheus.yml` no DockerHost, mas o Grafana não mostrava os dados.
+        - *Causa:* O serviço Prometheus dentro do container não recarregou a configuração automaticamente apenas com a mudança do arquivo.
+        - *Solução:* Executado `docker restart prometheus`.
+    - **Validação:** Query `up{job="rpi-edge"}` retornou `1` no Grafana. O Pi agora é observável (CPU, RAM, Disco, Temperatura).
 ## 2026-01-17
 **Status:** 🔄 Pivotagem de Hardware (UPS)
 
