@@ -27,7 +27,6 @@
           - unattended-upgrades
           - apt-listchanges
           # Específicos do Hardware RPi
-          - libraspberrypi-bin  # Para comando vcgencmd (temperatura/voltagem)
           - i2c-tools           # Para gestão do RTC
           - usbutils            # Para lsusb (diagnóstico UPS)
         state: present
