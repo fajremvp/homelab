@@ -1,0 +1,126 @@
+---
+- name: Hardening do Raspberry Pi (Edge Node)
+  hosts: rpi
+  become: yes
+
+  tasks:
+    # --- ATUALIZAÇÕES E PACOTES ---
+    - name: Atualizar cache e sistema (Safe Upgrade)
+      apt:
+        update_cache: yes
+        upgrade: safe
+        cache_valid_time: 3600
+
+    - name: Instalar ferramentas essenciais
+      apt:
+        name:
+          - curl
+          - wget
+          - git
+          - rsync
+          - htop
+          - ncdu
+          - fastfetch # Tem que ter :D
+          - sudo
+          - vim
+          - fail2ban
+          - unattended-upgrades
+          - apt-listchanges
+          # Específicos do Hardware RPi
+          - libraspberrypi-bin  # Para comando vcgencmd (temperatura/voltagem)
+          - i2c-tools           # Para gestão do RTC
+          - usbutils            # Para lsusb (diagnóstico UPS)
+        state: present
+
+    # --- TIMEZONE & RTC ---
+    # Garantir que o Ansible respeite o RTC
+    - name: Configurar Timezone para America/Sao_Paulo
+      timezone:
+        name: America/Sao_Paulo
+
+    # --- CONFIGURAÇÃO SSH (Acesso de Emergência Seguro) ---
+    - name: Hardening SSH - Desativar Login Root
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin prohibit-password'
+        state: present
+      notify: Restart SSH
+
+    - name: Hardening SSH - Desativar Autenticação por Senha
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+      notify: Restart SSH
+
+    - name: Hardening SSH - Forçar Pubkey
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PubkeyAuthentication'
+        line: 'PubkeyAuthentication yes'
+        state: present
+      notify: Restart SSH
+
+    - name: Hardening SSH - Desativar KbdInteractiveAuthentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?KbdInteractiveAuthentication'
+        line: 'KbdInteractiveAuthentication no'
+        state: present
+      notify: Restart SSH
+
+    # --- CONFIGURAÇÃO FAIL2BAN ---
+    - name: Configurar Fail2Ban (jail.local)
+      copy:
+        dest: /etc/fail2ban/jail.local
+        content: |
+          [DEFAULT]
+          bantime = 1h
+          findtime = 10m
+          maxretry = 3
+          backend = systemd
+          # Whitelist: Localhost + Ansible Controller + Rede Interna Confiável
+          # Não bloquear a VPN (100.x.x.x) aqui para não te trancar para fora
+          ignoreip = 127.0.0.1/8 10.10.10.10 192.168.0.0/24
+
+          [sshd]
+          enabled = true
+          mode    = aggressive
+          port    = ssh
+        mode: '0644'
+      notify: Restart Fail2Ban
+
+    # --- SERVIÇOS DE SEGURANÇA ---
+    - name: Garantir que Fail2Ban esteja rodando
+      service:
+        name: fail2ban
+        state: started
+        enabled: yes
+
+    - name: Configurar Unattended Upgrades (Security Patches)
+      copy:
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+
+    # --- MONITORAMENTO ---
+    # Node Exporter nativo (apt)
+    # Permite que o Prometheus do DockerHost monitore a saúde do Pi
+    - name: Instalar Node Exporter (Sistema)
+      apt:
+        name: prometheus-node-exporter
+        state: present
+
+  handlers:
+    - name: Restart SSH
+      service:
+        name: ssh
+        state: restarted
+
+    - name: Restart Fail2Ban
+      service:
+        name: fail2ban
+        state: restarted
