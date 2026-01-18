@@ -5,10 +5,10 @@
 
 | Componente | Regra / Política | Aplicação |
 | :--- | :--- | :--- |
-| **Acesso SSH** | Autenticação **somente via Chave** (PasswordAuthentication `no`). Root permitido **apenas com chave** (PermitRootLogin `prohibit-password`) para automação Ansible. Porta 22 padrão. | Todas as VMs/LXCs (Exceto Talos). |
+| **Acesso SSH** | Autenticação **somente via Chave** (PasswordAuthentication `no`). Root permitido **apenas com chave** (PermitRootLogin `prohibit-password`) para automação Ansible. Porta 22 padrão. | Todas as VMs/LXCs e RPi (Exceto Talos). |
 | **Bastion Host** | NENHUMA máquina expõe SSH para a internet ou VLANs não confiáveis. Acesso administrativo é exclusivo via **VPN (WireGuard)** ou console do Proxmox na VLAN MGMT. | Geral. |
 | **Sudo / Privilégios** | Acesso `sudo` restrito ao usuário admin, exigindo senha. Logs de auditoria de comandos habilitados. | Debian / Alpine. |
-| **Firewall de Host** | Além do OPNsense (borda), cada host roda seu próprio firewall (`nftables` ou `ufw`) negando tudo exceto o essencial ("Defense in Depth"). | Todas as VMs. |
+| **Firewall de Host** | Além do OPNsense (borda), cada host roda seu próprio firewall (`nftables`, `ufw` ou `iptables` via Fail2Ban) negando tudo exceto o essencial ("Defense in Depth"). | Todas as VMs e RPi. |
 | **Atualizações** | **Unattended-Upgrades** habilitado para patches de segurança críticos automáticos. | Debian Stable (DockerHost). |
 | **Kernel / Sysctl** | Desabilitar IPv6 se não usado, desabilitar forwarding de pacotes (exceto se for router), proteção contra ataques ICMP e SYN flood. | Debian / Alpine. |
 | **CrowdSec** | Agente instalado em cada host enviando logs para o LAPI central. Detecta Brute Force local e reporta para bloqueio no OPNsense. | Todas as VMs expostas a serviços. |
