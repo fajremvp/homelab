@@ -15,3 +15,8 @@ scrape_configs:
   - job_name: 'dockerhost-cadvisor'
     static_configs:
       - targets: ['cadvisor:8080']
+
+  # Raspberry Pi (Edge Node)
+  - job_name: 'rpi-edge'
+    static_configs:
+      - targets: ['192.168.0.5:9100']
