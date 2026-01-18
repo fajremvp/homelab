@@ -13,6 +13,14 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Encontrar um novo Nobreak
 
 ---
+## [2026-01-18] - RPi Hardening & Distributed Metrics
+### Adicionado (Added)
+- **Playbook `hardening_rpi.yml`:** Automação de segurança específica para o Raspberry Pi (Edge), focada em SSH, Fail2Ban e Node Exporter, sem dependências de Docker.
+- **Inventory:** Grupo `[rpi]` adicionado ao `hosts.ini` para gestão centralizada.
+- **Observability:** Novo target `rpi-edge` adicionado ao `prometheus.yml` para monitoramento de infraestrutura do nó de gerenciamento.
+
+### Alterado (Changed)
+- **Prometheus Config:** Atualizada lista de *scrape configs* para incluir endpoints fora da rede Docker (LAN Física).
 ## [2026-01-17] - UPS Protocol Analysis & RPi Stabilization
 ### Adicionado (Added)
 - **RPi Storage Quirk:** Implementado parâmetro de kernel `usb-storage.quirks` para mitigar falhas do controlador JMicron UAS, estabilizando o boot do SSD via USB 3.0.
