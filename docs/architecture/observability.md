@@ -64,7 +64,7 @@ Esta implementação assume um modelo de ameaça específico para ambiente domé
 
 - [ ] **Proxmox (Host):** Node Exporter (apt) + Promtail/Alloy (Logs do Hypervisor).
 - [ ] **Vault (VM):** Node Exporter (Binário standalone) com firewall restrito (Allow 9100 from DockerHost only).
-- [ ] **Raspberry Pi (Management):** Monitoramento de recursos e AdGuard Home.
+- [X] **Raspberry Pi (Management):** Monitoramento de recursos (CPU/RAM/Temp) via Node Exporter.
 
 ### Fase 3 – Infraestrutura Física
 **Objetivo:** Visibilidade de rede e energia.
