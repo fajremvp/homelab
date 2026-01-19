@@ -123,6 +123,12 @@
       notify: Restart AdGuard
 
     # --- FORENSE (TMPFS) ---
+    
+    - name: Forçar desmontagem do data (para aplicar permissões)
+      mount:
+        path: "{{ install_dir }}/data"
+        state: unmounted
+
     - name: Garantir diretório data
       file:
         path: "{{ install_dir }}/data"
