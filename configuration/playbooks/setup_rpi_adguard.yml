@@ -1,71 +1,60 @@
 ---
-- name: Provisionamento AdGuard Home Secundário (Amnésia Total)
+- name: Provisionamento AdGuard Home (Amnésico)
   hosts: rpi
   become: yes
 
   vars:
     adguard_version: "v0.107.56"
     install_dir: "/opt/AdGuardHome"
-    adguard_port: 3000
     dns_port: 53
 
   tasks:
-    # --- PREPARAÇÃO DE REDE ---
-
-    - name: Parar serviço AdGuard para manutenção
+    # --- PREPARAÇÃO (LIMPEZA) ---
+    - name: Parar serviço AdGuard
       service:
         name: AdGuardHome
         state: stopped
       failed_when: false
-    
-    - name: Verificar existência do systemd-resolved
+
+    - name: Remover configuração antiga (Clean Slate)
+      file:
+        path: "{{ install_dir }}/AdGuardHome.yaml"
+        state: absent
+
+    # --- REDE ---
+    - name: Verificar systemd-resolved
       stat:
         path: /lib/systemd/system/systemd-resolved.service
       register: resolved_service_file
 
-    - name: Parar e Desabilitar systemd-resolved (Se existir)
+    - name: Parar systemd-resolved
       service:
         name: systemd-resolved
         state: stopped
         enabled: no
       when: resolved_service_file.stat.exists
 
-    # Configura o NetworkManager para NÃO tocar no DNS
-    - name: Configurar NetworkManager para ignorar DNS
+    - name: Configurar NetworkManager (dns=none)
       copy:
         dest: /etc/NetworkManager/conf.d/99-disable-dns.conf
-        content: |
-          [main]
-          dns=none
-        mode: '0644'
+        content: "[main]\ndns=none"
       notify: Reload NetworkManager
 
-    # Garante DNS temporário
-    - name: Garantir resolv.conf estático (Cloudflare)
+    - name: Garantir resolv.conf
       copy:
         dest: /etc/resolv.conf
         content: "nameserver 1.1.1.1\nnameserver 9.9.9.9\n"
-        mode: '0644'
         force: yes
 
-    - name: Remover configuração antiga (Clean Slate)
-      file:
-        path: "{{ install_dir }}/AdGuardHome.yaml"
-        state: absent
- 
-    # --- INSTALAÇÃO DO BINÁRIO ---
-    
-    # Extrai para /opt/ criando a pasta /opt/AdGuardHome automaticamente
-    - name: Baixar e Extrair AdGuard Home (ARM64)
+    # --- INSTALAÇÃO ---
+    - name: Baixar e Extrair AdGuard
       unarchive:
         src: "https://github.com/AdguardTeam/AdGuardHome/releases/download/{{ adguard_version }}/AdGuardHome_linux_arm64.tar.gz"
         dest: "/opt/"
         remote_src: yes
         creates: "{{ install_dir }}/AdGuardHome"
 
-    # Aplica permissão 0700 na pasta raiz.
-    # O AdGuard exige isso para rodar como root.
-    - name: Enforce permissões estritas no diretório de instalação
+    - name: Permissões Estritas (0700)
       file:
         path: "{{ install_dir }}"
         state: directory
@@ -73,41 +62,30 @@
         owner: root
         group: root
 
-    # --- CONFIGURAÇÃO (AMNÉSICA) ---
-    
-    # Remove config antiga para garantir que não haja conflito de schema
-    - name: Remover configuração antiga
-      file:
-        path: "{{ install_dir }}/AdGuardHome.yaml"
-        state: absent
-
-    # Injetar ANTES de criar o data/tmpfs para garantir a ordem
-    - name: Injetar AdGuardHome.yaml (Permissão 0600)
+    # --- CONFIGURAÇÃO ---
+    - name: Injetar AdGuardHome.yaml (Inline Syntax)
       copy:
         dest: "{{ install_dir }}/AdGuardHome.yaml"
         owner: root
         group: root
-        mode: '0600' # Apenas root pode ler
+        mode: '0600'
         content: |
-          # [FIX] Força a versão do schema para evitar erro de parser
           schema_version: 29
           
           http:
             address: 0.0.0.0:3000
+            
           auth_attempts: 5
           block_auth_min: 15
           language: pt-br
           theme: dark
 
-          # Logs do Daemon (Silenciados)
           log:
             file: ""
             verbose: false
 
-          # DNS & Performance
           dns:
-            # [FIX] Usar String (singular) resolve o erro "cannot unmarshal !!seq into string"
-            bind_host: "0.0.0.0"
+            bind_hosts: [ "0.0.0.0" ]
             
             port: {{ dns_port }}
             protection_enabled: true
@@ -115,20 +93,16 @@
             dnssec_enabled: true
             cache_size: 4096
             cache_optimistic: true 
-            
-            # Upstreams
-            upstream_dns:
-              - https://dns.cloudflare.com/dns-query
-              - tls://dns.quad9.net
-            
-            # Bootstrap
-            bootstrap_dns:
-              - 1.1.1.1
-              - 9.9.9.10
-            
             ratelimit: 20
 
-          # Zero Query Logs
+            upstream_dns: 
+              - "https://dns.cloudflare.com/dns-query"
+              - "tls://dns.quad9.net"
+            
+            bootstrap_dns: 
+              - "1.1.1.1"
+              - "9.9.9.10"
+
           querylog:
             enabled: false
             file_enabled: false
@@ -139,7 +113,6 @@
             enabled: false
             interval: 0h
 
-          # Filtros
           filters:
             - enabled: true
               url: https://big.oisd.nl/
@@ -147,49 +120,44 @@
             - enabled: true
               url: https://adaway.org/hosts.txt
               name: AdAway
-      notify: Restart AdGuard 
+      notify: Restart AdGuard
 
-    # --- BLINDAGEM FORENSE (TMPFS) ---
-    
-    - name: Garantir que o diretório data existe (0700)
+    # --- FORENSE (TMPFS) ---
+    - name: Garantir diretório data
       file:
         path: "{{ install_dir }}/data"
         state: directory
-        mode: '0700' # Permissão estrita
+        mode: '0700'
         owner: root
         group: root
 
-    - name: Configurar tmpfs para a pasta de dados
+    - name: Mount tmpfs
       mount:
         path: "{{ install_dir }}/data"
         src: tmpfs
         fstype: tmpfs
-        # mode=0700 no mount options é vital
         opts: "size=128M,mode=0700"
         state: mounted
 
-    # --- UNIT SYSTEMD ---
-    - name: Criar Unit File Blindado
+    # --- SYSTEMD ---
+    - name: Criar Unit File
       copy:
         dest: /etc/systemd/system/AdGuardHome.service
         content: |
           [Unit]
-          Description=AdGuard Home: Network-level blocker
+          Description=AdGuard Home
           After=network-online.target
-          # Crítico: Espera o tmpfs montar antes de subir
           RequiresMountsFor={{ install_dir }}/data
           
           [Service]
           Type=simple
-          # [CORREÇÃO] Caminho ajustado: install_dir já aponta para a pasta base
+          # Caminho validado: /opt/AdGuardHome/AdGuardHome
           ExecStart={{ install_dir }}/AdGuardHome --no-check-update -c {{ install_dir }}/AdGuardHome.yaml
           
-          # Silenciamento total
           StandardOutput=null
           StandardError=null
-          
           Restart=always
-          RestartSec=10
+          RestartSec=5
           
           [Install]
           WantedBy=multi-user.target
