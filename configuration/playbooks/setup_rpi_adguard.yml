@@ -1,0 +1,146 @@
+---
+- name: Provisionamento AdGuard Home Secundário (Amnésia Total)
+  hosts: rpi
+  become: yes
+
+  vars:
+    adguard_version: "v0.107.56"
+    install_dir: "/opt/AdGuardHome"
+    adguard_port: 3000
+    dns_port: 53
+
+  tasks:
+    # --- PREPARAÇÃO DO SISTEMA ---
+    - name: Parar e Desabilitar systemd-resolved (Libera porta 53)
+      service:
+        name: systemd-resolved
+        state: stopped
+        enabled: no
+
+    - name: Garantir resolv.conf estável (DNS Temporário)
+      copy:
+        dest: /etc/resolv.conf
+        content: "nameserver 1.1.1.1\nnameserver 9.9.9.9\n"
+        mode: '0644'
+
+    # --- INSTALAÇÃO DO BINÁRIO ---
+    - name: Criar diretório de instalação
+      file:
+        path: "{{ install_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Baixar e Extrair AdGuard Home (ARM64)
+      unarchive:
+        src: "https://github.com/AdguardTeam/AdGuardHome/releases/download/{{ adguard_version }}/AdGuardHome_linux_arm64.tar.gz"
+        dest: "/opt/"
+        remote_src: yes
+        extra_opts: [--strip-components=2]
+        creates: "{{ install_dir }}/AdGuardHome"
+
+    # --- BLINDAGEM FORENSE (TMPFS) ---
+    - name: Garantir que o diretório data existe antes do mount
+      file:
+        path: "{{ install_dir }}/data"
+        state: directory
+        mode: '0755'
+
+    - name: Configurar tmpfs para a pasta de dados do AdGuard
+      mount:
+        path: "{{ install_dir }}/data"
+        src: tmpfs
+        fstype: tmpfs
+        opts: "size=128M,mode=0755"
+        state: mounted
+
+    # --- CONFIGURAÇÃO (SINTAXE OFICIAL v0.107+) ---
+    - name: Injetar AdGuardHome.yaml (Minimalista & Sem Logs)
+      copy:
+        dest: "{{ install_dir }}/AdGuardHome.yaml"
+        mode: '0644'
+        content: |
+          bind_host: 0.0.0.0
+          bind_port: {{ adguard_port }}
+          auth_attempts: 5
+          block_auth_min: 15
+          language: pt-br
+          theme: dark
+
+          log:
+            file: ""
+            verbose: false
+
+          dns:
+            bind_hosts:
+              - 0.0.0.0
+            port: {{ dns_port }}
+            protection_enabled: true
+            filtering_enabled: true
+            dnssec_enabled: true
+            cache_size: 4096
+            cache_optimistic: true 
+            upstream_dns:
+              - https://dns.cloudflare.com/dns-query
+              - tls://dns.quad9.net
+            bootstrap_dns:
+              - 1.1.1.1
+              - 9.9.9.10
+            ratelimit: 20
+
+          querylog:
+            enabled: false
+            file_enabled: false
+            interval: 0h
+            size_memory: 0
+
+          statistics:
+            enabled: false
+            interval: 0h
+
+          filters:
+            - enabled: true
+              url: https://big.oisd.nl/
+              name: OISD Big
+            - enabled: true
+              url: https://adaway.org/hosts.txt
+              name: AdAway
+      notify: Restart AdGuard
+
+    # --- UNIT SYSTEMD (ZERO OUTPUT + MOUNT DEPENDENCY) ---
+    - name: Criar Unit File Blindado
+      copy:
+        dest: /etc/systemd/system/AdGuardHome.service
+        content: |
+          [Unit]
+          Description=AdGuard Home: Network-level blocker
+          After=network-online.target
+          # Garante que o serviço espere o tmpfs
+          RequiresMountsFor={{ install_dir }}/data
+          
+          [Service]
+          Type=simple
+          ExecStart={{ install_dir }}/AdGuardHome --no-check-update -c {{ install_dir }}/AdGuardHome.yaml
+          
+          # Silenciamento total do journald
+          StandardOutput=null
+          StandardError=null
+          
+          Restart=always
+          RestartSec=10
+          
+          [Install]
+          WantedBy=multi-user.target
+      notify: Reload and Restart
+
+  handlers:
+    - name: Restart AdGuard
+      service:
+        name: AdGuardHome
+        state: restarted
+
+    - name: Reload and Restart
+      systemd:
+        daemon_reload: yes
+        name: AdGuardHome
+        state: restarted
+        enabled: yes
