@@ -79,8 +79,8 @@
         group: root
         mode: '0600' # Apenas root pode ler
         content: |
-          bind_host: 0.0.0.0
-          bind_port: {{ adguard_port }}
+          http:
+            address: 0.0.0.0:3000
           auth_attempts: 5
           block_auth_min: 15
           language: pt-br
@@ -93,7 +93,8 @@
 
           # DNS & Performance
           dns:
-            bind_hosts: 0.0.0.0
+            bind_hosts:
+              - 0.0.0.0
             port: {{ dns_port }}
             protection_enabled: true
             filtering_enabled: true
@@ -161,7 +162,9 @@
           
           [Service]
           Type=simple
+          # [CORREÇÃO] Caminho ajustado: install_dir já aponta para a pasta base
           ExecStart={{ install_dir }}/AdGuardHome --no-check-update -c {{ install_dir }}/AdGuardHome.yaml
+          
           # Silenciamento total
           StandardOutput=null
           StandardError=null
