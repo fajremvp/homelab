@@ -10,18 +10,39 @@
     dns_port: 53
 
   tasks:
-    # --- PREPARAÇÃO DO SISTEMA ---
-    - name: Parar e Desabilitar systemd-resolved (Libera porta 53)
+    # --- PREPARAÇÃO DE REDE ---
+    
+    # Verifica se systemd-resolved existe antes de tentar parar
+    - name: Verificar existência do systemd-resolved
+      stat:
+        path: /lib/systemd/system/systemd-resolved.service
+      register: resolved_service_file
+
+    - name: Parar e Desabilitar systemd-resolved (Se existir)
       service:
         name: systemd-resolved
         state: stopped
         enabled: no
+      when: resolved_service_file.stat.exists
 
-    - name: Garantir resolv.conf estável (DNS Temporário)
+    # Configura o NetworkManager para NÃO tocar no DNS (dns=none)
+    # Isso impede que ele sobrescreva o resolv.conf num reboot
+    - name: Configurar NetworkManager para ignorar DNS
+      copy:
+        dest: /etc/NetworkManager/conf.d/99-disable-dns.conf
+        content: |
+          [main]
+          dns=none
+        mode: '0644'
+      notify: Reload NetworkManager
+
+    # Garante DNS temporário para baixar o binário
+    - name: Garantir resolv.conf estático (Cloudflare)
       copy:
         dest: /etc/resolv.conf
         content: "nameserver 1.1.1.1\nnameserver 9.9.9.9\n"
         mode: '0644'
+        force: yes
 
     # --- INSTALAÇÃO DO BINÁRIO ---
     - name: Criar diretório de instalação
@@ -29,6 +50,8 @@
         path: "{{ install_dir }}"
         state: directory
         mode: '0755'
+        owner: root
+        group: root
 
     - name: Baixar e Extrair AdGuard Home (ARM64)
       unarchive:
@@ -39,13 +62,13 @@
         creates: "{{ install_dir }}/AdGuardHome"
 
     # --- BLINDAGEM FORENSE (TMPFS) ---
-    - name: Garantir que o diretório data existe antes do mount
+    - name: Garantir que o diretório data existe
       file:
         path: "{{ install_dir }}/data"
         state: directory
         mode: '0755'
 
-    - name: Configurar tmpfs para a pasta de dados do AdGuard
+    - name: Configurar tmpfs para a pasta de dados
       mount:
         path: "{{ install_dir }}/data"
         src: tmpfs
@@ -53,7 +76,7 @@
         opts: "size=128M,mode=0755"
         state: mounted
 
-    # --- CONFIGURAÇÃO (SINTAXE OFICIAL v0.107+) ---
+    # --- CONFIGURAÇÃO (AMNÉSICA) ---
     - name: Injetar AdGuardHome.yaml (Minimalista & Sem Logs)
       copy:
         dest: "{{ install_dir }}/AdGuardHome.yaml"
@@ -106,7 +129,7 @@
               name: AdAway
       notify: Restart AdGuard
 
-    # --- UNIT SYSTEMD (ZERO OUTPUT + MOUNT DEPENDENCY) ---
+    # --- UNIT SYSTEMD ---
     - name: Criar Unit File Blindado
       copy:
         dest: /etc/systemd/system/AdGuardHome.service
@@ -114,31 +137,33 @@
           [Unit]
           Description=AdGuard Home: Network-level blocker
           After=network-online.target
-          # Garante que o serviço espere o tmpfs
+          # Crítico: Espera o tmpfs montar antes de subir
           RequiresMountsFor={{ install_dir }}/data
           
           [Service]
           Type=simple
           ExecStart={{ install_dir }}/AdGuardHome --no-check-update -c {{ install_dir }}/AdGuardHome.yaml
-          
-          # Silenciamento total do journald
           StandardOutput=null
           StandardError=null
-          
           Restart=always
           RestartSec=10
           
           [Install]
           WantedBy=multi-user.target
-      notify: Reload and Restart
+      notify: Reload Systemd and Restart
 
   handlers:
+    - name: Reload NetworkManager
+      service:
+        name: NetworkManager
+        state: reloaded
+
     - name: Restart AdGuard
       service:
         name: AdGuardHome
         state: restarted
 
-    - name: Reload and Restart
+    - name: Reload Systemd and Restart
       systemd:
         daemon_reload: yes
         name: AdGuardHome
