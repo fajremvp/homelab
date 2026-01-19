@@ -66,6 +66,10 @@
         remote_src: yes
         creates: "{{ install_dir }}/AdGuardHome"
 
+    - name: Garantir binário executável
+      file:
+        path: "{{ install_dir }}/AdGuardHome/AdGuardHome"
+        mode: '0755'
 
     # --- BLINDAGEM FORENSE (TMPFS) ---
     - name: Garantir que o diretório data existe
@@ -148,7 +152,7 @@
           
           [Service]
           Type=simple
-          ExecStart={{ install_dir }}/AdGuardHome --no-check-update -c {{ install_dir }}/AdGuardHome.yaml
+          ExecStart={{ install_dir }}/AdGuardHome/AdGuardHome --no-check-update -c {{ install_dir }}/AdGuardHome.yaml
           StandardOutput=null
           StandardError=null
           Restart=always
