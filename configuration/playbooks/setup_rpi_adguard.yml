@@ -12,7 +12,6 @@
   tasks:
     # --- PREPARAÇÃO DE REDE ---
     
-    # Verifica se systemd-resolved existe antes de tentar parar
     - name: Verificar existência do systemd-resolved
       stat:
         path: /lib/systemd/system/systemd-resolved.service
@@ -25,8 +24,7 @@
         enabled: no
       when: resolved_service_file.stat.exists
 
-    # Configura o NetworkManager para NÃO tocar no DNS (dns=none)
-    # Isso impede que ele sobrescreva o resolv.conf num reboot
+    # Configura o NetworkManager para NÃO tocar no DNS
     - name: Configurar NetworkManager para ignorar DNS
       copy:
         dest: /etc/NetworkManager/conf.d/99-disable-dns.conf
@@ -36,7 +34,7 @@
         mode: '0644'
       notify: Reload NetworkManager
 
-    # Garante DNS temporário para baixar o binário
+    # Garante DNS temporário
     - name: Garantir resolv.conf estático (Cloudflare)
       copy:
         dest: /etc/resolv.conf
@@ -44,6 +42,7 @@
         mode: '0644'
         force: yes
 
+    # Limpeza para garantir estado limpo (Clean Slate)
     - name: Limpar instalação incorreta anterior
       file:
         path: "{{ install_dir }}"
@@ -51,46 +50,34 @@
       failed_when: false
 
     # --- INSTALAÇÃO DO BINÁRIO ---
-    - name: Criar diretório de instalação
-      file:
-        path: "{{ install_dir }}"
-        state: directory
-        mode: '0755'
-        owner: root
-        group: root
-
+    
+    # Extrai para /opt/ criando a pasta /opt/AdGuardHome automaticamente
     - name: Baixar e Extrair AdGuard Home (ARM64)
       unarchive:
-        src: https://github.com/AdguardTeam/AdGuardHome/releases/download/{{ adguard_version }}/AdGuardHome_linux_arm64.tar.gz
-        dest: /opt/
+        src: "https://github.com/AdguardTeam/AdGuardHome/releases/download/{{ adguard_version }}/AdGuardHome_linux_arm64.tar.gz"
+        dest: "/opt/"
         remote_src: yes
         creates: "{{ install_dir }}/AdGuardHome"
 
-    - name: Garantir binário executável
+    # Aplica permissão 0700 na pasta raiz.
+    # O AdGuard exige isso para rodar como root.
+    - name: Enforce permissões estritas no diretório de instalação
       file:
-        path: "{{ install_dir }}/AdGuardHome/AdGuardHome"
-        mode: '0755'
-
-    # --- BLINDAGEM FORENSE (TMPFS) ---
-    - name: Garantir que o diretório data existe
-      file:
-        path: "{{ install_dir }}/data"
+        path: "{{ install_dir }}"
         state: directory
-        mode: '0755'
-
-    - name: Configurar tmpfs para a pasta de dados
-      mount:
-        path: "{{ install_dir }}/data"
-        src: tmpfs
-        fstype: tmpfs
-        opts: "size=128M,mode=0755"
-        state: mounted
+        mode: '0700'
+        owner: root
+        group: root
 
     # --- CONFIGURAÇÃO (AMNÉSICA) ---
-    - name: Injetar AdGuardHome.yaml (Minimalista & Sem Logs)
+    
+    # Injetar ANTES de criar o data/tmpfs para garantir a ordem
+    - name: Injetar AdGuardHome.yaml (Permissão 0600)
       copy:
         dest: "{{ install_dir }}/AdGuardHome.yaml"
-        mode: '0644'
+        owner: root
+        group: root
+        mode: '0600' # Apenas root pode ler
         content: |
           bind_host: 0.0.0.0
           bind_port: {{ adguard_port }}
@@ -99,10 +86,12 @@
           language: pt-br
           theme: dark
 
+          # Logs do Daemon (Silenciados)
           log:
             file: ""
             verbose: false
 
+          # DNS & Performance
           dns:
             bind_hosts:
               - 0.0.0.0
@@ -120,6 +109,7 @@
               - 9.9.9.10
             ratelimit: 20
 
+          # Zero Query Logs
           querylog:
             enabled: false
             file_enabled: false
@@ -130,6 +120,7 @@
             enabled: false
             interval: 0h
 
+          # Filtros
           filters:
             - enabled: true
               url: https://big.oisd.nl/
@@ -138,6 +129,25 @@
               url: https://adaway.org/hosts.txt
               name: AdAway
       notify: Restart AdGuard
+
+    # --- BLINDAGEM FORENSE (TMPFS) ---
+    
+    - name: Garantir que o diretório data existe (0700)
+      file:
+        path: "{{ install_dir }}/data"
+        state: directory
+        mode: '0700' # Permissão estrita
+        owner: root
+        group: root
+
+    - name: Configurar tmpfs para a pasta de dados
+      mount:
+        path: "{{ install_dir }}/data"
+        src: tmpfs
+        fstype: tmpfs
+        # mode=0700 no mount options é vital
+        opts: "size=128M,mode=0700"
+        state: mounted
 
     # --- UNIT SYSTEMD ---
     - name: Criar Unit File Blindado
@@ -152,9 +162,11 @@
           
           [Service]
           Type=simple
-          ExecStart={{ install_dir }}/AdGuardHome/AdGuardHome --no-check-update -c {{ install_dir }}/AdGuardHome.yaml
+          ExecStart={{ install_dir }}/AdGuardHome --no-check-update -c {{ install_dir }}/AdGuardHome.yaml
+          # Silenciamento total
           StandardOutput=null
           StandardError=null
+          
           Restart=always
           RestartSec=10
           
