@@ -93,8 +93,7 @@
 
           # DNS & Performance
           dns:
-            bind_hosts:
-              - 0.0.0.0
+            bind_hosts: 0.0.0.0
             port: {{ dns_port }}
             protection_enabled: true
             filtering_enabled: true
