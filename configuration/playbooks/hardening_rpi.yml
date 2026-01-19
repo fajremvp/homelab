@@ -23,7 +23,7 @@
           - fastfetch # Tem que ter :D
           - sudo
           - vim
-          - dig
+          - dnsutils
           - fail2ban
           - unattended-upgrades
           - apt-listchanges
