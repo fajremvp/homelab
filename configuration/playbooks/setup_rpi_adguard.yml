@@ -106,12 +106,12 @@
           querylog:
             enabled: false
             file_enabled: false
-            interval: 0h
+            interval: 24h
             size_memory: 0
 
           statistics:
             enabled: false
-            interval: 0h
+            interval: 24h
 
           filters:
             - enabled: true
