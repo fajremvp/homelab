@@ -44,6 +44,12 @@
         mode: '0644'
         force: yes
 
+    - name: Limpar instalação incorreta anterior
+      file:
+        path: "{{ install_dir }}"
+        state: absent
+      failed_when: false
+
     # --- INSTALAÇÃO DO BINÁRIO ---
     - name: Criar diretório de instalação
       file:
@@ -55,11 +61,11 @@
 
     - name: Baixar e Extrair AdGuard Home (ARM64)
       unarchive:
-        src: "https://github.com/AdguardTeam/AdGuardHome/releases/download/{{ adguard_version }}/AdGuardHome_linux_arm64.tar.gz"
-        dest: "/opt/"
+        src: https://github.com/AdguardTeam/AdGuardHome/releases/download/{{ adguard_version }}/AdGuardHome_linux_arm64.tar.gz
+        dest: /opt/
         remote_src: yes
-        extra_opts: [--strip-components=2]
         creates: "{{ install_dir }}/AdGuardHome"
+
 
     # --- BLINDAGEM FORENSE (TMPFS) ---
     - name: Garantir que o diretório data existe
