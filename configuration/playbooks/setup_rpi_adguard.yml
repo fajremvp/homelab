@@ -11,6 +11,12 @@
 
   tasks:
     # --- PREPARAÇÃO DE REDE ---
+
+    - name: Parar serviço AdGuard para manutenção
+      service:
+        name: AdGuardHome
+        state: stopped
+      failed_when: false
     
     - name: Verificar existência do systemd-resolved
       stat:
@@ -42,13 +48,11 @@
         mode: '0644'
         force: yes
 
-    # Limpeza para garantir estado limpo (Clean Slate)
-    - name: Limpar instalação incorreta anterior
+    - name: Remover configuração antiga (Clean Slate)
       file:
-        path: "{{ install_dir }}"
+        path: "{{ install_dir }}/AdGuardHome.yaml"
         state: absent
-      failed_when: false
-
+ 
     # --- INSTALAÇÃO DO BINÁRIO ---
     
     # Extrai para /opt/ criando a pasta /opt/AdGuardHome automaticamente
@@ -71,6 +75,12 @@
 
     # --- CONFIGURAÇÃO (AMNÉSICA) ---
     
+    # Remove config antiga para garantir que não haja conflito de schema
+    - name: Remover configuração antiga
+      file:
+        path: "{{ install_dir }}/AdGuardHome.yaml"
+        state: absent
+
     # Injetar ANTES de criar o data/tmpfs para garantir a ordem
     - name: Injetar AdGuardHome.yaml (Permissão 0600)
       copy:
@@ -79,6 +89,9 @@
         group: root
         mode: '0600' # Apenas root pode ler
         content: |
+          # [FIX] Força a versão do schema para evitar erro de parser
+          schema_version: 29
+          
           http:
             address: 0.0.0.0:3000
           auth_attempts: 5
@@ -93,20 +106,26 @@
 
           # DNS & Performance
           dns:
-            bind_hosts:
-              - 0.0.0.0
+            # [FIX] Usar String (singular) resolve o erro "cannot unmarshal !!seq into string"
+            bind_host: "0.0.0.0"
+            
             port: {{ dns_port }}
             protection_enabled: true
             filtering_enabled: true
             dnssec_enabled: true
             cache_size: 4096
             cache_optimistic: true 
+            
+            # Upstreams
             upstream_dns:
               - https://dns.cloudflare.com/dns-query
               - tls://dns.quad9.net
+            
+            # Bootstrap
             bootstrap_dns:
               - 1.1.1.1
               - 9.9.9.10
+            
             ratelimit: 20
 
           # Zero Query Logs
@@ -128,7 +147,7 @@
             - enabled: true
               url: https://adaway.org/hosts.txt
               name: AdAway
-      notify: Restart AdGuard
+      notify: Restart AdGuard 
 
     # --- BLINDAGEM FORENSE (TMPFS) ---
     
