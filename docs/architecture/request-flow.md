@@ -15,10 +15,19 @@
 
 ```
 graph TD
-    Client[Client (Arch/Mobile)] -->|1. DNS Query (app.home)| AdGuard[AdGuard Home (LXC)]
-    AdGuard -->|1.1 IP Response (10.10.30.10)| Client
+    Client[Client (Arch/Mobile)]
+    
+    %% Fluxo DNS com Alta Disponibilidade
+    Client -->|1. Primary Query| PrimaryDNS[AdGuard LXC (10.10.30.5)]
+    Client -.->|1.1 Failover Timeout| SecondaryDNS[AdGuard RPi (192.168.0.5)]
+    
+    %% Fluxo de Resposta
+    PrimaryDNS -->|IP: 10.10.30.10| Client
+    SecondaryDNS -->|IP: 10.10.30.10| Client
+    
+    %% Fluxo de Dados
     Client -->|2. HTTPS Request| OPNsense[OPNsense Firewall]
     OPNsense -->|3. Allow Traffic| Traefik[Traefik Proxy (DockerHost)]
     Traefik -->|4. Router Match| Authentik[Authentik Middleware]
-    Authentik -->|5. Auth OK| Container[App Container (Whoami/Services)]
+    Authentik -->|5. Auth OK| Container[App Container]
 ```
