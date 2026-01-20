@@ -11,8 +11,23 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Organizar cabos
 - Fazer uma bancadinha/rack pra deixar tudo
 - Encontrar um novo Nobreak
+- Colocar consulta de DNS do modem para meus próprios.
 
 ---
+## [2026-01-19] - DNS High Availability & Forensic Hardening
+### Adicionado (Added)
+- **DNS Secundário (Edge):** Implementado AdGuard Home no Raspberry Pi (`192.168.0.5`) atuando como failover para o nó principal.
+- **Forensic Hardening:** Configurado armazenamento em RAM Disk (`tmpfs`) com permissão estrita (`mode=0700`) para o AdGuard Secundário, garantindo "Zero Footprint" físico.
+- **Failover Automático:** Configurado DHCP e Firewall no OPNsense para distribuir ambos os DNS (Primário e Secundário) para as VLANs.
+- **Playbook `setup_rpi_adguard.yml`:** Automação completa para deploy do AdGuard com sintaxe YAML v0.107+, remoção de logs e blindagem de systemd.
+
+### Corrigido (Fixed)
+- **Network Routing:** Corrigido erro crítico de "Destination Host Unreachable" no Arch Linux (VLAN Trusted) adicionando Gateway explícito (`10.10.20.1`) no DHCPv4 do OPNsense.
+- **AdGuard Configuration:** Resolvido erro de parser YAML (`cannot unmarshal !!seq into string`) migrando para sintaxe inline (`[ "0.0.0.0" ]`) e definindo `schema_version: 29`.
+- **Systemd Loop:** Corrigida falha de boot do serviço AdGuard adicionando dependência `RequiresMountsFor` para aguardar a montagem do `tmpfs`.
+
+### Alterado (Changed)
+- **OPNsense Gateway Policy:** Removidos Gateways desnecessários na configuração de DNS System (General Settings), eliminando erros de "Directly Connected Network".
 ## [2026-01-18] - RPi Hardening & Distributed Metrics
 ### Adicionado (Added)
 - **Playbook `hardening_rpi.yml`:** Automação de segurança específica para o Raspberry Pi (Edge), focada em SSH, Fail2Ban e Node Exporter, sem dependências de Docker.
