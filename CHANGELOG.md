@@ -18,7 +18,7 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 ### Adicionado (Added)
 - **DNS Secundário (Edge):** Implementado AdGuard Home no Raspberry Pi (`192.168.0.5`) atuando como failover para o nó principal.
 - **Forensic Hardening:** Configurado armazenamento em RAM Disk (`tmpfs`) com permissão estrita (`mode=0700`) para o AdGuard Secundário, garantindo "Zero Footprint" físico.
-- **Failover Automático:** Configurado DHCP e Firewall no OPNsense para distribuir ambos os DNS (Primário e Secundário) para as VLANs.
+- **Failover Automático:** Configurado DHCP e Firewall no OPNsense para distribuir ambos os DNS (Primário e Secundário) para as VLANs 20 (Trusted) e 50 (IoT).
 - **Playbook `setup_rpi_adguard.yml`:** Automação completa para deploy do AdGuard com sintaxe YAML v0.107+, remoção de logs e blindagem de systemd.
 
 ### Corrigido (Fixed)
