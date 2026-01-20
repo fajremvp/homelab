@@ -25,8 +25,11 @@ O Raspberry Pi atua como um nó de borda (Edge Node), fisicamente separado da in
 * **Estado:** O arquivo de estado da VPN (`tailscaled.state`) é o único dado persistente de identidade. Se o Pi for roubado, a revogação deste nó no painel administrativo invalida o acesso imediatamente.
 
 ### 3. DNS Secundário (AdGuard Home)
-* **Função:** Failover. Se o AdGuard principal (LXC no Proxmox) cair, os clientes DHCP alternam para este IP.
-* **Privacidade:** Logs de consulta desativados ou mantidos estritamente em RAM (`querylog_enabled: false`), garantindo que o Pi não retenha histórico de navegação.
+* **Função:** Alta Disponibilidade. Se o AdGuard principal (LXC no Proxmox) cair ou estiver reiniciando, os clientes DHCP alternam automaticamente para este IP.
+* **Segurança Forense (Zero Footprint):**
+    * **Dados em RAM:** O diretório de dados (`/opt/AdGuardHome/data`) é montado em `tmpfs` com permissão estrita (`mode=0700`).
+    * **Consequência:** Ao desligar a energia, todo o cache e histórico desaparecem fisicamente. Não há persistência no cartão SD.
+* **Privacidade:** Configurado com `querylog: false` e `statistics: false` na raiz. Logs do daemon silenciados no Systemd.
 
 ### 4. Observabilidade (Node Exporter)
 * **Função:** Expõe métricas de hardware (CPU, RAM, Temperatura, Disco) para o Prometheus central.
