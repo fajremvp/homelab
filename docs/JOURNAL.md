@@ -4,6 +4,43 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-19
+**Status:** ✅ Sucesso (DNS High Availability)
+
+**Foco:** Implementação de Redundância de DNS, Hardening Forense e Correção de Roteamento.
+
+- **Implementação do DNS Secundário (Raspberry Pi):**
+    - **Objetivo:** Garantir resolução de nomes mesmo se o LXC Alpine falhar.
+    - **Deploy:** Criado playbook `setup_rpi_adguard.yml` instalando AdGuard Home v0.107.56.
+    - **Desafio de Sintaxe (YAML Hell):**
+        - *Sintoma:* O serviço entrava em loop de reinício com erro `cannot unmarshal !!seq into string`.
+        - *Causa:* O binário do AdGuard é estrito com indentação e tipos (Lista vs String) no arquivo de configuração, especialmente nas chaves `bind_hosts`.
+        - *Solução:* Adoção de sintaxe YAML Inline (ex: `bind_hosts: [ "0.0.0.0" ]`) e definição explícita de `schema_version: 29` no template Ansible.
+    - **Desafio de Validação (Init Stats):**
+        - *Erro:* `fatal: init stats: unsupported interval: less than an hour`.
+        - *Solução:* Mesmo com estatísticas desativadas (`enabled: false`), o validador exige um intervalo válido. Configurado `interval: 24h` para satisfazer o check, mantendo a coleta desligada.
+
+- **Hardening Forense (Zero Footprint):**
+    - **Arquitetura:** O Raspberry Pi foi configurado para **não persistir** nenhum dado de navegação no cartão SD.
+    - **RAM Disk (Tmpfs):** O diretório de dados (`/opt/AdGuardHome/data`) é montado em RAM.
+    - **Permissões Estritas:** Configurado `mode=0700` no mount point.
+        - *Validação:* `df -h` confirma `tmpfs`, e acesso via usuário comum retorna `Permission denied`. Apenas root acessa a memória do processo.
+    - **Logs:** `querylog` e `statistics` desativados na configuração. `journald` silenciado via `StandardOutput=null` no Systemd.
+
+- **Correção de Infraestrutura de Rede (OPNsense):**
+    - **Incidente:** O Arch Linux (VLAN Trusted) conseguia pingar o Gateway, mas falhava ao acessar a internet (`Destination Host Unreachable` para 1.1.1.1).
+    - **Diagnóstico:** O campo **Gateway** no escopo DHCPv4 da interface Trusted estava definido como `None`. Os clientes recebiam IP mas não rota default.
+    - **Correção:** Definido Gateway para `10.10.20.1` (IP do OPNsense na VLAN). Conectividade restaurada imediatamente.
+    - **Ajuste de DNS System:** Removidos gateways associados aos DNS Servers em *System > Settings > General*, corrigindo o erro `You can not assign a gateway to DNS server which is on a directly connected network`.
+
+- **Teste de Failover (Chaos Engineering):**
+    - **Cenário:** Container do AdGuard Primário (`10.10.30.5`) desligado intencionalmente.
+    - **Resultado:**
+        1. O cliente (Arch) detectou timeout no primário.
+        2. Automaticamente chaveou para o secundário (`192.168.0.5`).
+        3. `dig google.com` confirmou resposta vinda do Pi.
+        4. Navegação continuou fluida.
+    - **Conclusão:** A redundância de DNS está operante e transparente.
 ## 2026-01-18
 **Status:** ✅ Sucesso (Hardening & Edge Observability)
 
