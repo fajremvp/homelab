@@ -4,7 +4,7 @@
 
 | Camada | Ferramenta | Responsabilidade (O que ela faz) | Tipo de Bloqueio |
 | :--- | :--- | :--- | :--- |
-| **1. Resolução (DNS)** | **AdGuard Home** | Resolve `app.home` para o IP do DockerHost (`10.10.30.10`). | Bloqueio de domínios maliciosos e rastreadores antes mesmo da conexão iniciar. |
+| **1. Resolução (DNS)** | **AdGuard Home** | Primário: LXC que resolve `app.home` para o IP do DockerHost (`10.10.30.10`), localizado na VLAN 30. Secundário: Raspberry Pi (Edge), failover do primário (0 footprint). | Bloqueio de domínios maliciosos e rastreadores antes mesmo da conexão iniciar. |
 | **2. Borda (Network)** | **OPNsense** | Filtra conexões brutas (TCP/UDP). | Geo-blocking (bloqueia países), Listas Negras de IP, Proteção contra Scanners de Porta. |
 | **3. Inteligência** | **CrowdSec (Bouncer)** | Lê logs de toda a pilha e atualiza o OPNsense. | Se alguém ataca o site, o CrowdSec bane o IP no OPNsense, impedindo qualquer acesso futuro à rede. |
 | **4. Ingresso (App)** | **Traefik** | Entende HTTP/HTTPS. | Roteamento por domínio (`app.home`), terminação SSL, Headers de segurança e **Rate Limiting** (evita flood em rotas específicas). |
