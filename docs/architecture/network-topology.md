@@ -55,7 +55,7 @@
 | IOT (50) | LOCAL | - | BLOQUEADO (Acesso somente à Internet). Dispositivos IoT usam AdGuard (10.10.30.5). |
 | Raspberry Pi | Proxmox (Dropbear) | TCP/SSH 2222 | Acesso de emergência para desbloqueio de disco (Via VPN). |
 | Proxmox | Raspberry Pi | TCP 3493 (NUT) | Leitura de status de bateria. |
-
+| TRUSTED (20) | ISP LAN | UDP 53 (DNS) | Failover: Clientes acessam AdGuard Secundário (192.168.0.5) se o Primário cair. |
 
 ## Estrutura de Interfaces (OPNsense)
    - Para referência de manutenção (Drivers VirtIO).
