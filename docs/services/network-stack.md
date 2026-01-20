@@ -33,15 +33,15 @@
     * **Justificativa:** A forma mais fácil de "alterar" é criar uma regra de roteamento no OPNsense. Assim, pode-se definir que certos IPs (ex: uma VM de "privacidade") tenham todo o tráfego roteado pela rede Tor, enquanto outros usam a VPN ou a WAN normal.
 * **AdGuard Home e Unbound (DNS):**
     * **Estratégia de DHCP (Failover Automático):**
-      - **VLAN TRUSTED/IOT (Clientes):** O OPNsense entregará via DHCP **dois endereços IP** de DNS para garantir alta disponibilidade:
-        1. **Primário:** IP do LXC AdGuard (Proxmox).
-        2. **Secundário:** IP do Raspberry Pi.
+      - **VLAN TRUSTED/IOT (Clientes):** O OPNsense entrega via DHCP **dois endereços IP** de DNS simultâneos para garantir alta disponibilidade:
+        1. **Primário:** `10.10.30.5` (LXC AdGuard).
+        2. **Secundário:** `192.168.0.5` (Raspberry Pi Edge).
         - *Comportamento:* Os clientes alternam automaticamente para o Pi caso o servidor principal não responda (timeout), garantindo navegação ininterrupta durante manutenções sem intervenção do usuário.
       - **VLAN SERVER (Infraestrutura):** Recebem apenas o IP do **Gateway (OPNsense) ou 1.1.1.1**.
         - *Justificativa:* Garante que servidores nunca percam conectividade DNS (updates/NTP) mesmo se o container do AdGuard falhar ou estiver em loop de boot, evitando dependência cíclica.
       - **Definição dos Nós DNS:**
-        * **Primário:** `[LXC Alpine]` - No servidor principal. Serviço leve. Ter um IP dedicado (via LXC) facilita apontar o OPNsense para ele.
-        * **Secundário:** `[Raspberry Pi]` - Instância de backup rodando no Pi de gerenciamento.
+        * **Primário:** `[LXC Alpine]` - VLAN 30. Filtragem principal.
+        * **Secundário:** `[Raspberry Pi]` - Rede Nativa. Configuração "Amnésica" (RAM Disk) para privacidade total em caso de roubo físico do nó de borda.
     * **Estratégia Anti-Loop:** O OPNsense (Router) usará seu próprio **Unbound nativo** (localhost) para resolver nomes de infraestrutura, garantindo que ele nunca dependa do AdGuard para bootar. O AdGuard será entregue apenas aos clientes (PCs/Celulares) via DHCP.
 * **Traefik (Reverse Proxy):** `[DockerHost]`
     * **Justificativa:** "Portão de entrada" único. Roda no DockerHost para aproveitar a **Auto-Descoberta** de serviços via labels.
