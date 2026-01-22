@@ -24,6 +24,10 @@ services:
       - DOCKER_API_VERSION=1.45
     command:
       - "--api.dashboard=true"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.addEntryPointsLabels=true"
+      - "--metrics.prometheus.addRoutersLabels=true"
+      - "--entrypoints.metrics.address=:8082"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.endpoint=tcp://socket-proxy:2375"
@@ -38,6 +42,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8082:8082"
     volumes:
       - ./data/acme.json:/acme.json
       - ./certs:/etc/traefik/certs:ro
