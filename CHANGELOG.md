@@ -10,10 +10,25 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 - Organizar cabos
 - Fazer uma bancadinha/rack pra deixar tudo
-- Encontrar um novo Nobreak
+- Aguardar Nobreak chegar
 - Colocar consulta de DNS do modem para meus próprios.
 
 ---
+## [2026-01-22] - Observability Repair & Dashboard as Code
+### Adicionado (Added)
+- **Dashboard as Code:** Implementado provisionamento automático de dashboards no Grafana.
+    - Criada estrutura de diretórios `grafana/provisioning` e `grafana/dashboards`.
+    - Dashboards agora são imutáveis e persistidos como código (JSON) no Git.
+- **Traefik Metrics:** Habilitado endpoint de métricas Prometheus na porta 8082.
+
+### Corrigido (Fixed)
+- **Loki Crash Loop:** Atualizado arquivo de configuração `local-config.yaml` para sintaxe compatível com Loki v3.6.3.
+    - Removido parâmetro depreciado `shared_store`.
+    - Adicionado parâmetro obrigatório `delete_request_store` no compactador.
+- **Traefik Dashboard:** Corrigida ausência de dados no Grafana vinculando as métricas ao EntryPoint dedicado (`--metrics.prometheus.entryPoint=metrics`).
+
+### Alterado (Changed)
+- **Monitoring Stack:** Atualizado `docker-compose.yml` para montar volumes de provisionamento do Grafana.
 ## [2026-01-19] - DNS High Availability & Forensic Hardening
 ### Adicionado (Added)
 - **DNS Secundário (Edge):** Implementado AdGuard Home no Raspberry Pi (`192.168.0.5`) atuando como failover para o nó principal.
