@@ -1,0 +1,13 @@
+# Leitura direta dos logs do Docker (Traefik)
+filenames:
+  - /var/lib/docker/containers/*/*.log
+labels:
+  type: traefik
+filter: "RegexpInFile('.*traefik.*', evt.Line.Labels.name)"
+---
+# Leitura dos logs do Authentik
+filenames:
+  - /var/lib/docker/containers/*/*.log
+labels:
+  type: authentik
+filter: "RegexpInFile('.*authentik-server.*', evt.Line.Labels.name)"
