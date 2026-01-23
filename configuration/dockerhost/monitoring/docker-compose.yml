@@ -38,6 +38,10 @@ services:
       - GF_SERVER_ROOT_URL=https://grafana.home
     volumes:
       - grafana_data:/var/lib/grafana
+      # Mapeia a configuração de provisionamento
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      # Mapeia os arquivos JSON
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
     networks:
       - monitoring
       - proxy
