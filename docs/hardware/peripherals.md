@@ -20,27 +20,37 @@
 
 ---
 
-## UPS (Nobreak) — Em Definição
+## UPS (Nobreak) — NHS Gamer Play Senoidal 1000VA
 
-### Status Atual
-- Equipamento anterior devolvido por incompatibilidade de software.
-- **Requisito Mandatório:** Compatibilidade nativa com NUT (Network UPS Tools) no Linux via USB (HID ou Serial Padrão).
-- **Candidatos em Análise:** APC (Linha Back-UPS) ou NHS (Linha Senoidal), visando autonomia estendida (2 baterias) e suporte a shutdown gracioso.
+### Identificação
+- **Fabricante:** NHS
+- **Modelo:** Gamer Play Senoidal 1000VA
+- **Part Number:** 91.G0.010000
+- **Status:** Adquirido em 21/01/2026 (Aguardando entrega).
 
-### Função Crítica
-- Proteção elétrica do servidor e equipamentos de rede.
-- **Essencial para fontes com PFC ativo** (evita dano elétrico e instabilidade).
-- Integração com gerenciamento de energia via **USB → Raspberry Pi (NUT Server)**.
+### Especificações Elétricas
+- **Potência:** 1000 VA / 600 W (Fator de Potência 0.6).
+- **Forma de Onda:** **Senoidal Pura** (Obrigatório para fontes com PFC Ativo como a MSI MAG A750GL).
+- **Entrada:** Bivolt Automático (120V - 220V) - *Full Range*.
+- **Saída:** 120V (Padrão de fábrica).
+- **Tomadas:** 6 × NBR 14136 (10A).
+- **Proteções:** Curto-circuito, Sobrecarga, Sub/Sobretensão e Surtos (Varistor).
 
-### Recursos
-- **Proteções:** Sub/Sobretensão, Surtos, Sobrecarga, Curto-circuito, Sobretemperatura.
-- **DC-start:** Permite ligar os equipamentos mesmo sem energia da rua.
-- **Auto-restart:** Religa automaticamente no retorno da energia.
+### Armazenamento de Energia
+- **Baterias Internas:** 2 × 7Ah / 12V Chumbo-ácida VRLA (Sistema 24V).
+- **Autonomia Estimada:** ~25 a 35 minutos (Considerando carga média do Homelab de ~160W).
+- **Expansão:** Possui engate para módulo de bateria externa.
 
-### Integração
-- Conectado via USB ao Raspberry Pi.
-- Monitorado pelo **NUT (Network UPS Tools)**.
-- Permite shutdown controlado (graceful shutdown) do servidor em falha prolongada.
+### Gerenciamento e Integração (Linux/NUT)
+- **Interface:** USB tipo B.
+- **Protocolo:** Compatível com **NHS / SEC2400** (MegaTec).
+- **Driver NUT:** `blazer_usb` ou `nutdrv_qx`.
+- **Topologia:** USB → Raspberry Pi (NUT Master) → Rede → Proxmox (NUT Slave).
+
+### Justificativa Técnica
+- **Protocolo Aberto:** Ao contrário do Ragtech (proprietário/binário), o NHS utiliza padrões de mercado documentados, garantindo monitoramento nativo no Linux sem "gambiarras".
+- **Resiliência:** O banco de baterias em 24V oferece o dobro de autonomia comparado a nobreaks de entrada (12V), fundamental para evitar *flapping* (ligar/desligar) em oscilações curtas de energia.
+- **Construção:** Gabinete metálico com pintura epóxi oferece melhor blindagem eletromagnética e dissipação térmica que carcaças de plástico ABS.
 
 ---
 
