@@ -4,6 +4,40 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-22
+**Status:** ✅ Sucesso (Observability Repair & GitOps Level 2)
+
+**Foco:** Correção de Métricas do Traefik, Ressurreição do Loki (Config V3) e Implementação de Dashboard as Code.
+
+- **Correção de Métricas (Traefik v3):**
+    - **Sintoma:** O Dashboard do Traefik no Grafana não exibia dados ("No Data"), apesar da porta 8082 estar exposta.
+    - **Diagnóstico:** O Traefik estava gerando métricas, mas não estava vinculado ao EntryPoint dedicado. O endpoint `/metrics` retornava 404.
+    - **Correção:** Adicionado `--metrics.prometheus.entryPoint=metrics` no `docker-compose.yml`.
+    - **Validação:** `curl http://10.10.30.10:8082/metrics` passou a retornar o payload do Prometheus.
+    - **Aprendizado:** Grafana vazio muitas vezes é apenas o *Time Range* errado. Alterado de "Last 6 hours" para "Last 5 minutes" para visualizar dados recentes.
+
+- **Troubleshooting do Loki (Crash Loop):**
+    - **Incidente:** O Grafana exibia erro `Live tailing was stopped... undefined` e o container do Loki reiniciava a cada 10 segundos.
+    - **Causa Raiz (Depreciação):** O arquivo de configuração `local-config.yaml` utilizava parâmetros da versão 2.x incompatíveis com a imagem `loki:3.6.3`.
+    - **Correções Aplicadas:**
+        1.  **Shared Store:** Removida a linha `shared_store: filesystem` (o Loki v3 infere isso automaticamente).
+        2.  **Compactor:** Adicionado `delete_request_store: filesystem` no bloco do `compactor` (Obrigatório quando `retention_enabled` é true).
+    - **Recuperação do Agente:** O container `alloy` (coletor) havia desistido de enviar logs durante a falha. Um `docker compose restart alloy` restabeleceu o fluxo de logs para o Grafana.
+
+- **Implementação de Dashboard as Code (Imutabilidade):**
+    - **Objetivo:** Eliminar o "ClickOps". Dashboards devem ser arquivos no Git, não configurações manuais no banco de dados.
+    - **Arquitetura:**
+        - Criada estrutura separada: `provisioning/dashboards` (Configuração do Provider) e `dashboards/` (Arquivos JSON).
+        - Mapeados volumes no `docker-compose.yml` do Grafana.
+    - **Desafio de Deploy (Ansible):**
+        - *Erro 1:* Execução do Ansible fora da raiz (`/opt/homelab`), causando falha na leitura do `ansible.cfg` e inventário.
+        - *Erro 2:* Estrutura de pastas inconsistente no repositório de origem (Arch Linux), misturando JSONs com configs YAML.
+    - **Solução:** Reorganização das pastas no Git local (`mv *.json dashboards/`) e execução correta do Ansible.
+    - **Resultado:** Dashboards marcados como "Provisioned". O Grafana agora impede a exclusão manual ("Cannot be deleted"), garantindo integridade da infraestrutura.
+
+- **Conceitos Adotados/Aprendidos:**
+    - **Método U.S.E. (Utilization, Saturation, Errors):** Aplicado para análise de Hardware (Node Exporter).
+    - **Método R.E.D. (Rate, Errors, Duration):** Aplicado para análise de Serviços.
 ## 2026-01-19
 **Status:** ✅ Sucesso (DNS High Availability)
 
