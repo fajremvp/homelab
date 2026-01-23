@@ -28,6 +28,20 @@ Adoção de padrões de arquitetura corporativa (Enterprise Patterns), porém ad
 
 ---
 
+## Estratégia de Dashboards (GitOps)
+
+Para garantir a recuperabilidade e auditoria, os painéis do Grafana seguem o modelo **Dashboard as Code**.
+
+1.  **Imutabilidade:** Dashboards não são criados ou salvos no banco de dados interno do Grafana via interface web.
+2.  **Fonte da Verdade:** Arquivos JSON armazenados em `configuration/dockerhost/monitoring/grafana/dashboards/`.
+3.  **Provisionamento:** O Grafana é configurado para ler esta pasta no boot. Alterações manuais na UI são perdidas ao reiniciar o container, forçando o operador a comitar a mudança no Git.
+
+**Estrutura de Arquivos:**
+- `provisioning/dashboards/main.yml`: Instrui o Grafana a carregar os arquivos.
+- `dashboards/*.json`: O código fonte dos painéis (Node Exporter, Traefik, cAdvisor).
+
+---
+
 ## 🛡️ Threat Model & Limites de Confiança (Fase 1)
 
 Esta implementação assume um modelo de ameaça específico para ambiente doméstico controlado.
@@ -77,5 +91,5 @@ Esta implementação assume um modelo de ameaça específico para ambiente domé
 **Objetivo:** Transformar dados em alertas acionáveis.
 
 - [ ] **Alerting Rules:** Definição de limiares (Disco > 90%, Alta Temperatura, Vault Sealed).
-- [ ] **Dashboards:** Criação de visão unificada ("Single Pane of Glass").
+- [X] **Dashboards:** Criação de visão unificada ("Single Pane of Glass").
 - [ ] **Watchdog:** Monitoramento de disponibilidade da própria stack de monitoramento (Dead Man's Switch).
