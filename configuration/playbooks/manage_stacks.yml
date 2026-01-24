@@ -131,26 +131,25 @@
       pause:
         seconds: 15
 
-    - name: Forçar atualização do Hub CrowdSec (Bypass Cache)
-      # O --force é o segredo para corrigir o índice
-      command: docker exec crowdsec cscli hub update --force
+    - name: Deletar Índice Corrompido (Forçar Download Real)
+      # Isso substitui o --force que não existe. Se apagar, ele é obrigado a baixar
+      command: docker exec crowdsec rm -f /etc/crowdsec/hub/.index.json
+
+    - name: Baixar Hub Index Novo
+      command: docker exec crowdsec cscli hub update
       register: hub_update
       changed_when: "'Updated' in hub_update.stdout"
-      ignore_errors: yes
 
     - name: Instalar Coleção Authentik (Idempotente)
-      # Shell script inteligente: Só instala se não tiver.
       shell: |
-        if ! docker exec crowdsec cscli collections list -a | grep -q "crowdsecurity/authentik"; then
-           echo "Coleção não encontrada no Hub, abortando."
-           exit 1
+        # 1. Verifica se JÁ está instalado (para não dar erro na segunda vez)
+        if docker exec crowdsec cscli collections list | grep -q "crowdsecurity/authentik"; then
+           echo "Already installed"
+           exit 0
         fi
 
-        if ! docker exec crowdsec cscli collections list | grep -q "crowdsecurity/authentik"; then
-          docker exec crowdsec cscli collections install crowdsecurity/authentik
-        else
-          echo "Already installed"
-        fi
+        # 2. Se não estiver, instala.
+        docker exec crowdsec cscli collections install crowdsecurity/authentik
       register: install_auth
       changed_when: "'Enabled' in install_auth.stdout"
 
