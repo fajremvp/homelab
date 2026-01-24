@@ -131,24 +131,29 @@
       pause:
         seconds: 15
 
-    - name: Deletar Índice Corrompido (Forçar Download Real)
-      # Isso substitui o --force que não existe. Se apagar, ele é obrigado a baixar
-      command: docker exec crowdsec rm -f /etc/crowdsec/hub/.index.json
+    - name: Baixar Hub Index (No Host)
+      get_url:
+        url: https://hub-cdn.crowdsec.net/master/.index.json
+        dest: /tmp/crowdsec_index.json
+        mode: '0644'
+        force: yes
 
-    - name: Baixar Hub Index Novo
-      command: docker exec crowdsec cscli hub update
-      register: hub_update
-      changed_when: "'Updated' in hub_update.stdout"
+    - name: Injetar Index no Container
+      command: docker cp /tmp/crowdsec_index.json crowdsec:/etc/crowdsec/hub/.index.json
+
+    - name: Corrigir Permissões do Index (O Pulo do Gato)
+      # Garante que o usuário do CrowdSec consiga ler o arquivo que injetamos
+      command: docker exec -u 0 crowdsec chmod 644 /etc/crowdsec/hub/.index.json
 
     - name: Instalar Coleção Authentik (Idempotente)
       shell: |
-        # 1. Verifica se JÁ está instalado (para não dar erro na segunda vez)
-        if docker exec crowdsec cscli collections list | grep -q "crowdsecurity/authentik"; then
+        # Verifica se já está instalado
+        if docker exec crowdsec cscli collections list -a | grep -q "crowdsecurity/authentik"; then
            echo "Already installed"
            exit 0
         fi
-
-        # 2. Se não estiver, instala.
+        
+        # Instala usando o índice que acabou de injetar
         docker exec crowdsec cscli collections install crowdsecurity/authentik
       register: install_auth
       changed_when: "'Enabled' in install_auth.stdout"
