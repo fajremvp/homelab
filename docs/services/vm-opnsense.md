@@ -11,6 +11,16 @@
     * HashiCorp Vault (Firewall)
     * CrowdSec - Bouncer ("Músculo")
 
+## CrowdSec Bouncer (Remediation)
+Implementação realizada em: 2026-01-24.
+
+O OPNsense atua como o executor (Músculo) das decisões do Agente.
+
+* **Plugin:** `os-crowdsec` (apenas componente IPS/Remediation ativo).
+* **Configuração via SSH:** Devido a limitações da interface, o arquivo `/usr/local/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml` foi editado manualmente para apontar para o LAPI externo (`10.10.30.10:8080`).
+* **Regras de Firewall:**
+    - **Floating Rule:** O plugin cria automaticamente regras flutuantes que consultam a tabela `crowdsec_blocklists`, bloqueando ataques em todas as interfaces simultaneamente.
+
 ## Estratégia de Backup e Agendamento
 Implementado em: 2026-01-09.
 
