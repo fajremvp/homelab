@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       # Boot limpo sem Authentik para evitar crash
-      - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve
+      - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve firix/authentik
       - GID=1000
     volumes:
       - crowdsec_db:/var/lib/crowdsec/data
