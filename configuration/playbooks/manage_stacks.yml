@@ -104,6 +104,29 @@
         name: vaultwarden-vault
         state: started
         enabled: yes 
+    
+    # --- SECURITY STACK (CROWDSEC) ---
+    - name: Criar diretório de Security
+      file:
+        path: "/opt/security"
+        state: directory
+        owner: fajre
+        group: docker
+        mode: '0750'
+
+    - name: Sincronizar configs de Security
+      synchronize:
+        src: "../dockerhost/security/"
+        dest: "/opt/security/"
+        # Apaga arquivos no servidor que não existem no Git (Limpeza)
+        delete: yes 
+        recursive: yes
+
+    - name: Start/Update Security Stack
+      community.docker.docker_compose_v2:
+        # Agora o docker-compose.yml está na raiz de /opt/security, então isso funciona:
+        project_src: "/opt/security"
+        state: present
 
     # --- MONITORAMENTO ---
     - name: Criar diretório de Monitoring

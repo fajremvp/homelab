@@ -1,0 +1,25 @@
+services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:latest
+    container_name: crowdsec
+    restart: unless-stopped
+    environment:
+      # Boot limpo sem Authentik para evitar crash
+      - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve
+      - GID=1000
+    volumes:
+      - crowdsec_db:/var/lib/crowdsec/data
+      - crowdsec_config:/etc/crowdsec
+      - ./crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml
+      # Leitura de Logs do Host (Crucial)
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      # BIND EXPLÍCITO: Só aceita conexão nesse IP
+      # Permite que o OPNsense conecte, mas bloqueia acessos externos se houver NAT errado
+      - "10.10.30.10:8080:8080"
+
+volumes:
+  crowdsec_db:
+  crowdsec_config:

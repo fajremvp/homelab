@@ -1,0 +1,5 @@
+# Lê TODOS os logs. O CrowdSec filtra internamente pelo nome do container.
+filenames:
+  - /var/lib/docker/containers/*/*-json.log
+labels:
+  type: docker
