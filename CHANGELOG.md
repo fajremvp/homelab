@@ -10,10 +10,22 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 - Organizar cabos
 - Fazer uma bancadinha/rack pra deixar tudo
-- Aguardar Nobreak chegar
+- NUT SERVER
 - Colocar consulta de DNS do modem para meus próprios.
 
 ---
+## [2026-01-24] - Security Hardening & UPS
+### Adicionado (Added)
+- **Security:** Implementação do CrowdSec (LAPI no DockerHost, Bouncer no OPNsense).
+- **Power:** Integração do Nobreak NHS Gamer Play 1000VA.
+### Corrigido (Fixed)
+- **Plugin OPNsense:** Bypass da validação de formulário do plugin `os-crowdsec` para permitir LAPI remota.
+- **Authentik Monitoring:** Identificado e corrigido o namespace da coleção para `firix/authentik`.
+### Dívida Técnica (Known Issues)
+- **CrowdSec / Authentik:** Parser da coleção `firix/authentik` incompatível com Authentik 2025 (Parsed = 0).
+- **Mitigação Planejada:** 
+  - Ajustar Regex local ou
+  - Migrar para parser customizado quando necessário.
 ## [2026-01-22] - Observability Repair & Dashboard as Code
 ### Adicionado (Added)
 - **Dashboard as Code:** Implementado provisionamento automático de dashboards no Grafana.
