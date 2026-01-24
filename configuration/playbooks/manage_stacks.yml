@@ -131,19 +131,28 @@
       pause:
         seconds: 15
 
-    - name: Forçar atualização do Hub CrowdSec
-      command: docker exec crowdsec cscli hub update
+    - name: Forçar atualização do Hub CrowdSec (Bypass Cache)
+      # O --force é o segredo para corrigir o índice
+      command: docker exec crowdsec cscli hub update --force
       register: hub_update
       changed_when: "'Updated' in hub_update.stdout"
       ignore_errors: yes
 
-    - name: Instalar Coleção Authentik (Pós-Boot)
-      command: docker exec crowdsec cscli collections install crowdsecurity/authentik
+    - name: Instalar Coleção Authentik (Idempotente)
+      # Shell script inteligente: Só instala se não tiver.
+      shell: |
+        if ! docker exec crowdsec cscli collections list -a | grep -q "crowdsecurity/authentik"; then
+           echo "Coleção não encontrada no Hub, abortando."
+           exit 1
+        fi
+
+        if ! docker exec crowdsec cscli collections list | grep -q "crowdsecurity/authentik"; then
+          docker exec crowdsec cscli collections install crowdsecurity/authentik
+        else
+          echo "Already installed"
+        fi
       register: install_auth
       changed_when: "'Enabled' in install_auth.stdout"
-      failed_when: 
-        - install_auth.rc != 0
-        - "'Nothing to install' not in install_auth.stdout"
 
     # --- MONITORAMENTO ---
     - name: Criar diretório de Monitoring
