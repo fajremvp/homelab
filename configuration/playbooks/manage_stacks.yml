@@ -126,37 +126,53 @@
         project_src: "/opt/security"
         state: present
 
-    # --- AUTOMAÇÃO PÓS-BOOT (FIX CROWDSEC) ---
+    # --- AUTOMAÇÃO PÓS-BOOT (BYPASS MANUAL DO HUB) ---
     - name: Aguardar CrowdSec iniciar
       pause:
         seconds: 15
 
-    - name: Baixar Hub Index (No Host)
+    # 1. Baixar Definições direto do GitHub (Bypass Hub Index)
+    - name: Baixar Arquivos do Authentik (Host)
       get_url:
-        url: https://hub-cdn.crowdsec.net/master/.index.json
-        dest: /tmp/crowdsec_index.json
+        url: "{{ item.url }}"
+        dest: "/tmp/{{ item.name }}"
         mode: '0644'
         force: yes
+      loop:
+        - { name: 'auth-parser.yaml', url: 'https://raw.githubusercontent.com/crowdsecurity/hub/master/parsers/s01-parse/crowdsecurity/authentik.yaml' }
+        - { name: 'auth-scenario.yaml', url: 'https://raw.githubusercontent.com/crowdsecurity/hub/master/scenarios/crowdsecurity/authentik-bf.yaml' }
+        - { name: 'auth-collection.yaml', url: 'https://raw.githubusercontent.com/crowdsecurity/hub/master/collections/crowdsecurity/authentik.yaml' }
 
-    - name: Injetar Index no Container
-      command: docker cp /tmp/crowdsec_index.json crowdsec:/etc/crowdsec/hub/.index.json
+    # 2. Injetar no Container
+    - name: Copiar Definições para o Container
+      command: "docker cp /tmp/{{ item }} crowdsec:/tmp/{{ item }}"
+      loop:
+        - auth-parser.yaml
+        - auth-scenario.yaml
+        - auth-collection.yaml
 
-    - name: Corrigir Permissões do Index (O Pulo do Gato)
-      # Garante que o usuário do CrowdSec consiga ler o arquivo que injetamos
-      command: docker exec -u 0 crowdsec chmod 644 /etc/crowdsec/hub/.index.json
+    # 3. Instalar via Arquivo Local (Ignora o Hub Index quebrado)
+    - name: Instalar Parser do Authentik (Manual)
+      command: docker exec crowdsec cscli parsers install /tmp/auth-parser.yaml
+      register: p_inst
+      failed_when: p_inst.rc != 0 and "already registred" not in p_inst.stderr
+      changed_when: "'Enabled' in p_inst.stdout"
 
-    - name: Instalar Coleção Authentik (Idempotente)
-      shell: |
-        # Verifica se já está instalado
-        if docker exec crowdsec cscli collections list -a | grep -q "crowdsecurity/authentik"; then
-           echo "Already installed"
-           exit 0
-        fi
-        
-        # Instala usando o índice que acabou de injetar
-        docker exec crowdsec cscli collections install crowdsecurity/authentik
-      register: install_auth
-      changed_when: "'Enabled' in install_auth.stdout"
+    - name: Instalar Scenario do Authentik (Manual)
+      command: docker exec crowdsec cscli scenarios install /tmp/auth-scenario.yaml
+      register: s_inst
+      failed_when: s_inst.rc != 0 and "already registred" not in s_inst.stderr
+      changed_when: "'Enabled' in s_inst.stdout"
+
+    - name: Instalar Collection do Authentik (Manual)
+      # A collection é só um meta-pacote, mas instalar mesmo assim para constar na lista
+      command: docker exec crowdsec cscli collections install /tmp/auth-collection.yaml
+      register: c_inst
+      failed_when: c_inst.rc != 0 and "already registred" not in c_inst.stderr
+      changed_when: "'Enabled' in c_inst.stdout"
+      
+    - name: Reload CrowdSec (Aplicar Mudanças)
+      command: docker exec crowdsec kill -HUP 1
 
     # --- MONITORAMENTO ---
     - name: Criar diretório de Monitoring
