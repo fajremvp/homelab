@@ -4,7 +4,7 @@ services:
     container_name: crowdsec
     restart: unless-stopped
     environment:
-      - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve
+      - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve crowdsecurity/authentik
       - GID=1000
     volumes:
       - crowdsec_db:/var/lib/crowdsec/data
