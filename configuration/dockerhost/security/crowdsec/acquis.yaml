@@ -1,5 +1,15 @@
-# Lê TODOS os logs. O CrowdSec filtra internamente pelo nome do container.
+# Aponta diretamente para o ID do container atual.
+# Obs: Se recriar o container do Authentik (update), precisará atualizar este ID.
+filenames:
+  - /var/lib/docker/containers/62bfb1acf60feb891a1b70fb50dbf23ebf1c34a6215af4f5a44bca16965c5834/*-json.log
+labels:
+  type: authentik
+
+---
+# --- REGRA GERAL PARA O RESTO ---
 filenames:
   - /var/lib/docker/containers/*/*-json.log
 labels:
   type: docker
+# Exclui o Authentik da regra geral para não duplicar
+filter: "evt.Line.Labels.type != 'authentik'"
