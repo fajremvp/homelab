@@ -7,6 +7,7 @@ services:
       # Boot limpo sem Authentik para evitar crash
       - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve firix/authentik
       - GID=1000
+      - DOCKER_HOST=tcp://socket-proxy:2375
     volumes:
       - crowdsec_db:/var/lib/crowdsec/data
       - crowdsec_config:/etc/crowdsec
@@ -19,7 +20,13 @@ services:
       # BIND EXPLÍCITO: Só aceita conexão nesse IP
       # Permite que o OPNsense conecte, mas bloqueia acessos externos se houver NAT errado
       - "10.10.30.10:8080:8080"
+    networks:
+      - proxy
 
 volumes:
   crowdsec_db:
   crowdsec_config:
+
+networks:
+  proxy:
+    external: true
