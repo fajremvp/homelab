@@ -103,61 +103,7 @@
       service:
         name: vaultwarden-vault
         state: started
-        enabled: yes
-    
-    # --- SEGURANÇA (CROWDSEC) ---
-    - name: Criar diretório de Security
-      file:
-        path: "/opt/security"
-        state: directory
-        owner: fajre
-        group: docker
-        mode: '0750'
-
-    - name: Sincronizar configs de Security
-      synchronize:
-        src: "../dockerhost/security/"
-        dest: "/opt/security/"
-        delete: no
-        recursive: yes
-
-    - name: Start/Update Security Stack
-      community.docker.docker_compose_v2:
-        project_src: "/opt/security"
-        state: present
-
-    # --- AUTOMAÇÃO PÓS-BOOT (FIX DE PERMISSÃO NO INDEX) ---
-    - name: Aguardar CrowdSec iniciar
-      pause:
-        seconds: 15
-
-    - name: Baixar Hub Index Oficial (Host)
-      get_url:
-        url: https://hub-cdn.crowdsec.net/master/.index.json
-        dest: /tmp/crowdsec_index.json
-        mode: '0644'
-        force: yes
-
-    - name: Injetar Index no Container
-      command: docker cp /tmp/crowdsec_index.json crowdsec:/etc/crowdsec/hub/.index.json
-
-    - name: Corrigir Dono do Arquivo (A CAUSA DE TODOS OS ERROS)
-      # O arquivo entra como root, o CrowdSec (id 1000) não lê e acha que não tem nada.
-      # Isso obriga o arquivo a pertencer ao usuário do container.
-      command: docker exec -u 0 crowdsec chown 1000:1000 /etc/crowdsec/hub/.index.json
-
-    - name: Instalar Coleção Authentik
-      shell: |
-        # Verifica se já instalou
-        if docker exec crowdsec cscli collections list -a | grep -q "crowdsecurity/authentik"; then
-           echo "Already installed"
-           exit 0
-        fi
-        
-        # Instala (agora com permissão de leitura no índice)
-        docker exec crowdsec cscli collections install crowdsecurity/authentik
-      register: install_auth
-      changed_when: "'Enabled' in install_auth.stdout"
+        enabled: yes 
 
     # --- MONITORAMENTO ---
     - name: Criar diretório de Monitoring

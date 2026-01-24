@@ -1,5 +1,0 @@
-# Ler TODOS os logs de container e tentar identificar Traefik/Authentik automaticamente
-filenames:
-  - /var/lib/docker/containers/*/*-json.log
-labels:
-  type: docker
