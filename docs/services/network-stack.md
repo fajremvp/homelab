@@ -57,6 +57,11 @@
         2. **Firewall de Host (UFW):** Rejeita conexões na porta 8200 que não venham do IP exato do DockerHost.
         3. **Aplicação:** Protegido por Authentik (Forward Auth) na borda HTTP.
         4. **Dados:** Banco de dados criptografado (Sealed (3/5)) em repouso.
-* **CrowdSec (Defesa Ativa):**
-    * **Agente ("Cérebro"):** `[DockerHost]` - Roda como container junto às aplicações. Lê os logs locais (Traefik, Autenticação) diretamente, sem complexidade de envio por rede.
-    * **Bouncer ("Músculo"):** `[VM - OPNsense]` - Instala o plugin `os-crowdsec` no OPNsense, que lê as decisões do Agente e aplica os bloqueios no firewall.
+* **CrowdSec (Defesa Ativa):** Implementado em 24/01/2026
+    * **Agente ("Cérebro"):** `[DockerHost]` - Centraliza a inteligência. Recebe logs do Traefik e Authentik.
+    * **Bouncer ("Músculo"):** `[VM - OPNsense]` - Utiliza o plugin `os-crowdsec` configurado para consultar a LAPI remota. Aplica bloqueios em nível de kernel (pf) via Regras Flutuantes.
+    * **Fluxo de Bloqueio:** Tentativa de ataque -> DockerHost detecta -> LAPI gera decisão -> Bouncer lê decisão -> IP bloqueado no Firewall.
+    * **Limitação Atual:** 
+        - CrowdSec não executa remediação baseada em falhas de login do Authentik.
+        - Defesa de identidade depende exclusivamente de MFA, políticas internas e rate-limit do próprio Authentik.
+
