@@ -120,6 +120,19 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
         * `Jitsi Meet`(Alternativa ao Meet (para no máximo umas 8 pessoas, somente chamada de áudio, sem video, talvez no máximo so alguém compartilhando a tela))
         * `Servidor de Minecraft`(Survival Vanilla para jogar com até 3 amigos)
 
+## CrowdSec Agent (LAPI)
+Implementação realizada em: 2026-01-24.
+
+O CrowdSec atua como o sistema de detecção de intrusão (IDS) baseado em logs.
+
+* **Configuração de Segurança:**
+    - **Isolamento de Porta:** A API (LAPI) escuta exclusivamente no IP `10.10.30.10:8080`.
+    - **Integração Docker:** Consome metadados via `socket-proxy` (TCP 2375).
+* **Monitoramento de Aplicação (Authentik):**
+    - **Mapeamento:** O log do Authentik é mapeado via ID estático do container em `/opt/security/crowdsec/acquis.yaml`. 
+    - **Atenção:** Em caso de `docker compose up` que gere novo ID, o `acquis.yaml` deve ser revisado.
+* **Coleções:** `crowdsecurity/traefik`, `crowdsecurity/http-cve`, `firix/authentik`.
+
 ## Gestão de Segredos (Vault Integration)
 O DockerHost não armazena senhas de banco de dados em arquivos de texto (`.env` ou `docker-compose.yml`).
 
