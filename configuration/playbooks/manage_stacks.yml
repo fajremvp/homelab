@@ -11,7 +11,7 @@
   vars:
     base_dir: "/opt/services"
     auth_dir: "/opt/auth"
-    mon_dir: "opt/monitoring"
+    mon_dir: "/opt/monitoring"
 
   tasks:
     # --- 1. PREPARAÇÃO ---
