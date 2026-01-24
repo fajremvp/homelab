@@ -126,6 +126,25 @@
         project_src: "/opt/security"
         state: present
 
+    # --- AUTOMAÇÃO PÓS-BOOT (FIX CROWDSEC) ---
+    - name: Aguardar CrowdSec iniciar
+      pause:
+        seconds: 15
+
+    - name: Forçar atualização do Hub CrowdSec
+      command: docker exec crowdsec cscli hub update
+      register: hub_update
+      changed_when: "'Updated' in hub_update.stdout"
+      ignore_errors: yes
+
+    - name: Instalar Coleção Authentik (Pós-Boot)
+      command: docker exec crowdsec cscli collections install crowdsecurity/authentik
+      register: install_auth
+      changed_when: "'Enabled' in install_auth.stdout"
+      failed_when: 
+        - install_auth.rc != 0
+        - "'Nothing to install' not in install_auth.stdout"
+
     # --- MONITORAMENTO ---
     - name: Criar diretório de Monitoring
       file:
