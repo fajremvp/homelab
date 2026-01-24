@@ -4,6 +4,40 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-24
+**Status:** ⚠️ Sucesso Parcial (Perímetro OK, Camada 7 Parcial)
+
+**Foco:** Instalação do Nobreak NHS, Deploy do CrowdSec (LAPI + Bouncer) e Troubleshooting de Parsing de Camada 7.
+
+- **Infraestrutura Elétrica (Nobreak NHS):**
+    - **Hardware:** Adquirido Nobreak NHS Gamer Play 1000VA (Senoidal Pura).
+    - **Protocolo de Ativação:** Iniciado ciclo de carga de 12 horas (sem carga conectada) para equalização das baterias internas (2x 7Ah).
+    - **Dimensionamento:** Carga estimada de 160W (~26%), garantindo autonomia superior a 20 minutos.
+
+- **Implementação CrowdSec (Defesa Ativa):**
+    - **Arquitetura Cérebro-Músculo:** LAPI (Agente/Cérebro) centralizado no DockerHost e Bouncer (Músculo) no OPNsense.
+    - **Segurança de Rede:** Porta 8080 do LAPI configurada com *Bind IP* exclusivo para o IP interno do DockerHost (`10.10.30.10`), isolando a API da rede externa.
+    - **Resolução de Metadados:** Conexão do CrowdSec ao `socket-proxy` via `DOCKER_HOST` para identificação de nomes de containers nos logs.
+
+- **Troubleshooting de Parsing (Authentik):**
+    - **Desafio do Hub:** A coleção oficial para Authentik foi identificada como `firix/authentik`.
+    - **YAML Hell (acquis.yaml):** - *Tentativa 1 (Falha):* Filtros dinâmicos via `evt.Parsed` falharam (aquisição ocorre antes do parsing).
+        - *Tentativa 2 (Sucesso):* Implementado apontamento via **Hardcoded Container ID** no `acquis.yaml` para forçar o `type: authentik`.
+        - **⚠️ Manutenção Crítica:** Caso o container do Authentik seja recriado (update), o ID em `acquis.yaml` deve ser atualizado para evitar cegueira do parser.
+    - **Resultado Técnico Real:** 
+        - O parser `firix/authentik-logs` está ativo e recebendo eventos (`Hits > 0`).
+        - **Parsed = 0** mesmo após falhas reais de login.
+        - **Impacto:** Nenhuma decisão automática de banimento é gerada a partir de falhas de autenticação no Authentik.
+        - **Estado Atual:** Monitoramento funcional, **remediação inativa** para Authentik.
+    - **Causa Raiz (Root Cause):**
+        - A coleção `firix/authentik` utiliza Regex compatível com versões anteriores do Authentik.
+        - O Authentik 2025 alterou o formato dos eventos `login_failed`, impedindo a extração de IP (`source_ip`).
+        - **Conclusão:** Limitação da coleção da comunidade, não da infraestrutura local.
+
+
+- **Integração OPNsense (Bouncer):**
+    - **Plugin `os-crowdsec`:** Superada falha de validação da GUI (que exige campos locais mesmo para LAPI remota) usando configuração "fake" (127.0.0.1) e edição manual do `/usr/local/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml` via SSH.
+    - **Validação:** Teste com IP `1.1.1.1` resultou em bloqueio imediato na tabela `crowdsec_blocklists`.
 ## 2026-01-22
 **Status:** ✅ Sucesso (Observability Repair & GitOps Level 2)
 
