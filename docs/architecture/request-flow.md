@@ -6,7 +6,7 @@
 | :--- | :--- | :--- | :--- |
 | **1. Resolução (DNS)** | **AdGuard Home** | Primário: LXC que resolve `app.home` para o IP do DockerHost (`10.10.30.10`), localizado na VLAN 30. Secundário: Raspberry Pi (Edge), failover do primário (0 footprint). | Bloqueio de domínios maliciosos e rastreadores antes mesmo da conexão iniciar. |
 | **2. Borda (Network)** | **OPNsense** | Filtra conexões brutas (TCP/UDP). | Geo-blocking (bloqueia países), Listas Negras de IP, Proteção contra Scanners de Porta. |
-| **3. Inteligência** | **CrowdSec (Bouncer)** | Lê logs de toda a pilha e atualiza o OPNsense. | Se alguém ataca o site, o CrowdSec bane o IP no OPNsense, impedindo qualquer acesso futuro à rede. |
+| **3. Inteligência** | **CrowdSec (Bouncer)** | Lê logs de toda a pilha e atualiza o OPNsense. | Se alguém ataca o site, o CrowdSec bane o IP no OPNsense, impedindo qualquer acesso futuro à rede. Perímetro: Bane IPs no Firewall detectados atacando o Traefik/Rede. Obs: Proteção de Login (Authentik) está em modo Monitoramento (sem banimento automático) devido a limitações de parser. |
 | **4. Ingresso (App)** | **Traefik** | Entende HTTP/HTTPS. | Roteamento por domínio (`app.home`), terminação SSL, Headers de segurança e **Rate Limiting** (evita flood em rotas específicas). |
 | **5. Identidade** | **Authentik** | Valida QUEM está entrando. | **Zero Trust:** Nenhuma requisição chega ao app sem um token válido. Gerencia MFA e SSO. |
 | **6. Host (Micro-seg)** | **nftables (Host)** | Firewall interno do Linux. | Impede que um container hackeado acesse outros serviços lateralmente (Ex: Container do Site não pode acessar o banco do Vault). |
