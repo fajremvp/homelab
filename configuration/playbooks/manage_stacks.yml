@@ -8,6 +8,10 @@
       prompt: "Digite a senha de Admin do Grafana"
       private: yes  # Isso esconde o que for digitado
 
+    - name: ntfy_token
+      prompt: "Digite o Token do CrowdSec (Ntfy)"
+      private: yes
+
   vars:
     base_dir: "/opt/services"
     auth_dir: "/opt/auth"
@@ -121,12 +125,26 @@
         # Apaga arquivos no servidor que não existem no Git (Limpeza)
         delete: yes 
         recursive: yes
+        rsync_opts:
+          - "--exclude=*.j2"
+          - "--exclude=crowdsec/notifications/http.yaml"
+      notify: Restart CrowdSec
+
+    - name: Configurar Notificação CrowdSec (Com Token)
+      template:
+        src: "../dockerhost/security/crowdsec/notifications/http.yaml.j2"
+        dest: "/opt/security/crowdsec/notifications/http.yaml"
+        owner: fajre
+        group: docker
+        mode: '0600' # Permissão restrita (tem senha)
+      notify: Restart CrowdSec
 
     - name: Start/Update Security Stack
       community.docker.docker_compose_v2:
         # Agora o docker-compose.yml está na raiz de /opt/security, então isso funciona:
         project_src: "/opt/security"
         state: present
+      notify: Restart CrowdSec
 
     # --- MONITORAMENTO ---
     - name: Criar diretório de Monitoring
@@ -165,3 +183,8 @@
     - name: Reload Systemd
       systemd:
         daemon_reload: yes
+
+    - name: Restart CrowdSec
+      community.docker.docker_container:
+        name: crowdsec
+        restart: yes
