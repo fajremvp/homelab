@@ -26,6 +26,11 @@ e este projeto adere ao versionamento semântico (onde aplicável).
     - *Depois:* Scripts genéricos lendo credenciais de arquivos protegidos (`/etc/vault/*.roleid`) injetados pelo Ansible em tempo de deploy.
 - **CrowdSec Config:** Ajuste de URL de notificação para rede interna Docker (`http://ntfy:80`) evitando Hairpin NAT e erros de SSL.
 
+### Corrigido (Fixed)
+- **Grafana Provisioning:** Corrigida falha de importação do Dashboard CrowdSec (ID 19010).
+    - *Causa:* O JSON utilizava uma variável de input `${DS_PROMETHEUS}` incompatível com o provisionamento automático.
+    - *Solução:* Substituição forçada via `sed` pelo UID estático do Prometheus (`dfa44v3b15a80b`), garantindo imutabilidade.
+
 ### Segurança (Security)
 - **Incident Response:** Rotação completa de credenciais (Ntfy Tokens, Vault RoleIDs e SecretIDs) após detecção de exposição acidental em repositório público.
 - **Git Hygiene:** Remoção de scripts contendo segredos do histórico e implementação de templates Jinja2 (`.j2`) sanitizados.

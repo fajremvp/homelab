@@ -36,9 +36,16 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
     - **Fix:** Atualizado playbook `setup_backup.yml` para incluir estes caminhos.
     - **Validação:** Execução manual do Restic confirmou a inclusão dos arquivos `.secretid` e `.roleid` no snapshot criptografado.
 
+- **Dashboard as Code (Grafana):**
+    - **Implementação:** Baixado o JSON oficial do CrowdSec (ID 19010) para o repositório Git.
+    - **Incidente de Provisionamento:** O dashboard carregava vazio ("Datasource not found").
+    - **Diagnóstico:** O Grafana em modo *provisioning* não resolve o nome "Prometheus" automaticamente se o JSON esperar um Input variável.
+    - **Correção Sênior:** Hardcoded o UID do Datasource (`dfa44v3b15a80b`) diretamente no JSON antes do commit, eliminando a dependência de inputs manuais.
+
 - **Status Final:**
     - Infraestrutura recuperada e mais segura do que antes do incidente.
     - Serviços Authentik e Vaultwarden reiniciados e operando com as novas credenciais rotacionadas.
+    - CrowdSec com uma boa observabilidade no Grafana.
     - Repositório Git limpo de segredos.
 ## 2026-01-24
 **Status:** ⚠️ Sucesso Parcial (Perímetro OK, Camada 7 Parcial)
