@@ -2,11 +2,13 @@ type: http
 name: ntfy_alert
 log_level: info
 format: |
+  {% raw %}
   {{- range . }}
   🚨 **CROWDSEC BAN** 🚨
   IP: {{.Source.IP}}
   Cenario: {{.Scenario}}
   {{- end }}
+  {% endraw %}
 url: http://ntfy:80/alertas_infra
 method: POST
 headers:
