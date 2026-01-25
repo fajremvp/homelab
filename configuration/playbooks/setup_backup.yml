@@ -41,7 +41,7 @@
           echo "--> [DockerHost] Backup iniciado..."
           
           # Backup de serviços e autenticação
-          restic backup /opt/services /opt/auth /opt/monitoring /opt/security /opt/utils \
+          restic backup /opt/services /opt/auth /opt/monitoring /opt/security /opt/utils /etc/vault \
             --exclude="*.log" \
             --exclude="*.sqlite3-wal" \
             --tag "dockerhost"
