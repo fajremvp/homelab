@@ -14,12 +14,27 @@
 ## CrowdSec Bouncer (Remediation)
 Implementação realizada em: 2026-01-24.
 
-O OPNsense atua como o executor (Músculo) das decisões do Agente.
+O OPNsense atua exclusivamente como executor (Músculo), consultando o Agente (LAPI) rodando no DockerHost.
 
-* **Plugin:** `os-crowdsec` (apenas componente IPS/Remediation ativo).
-* **Configuração via SSH:** Devido a limitações da interface, o arquivo `/usr/local/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml` foi editado manualmente para apontar para o LAPI externo (`10.10.30.10:8080`).
-* **Regras de Firewall:**
-    - **Floating Rule:** O plugin cria automaticamente regras flutuantes que consultam a tabela `crowdsec_blocklists`, bloqueando ataques em todas as interfaces simultaneamente.
+### Configuração do Plugin (Workaround & Settings)
+O plugin `os-crowdsec` possui uma validação de formulário restritiva na UI. Para configurá-lo como "Bouncer Only":
+
+1. **Interface Web (Services > CrowdSec):**
+    * `Enable Log Processor (IDS)`: **[ ] Desmarcado** (Economia de CPU/RAM, logs são processados no DockerHost).
+    * `Enable LAPI`: **[ ] Desmarcado** (Não rodar servidor no Firewall).
+    * `Enable Remediation (IPS)`: **[x] Marcado** (Ativa o bloqueio).
+    * `Create blocklist rules`: **[x] Marcado** (Cria regras flutuantes automaticamente).
+    * **Truque de Validação:** Preencher `LAPI listen address` com `127.0.0.1` apenas para permitir o botão "Apply" (o serviço ignorará isso pois a LAPI local está desativada).
+
+2. **Conexão Real (Via SSH):**
+    Devido à limitação da UI, a conexão real deve ser editada manualmente no arquivo `/usr/local/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml`:
+    ```yaml
+    api_key: 'CHAVE_GERADA_NO_DOCKERHOST_CSCLI'
+    api_url: http://10.10.30.10:8080/
+    ```
+
+3. **Validação:**
+    * **Firewall > Rules > Floating:** Deve existir uma regra gerada automaticamente (geralmente cinza) bloqueando a lista negra do CrowdSec.
 
 ## Estratégia de Backup e Agendamento
 Implementado em: 2026-01-09.
