@@ -14,6 +14,21 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Colocar consulta de DNS do modem para meus próprios.
 
 ---
+## [2026-01-25] - Security Incident Response & Hardening
+### Adicionado (Added)
+- **CrowdSec Observability:** Habilitado endpoint Prometheus (`0.0.0.0:6060`) e notificações via Ntfy (tópico `alertas_infra`).
+- **Ansible Automation:** Implementados *Handlers* para reinício automático de containers ao detectar mudanças de configuração.
+- **Backup Coverage:** Adicionados diretórios `/opt/security` (CrowdSec Data) e `/etc/vault` (AppRole Credentials) à rotina de backup do Restic no DockerHost.
+
+### Alterado (Changed)
+- **Vault Integration (Refactor):** Migração do método de injeção de segredos.
+    - *Antes:* `ROLE_ID` hardcoded em scripts shell no Git.
+    - *Depois:* Scripts genéricos lendo credenciais de arquivos protegidos (`/etc/vault/*.roleid`) injetados pelo Ansible em tempo de deploy.
+- **CrowdSec Config:** Ajuste de URL de notificação para rede interna Docker (`http://ntfy:80`) evitando Hairpin NAT e erros de SSL.
+
+### Segurança (Security)
+- **Incident Response:** Rotação completa de credenciais (Ntfy Tokens, Vault RoleIDs e SecretIDs) após detecção de exposição acidental em repositório público.
+- **Git Hygiene:** Remoção de scripts contendo segredos do histórico e implementação de templates Jinja2 (`.j2`) sanitizados.
 ## [2026-01-24] - Security Hardening & UPS
 ### Adicionado (Added)
 - **Security:** Implementação do CrowdSec (LAPI no DockerHost, Bouncer no OPNsense).
