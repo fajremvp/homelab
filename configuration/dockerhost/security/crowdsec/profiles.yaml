@@ -1,6 +1,6 @@
 name: default_ip_remediation
 filters:
- - Alert.Remediation == true && Alert.Scope == "Ip"
+ - Alert.Remediation == true
 decisions:
  - type: ban
    duration: 4h

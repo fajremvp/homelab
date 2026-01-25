@@ -8,7 +8,7 @@ format: |
   **Cenário:** {{.Scenario}}
   **País:** {{.Source.CN}}
   {{end -}}
-url: http://10.10.30.10:80/security_alerts
+url: http://10.10.30.10:80/alertas_infra
 method: POST
 headers:
   Title: "CrowdSec Ban"
