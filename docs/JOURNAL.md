@@ -4,10 +4,46 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-25
+**Status:** ✅ Sucesso (Security Incident Response & Hardening)
+
+**Foco:** Resposta a Incidente de Vazamento de Credenciais, Refatoração do Vault e Observabilidade do CrowdSec.
+
+- **CrowdSec Observability (Métricas & Alertas):**
+    - **Prometheus:** Realizada "cirurgia" no `config.yaml` dentro do container para habilitar o módulo Prometheus e alterar o bind para `0.0.0.0`, permitindo coleta externa na porta `6060`.
+    - **Ntfy Integration:**
+        - Implementado template de notificação `http.yaml`.
+        - **Fix de Template:** Simplificado o formato da mensagem para remover a variável `.Source.CN` (Country Name), que causava crash do plugin em testes manuais (IPs sem geolocalização).
+        - **Fix de Rede:** Alterada a URL de notificação de `http://10.10.30.10` para `http://ntfy:80` (Rede interna Docker) para contornar problemas de *Hairpin NAT* e erros de certificado SSL autoassinado.
+    - **Validação:** Testes de ataque simulado (`cscli decisions add`) geram alertas imediatos no celular.
+
+- **Incidente de Segurança (Data Leak):**
+    - **Evento:** Durante o push das configurações de notificação, identificou-se que o Token do Ntfy e os `ROLE_ID` do Vault (Authentik/Vaultwarden) foram commitados em texto plano no repositório público.
+    - **Análise de Risco:** Exposição de credenciais de "Nome de Usuário" (RoleID) e Token de Push. Risco de spam de notificações e redução da entropia de segurança do Vault.
+    - **Ação Imediata:** Revogação do Token Ntfy e desabilitação/habilitação do método AppRole no Vault, invalidando todos os IDs anteriores.
+
+- **Refatoração Arquitetural (Vault AppRole):**
+    - **Nova Estratégia:** Adotado o padrão "Gold Standard" para repositórios públicos.
+        - Scripts de inicialização (`start-with-vault.sh`) transformados em arquivos "burros" que leem credenciais do disco.
+        - Segredos (`ROLE_ID`, `SECRET_ID`) movidos para `/etc/vault/` com permissão `0600` (root only).
+    - **Automação Ansible:**
+        - Atualizado `manage_stacks.yml` para solicitar as novas credenciais via `vars_prompt` (RAM apenas) e gravá-las nos arquivos protegidos.
+        - Templates `.j2` removidos do fluxo de cópia direta.
+    - **Limpeza:** Removidos arquivos sensíveis do histórico Git e aplicados novos templates sanitizados.
+
+- **Correção de Backup (Disaster Recovery):**
+    - **Gap Identificado:** Os diretórios `/opt/security` (Dados do CrowdSec) e a nova estrutura `/etc/vault` (Credenciais de Boot) não estavam no backup diário.
+    - **Fix:** Atualizado playbook `setup_backup.yml` para incluir estes caminhos.
+    - **Validação:** Execução manual do Restic confirmou a inclusão dos arquivos `.secretid` e `.roleid` no snapshot criptografado.
+
+- **Status Final:**
+    - Infraestrutura recuperada e mais segura do que antes do incidente.
+    - Serviços Authentik e Vaultwarden reiniciados e operando com as novas credenciais rotacionadas.
+    - Repositório Git limpo de segredos.
 ## 2026-01-24
 **Status:** ⚠️ Sucesso Parcial (Perímetro OK, Camada 7 Parcial)
 
-**Foco:** Instalação do Nobreak NHS, Deploy do CrowdSec (LAPI + Bouncer) e Troubleshooting de Parsing de Camada 7.
+**Foco:** Carregamento do Nobreak NHS, Deploy do CrowdSec (LAPI + Bouncer) e Troubleshooting de Parsing de Camada 7.
 
 - **Infraestrutura Elétrica (Nobreak NHS):**
     - **Hardware:** Adquirido Nobreak NHS Gamer Play 1000VA (Senoidal Pura).
