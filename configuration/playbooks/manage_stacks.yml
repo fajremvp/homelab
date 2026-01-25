@@ -12,6 +12,20 @@
       prompt: "Digite o Token do CrowdSec (Ntfy)"
       private: yes
 
+    - name: authentik_role_id
+      prompt: "AUTHENTIK RoleID"
+      private: no
+    - name: authentik_secret_id
+      prompt: "AUTHENTIK SecretID"
+      private: yes
+
+    - name: vaultwarden_role_id
+      prompt: "VAULTWARDEN RoleID"
+      private: no
+    - name: vaultwarden_secret_id
+      prompt: "VAULTWARDEN SecretID"
+      private: yes
+
   vars:
     base_dir: "/opt/services"
     auth_dir: "/opt/auth"
@@ -63,6 +77,47 @@
     - name: Tornar scripts start-with-vault executáveis
       shell: "find {{ base_dir }} {{ auth_dir }} -name '*.sh' -exec chmod +x {} \\;"
       changed_when: false
+
+    # --- CONFIGURAR SEGREDOS NO DISCO (/etc/vault) ---
+    - name: Criar diretório de segredos Vault
+      file:
+        path: "/etc/vault"
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+
+    # AUTHENTIK
+    - name: Gravar Authentik RoleID
+      copy:
+        content: "{{ authentik_role_id }}"
+        dest: "/etc/vault/authentik.roleid"
+        owner: root
+        group: root
+        mode: '0600'
+    - name: Gravar Authentik SecretID
+      copy:
+        content: "{{ authentik_secret_id }}"
+        dest: "/etc/vault/authentik.secretid"
+        owner: root
+        group: root
+        mode: '0600'
+
+    # VAULTWARDEN
+    - name: Gravar Vaultwarden RoleID
+      copy:
+        content: "{{ vaultwarden_role_id }}"
+        dest: "/etc/vault/vaultwarden.roleid"
+        owner: root
+        group: root
+        mode: '0600'
+    - name: Gravar Vaultwarden SecretID
+      copy:
+        content: "{{ vaultwarden_secret_id }}"
+        dest: "/etc/vault/vaultwarden.secretid"
+        owner: root
+        group: root
+        mode: '0600'
 
     # --- 5. INSTALAÇÃO DOS SERVIÇOS SYSTEMD (Para Apps com Vault) ---
     

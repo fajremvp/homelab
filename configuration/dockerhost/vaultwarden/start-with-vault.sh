@@ -2,15 +2,18 @@
 
 # --- Configurações ---
 VAULT_ADDR="https://vault.home"
-ROLE_ID="bef4ab40-1c69-214d-7a9f-6b3da992bdf0" 
+# MUDANÇA: Lê do arquivo
+ROLE_ID_FILE="/etc/vault/vaultwarden.roleid"
 SECRET_ID_FILE="/etc/vault/vaultwarden.secretid"
 ENV_OUTPUT_FILE="/opt/services/vaultwarden/.env.injected"
 
 # --- Validações ---
-if [ ! -f "$SECRET_ID_FILE" ]; then
-    echo "❌ Erro: SecretID não encontrado em $SECRET_ID_FILE"
+if [ ! -f "$ROLE_ID_FILE" ] || [ ! -f "$SECRET_ID_FILE" ]; then
+    echo "❌ Erro: Arquivos de credenciais não encontrados em /etc/vault/"
     exit 1
 fi
+
+ROLE_ID=$(cat "$ROLE_ID_FILE")
 SECRET_ID=$(cat "$SECRET_ID_FILE")
 
 echo "🔐 Conectando ao Vault (AppRole Vaultwarden)..."
@@ -21,7 +24,7 @@ VAULT_TOKEN=$(curl -s --insecure --request POST \
   "$VAULT_ADDR/v1/auth/approle/login" | jq -r '.auth.client_token')
 
 if [ -z "$VAULT_TOKEN" ] || [ "$VAULT_TOKEN" == "null" ]; then
-    echo "❌ Falha na autenticação AppRole."
+    echo "❌ Falha na autenticação."
     exit 1
 fi
 
@@ -32,14 +35,6 @@ SECRETS_JSON=$(curl -s --insecure --header "X-Vault-Token: $VAULT_TOKEN" \
 
 ADMIN_TOKEN=$(echo "$SECRETS_JSON" | jq -r '.data.data.admin_token')
 
-if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" == "null" ]; then
-    echo "❌ Falha ao obter admin_token."
-    exit 1
-fi
-
-# 3. Injetar
+# 3. Injetar e Subir
 echo "ADMIN_TOKEN=$ADMIN_TOKEN" > "$ENV_OUTPUT_FILE"
-
-# 4. Executar
-echo "🚀 Subindo Vaultwarden..."
 docker compose up -d

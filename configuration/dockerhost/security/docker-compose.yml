@@ -14,7 +14,6 @@ services:
       - ./crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml
       - ./crowdsec/notifications/http.yaml:/etc/crowdsec/notifications/http.yaml:ro
       - ./crowdsec/profiles.yaml:/etc/crowdsec/profiles.yaml:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
       # Leitura de Logs do Host (Crucial)
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
     security_opt:
