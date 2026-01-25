@@ -1,0 +1,16 @@
+type: http
+name: ntfy_alert
+log_level: info
+format: |
+  {{range . -}}
+  🚨 **CrowdSec detectou ataque!** 🚨
+  **IP:** {{.Source.IP}}
+  **Cenário:** {{.Scenario}}
+  **País:** {{.Source.CN}}
+  {{end -}}
+url: http://10.10.30.10:80/security_alerts
+method: POST
+headers:
+  Title: "CrowdSec Ban"
+  Priority: "high"
+  Tags: "shield,security"

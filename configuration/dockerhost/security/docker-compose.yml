@@ -12,6 +12,9 @@ services:
       - crowdsec_db:/var/lib/crowdsec/data
       - crowdsec_config:/etc/crowdsec
       - ./crowdsec/acquis.yaml:/etc/crowdsec/acquis.yaml
+      - ./crowdsec/notifications/http.yaml:/etc/crowdsec/notifications/http.yaml:ro
+      - ./crowdsec/profiles.yaml:/etc/crowdsec/profiles.yaml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
       # Leitura de Logs do Host (Crucial)
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
     security_opt:
@@ -20,6 +23,7 @@ services:
       # BIND EXPLÍCITO: Só aceita conexão nesse IP
       # Permite que o OPNsense conecte, mas bloqueia acessos externos se houver NAT errado
       - "10.10.30.10:8080:8080"
+      - "10.10.30.10:6060:6060"
     networks:
       - proxy
 

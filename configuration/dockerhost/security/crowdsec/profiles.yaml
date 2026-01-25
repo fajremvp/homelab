@@ -1,0 +1,9 @@
+name: default_ip_remediation
+filters:
+ - Alert.Remediation == true && Alert.Scope == "Ip"
+decisions:
+ - type: ban
+   duration: 4h
+notifications:
+ - ntfy_alert
+on_success: break
