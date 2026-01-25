@@ -6,7 +6,7 @@ format: |
   🚨 **CrowdSec detectou ataque!** 🚨
   **IP:** {{.Source.IP}}
   **Cenário:** {{.Scenario}}
-  **País:** {{.Source.CN}}
+  **País:** {{if .Source.CN}}{{.Source.CN}}{{else}}N/A{{end}}
   {{end -}}
 url: http://ntfy:80/alertas_infra
 method: POST
