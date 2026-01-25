@@ -2,15 +2,12 @@ type: http
 name: ntfy_alert
 log_level: info
 format: |
-  {{range . -}}
-  🚨 **CrowdSec detectou ataque!** 🚨
-  **IP:** {{.Source.IP}}
-  **Cenário:** {{.Scenario}}
-  **País:** {{if .Source.CN}}{{.Source.CN}}{{else}}N/A{{end}}
-  {{end -}}
+  🚨 **CrowdSec Ban** 🚨
+  IP Banido: {{.Source.IP}}
+  Motivo: Ataque Detectado
 url: http://ntfy:80/alertas_infra
 method: POST
 headers:
-  Title: "CrowdSec Ban"
+  Title: "CrowdSec Alert"
   Priority: "high"
-  Tags: "shield,security"
+  Tags: "shield"
