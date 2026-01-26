@@ -42,6 +42,14 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
     - **Diagnóstico:** O Grafana em modo *provisioning* não resolve o nome "Prometheus" automaticamente se o JSON esperar um Input variável.
     - **Correção Sênior:** Hardcoded o UID do Datasource (`dfa44v3b15a80b`) diretamente no JSON antes do commit, eliminando a dependência de inputs manuais.
 
+- **Nobreak NHS Gamer Play (Incompatibilidade):**
+    - **Tentativa:** Integração via NUT no Raspberry Pi (USB).
+    - **Hardware ID:** `0925:1241` (NXP/Lakeview Virtual COM).
+    - **Diagnóstico:** - Driver `nutdrv_qx`: Falha (Dispositivo não é HID compliant).
+        - Driver `blazer_ser`: Falha (Protocolo proprietário/Short Reply na porta `/dev/ttyACM0`).
+    - **Conclusão:** O modelo possui firmware travado/proprietário incompatível com o padrão open-source.
+    - **Ação:** Devolução e encontrar um outro, que seja compatível.
+
 - **Status Final:**
     - Infraestrutura recuperada e mais segura do que antes do incidente.
     - Serviços Authentik e Vaultwarden reiniciados e operando com as novas credenciais rotacionadas.

@@ -10,7 +10,7 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 - Organizar cabos
 - Fazer uma bancadinha/rack pra deixar tudo
-- NUT SERVER
+- Encontrar outro Nobreak.
 - Colocar consulta de DNS do modem para meus próprios.
 
 ---
@@ -25,6 +25,7 @@ e este projeto adere ao versionamento semântico (onde aplicável).
     - *Antes:* `ROLE_ID` hardcoded em scripts shell no Git.
     - *Depois:* Scripts genéricos lendo credenciais de arquivos protegidos (`/etc/vault/*.roleid`) injetados pelo Ansible em tempo de deploy.
 - **CrowdSec Config:** Ajuste de URL de notificação para rede interna Docker (`http://ntfy:80`) evitando Hairpin NAT e erros de SSL.
+- **Hardware Status:** Nobreak NHS Gamer Play em processo de devolução por ser incompatível.
 
 ### Corrigido (Fixed)
 - **Grafana Provisioning:** Corrigida falha de importação do Dashboard CrowdSec (ID 19010).
