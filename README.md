@@ -11,43 +11,39 @@ Focado em aprendizado, soberania de dados e segurança.
 
 ```text
 homelab/
-├── .github/                # Workflows de CI (GitHub Actions) para validar código.
-├── .gitignore              # Arquivos ignorados (Segurança: impede vazar senhas/keys).
-├── CHANGELOG.md            # Histórico executivo de mudanças e versões do lab.
-├── README.md               # Este arquivo
+├── ansible.cfg             # Configuração central do Ansible.
+├── CHANGELOG.md            # Histórico executivo de mudanças e versões.
+├── LICENSE
+├── README.md               # Este arquivo.
 │
-├── docs/                   # A "Wiki" do Lab (Documentação Viva)
-│   ├── JOURNAL.md          # Diário de Bordo (Erros, tentativas e aprendizados diários).
-│   ├── assets/             # Evidências, prints de benchmarks e diagramas.
-│   ├── architecture/       # Decisões de Design (VLANs, DNS, Escolha de SO).
-│   ├── hardware/           # Inventário Físico (Specs do Servidor, Pi, Nobreak).
-│   ├── security/           # Políticas (Modelo de Ameaça, Hardening, IAM).
-│   ├── services/           # Detalhes das Aplicações (Bitcoin, OPNsense, Docker).
+├── configuration/          # Gerenciamento de Configuração (Ansible & GitOps).
+│   ├── dockerhost/         # Stacks de Serviços (Docker Compose & Systemd).
+│   │   ├── authentik/      # Identity Provider & SSO.
+│   │   ├── monitoring/     # Stack LGM (Loki, Grafana, Prometheus, Alloy).
+│   │   ├── security/       # CrowdSec (IDS/IPS e Bouncers).
+│   │   ├── traefik/        # Ingress Controller & Certificados.
+│   │   └── vaultwarden/    # Gerenciador de Senhas.
+│   ├── inventory/          # Inventário de Hosts e Grupos (hosts.ini).
+│   ├── playbooks/          # Automação (Hardening, Backups, Deploys).
+│   └── vault/              # Políticas e configurações do HashiCorp Vault.
+│
+├── docs/                   # A "Wiki" do Lab (Documentação Viva).
+│   ├── architecture/       # Decisões de Design (Rede, Energia, Observabilidade).
+│   ├── hardware/           # Inventário Físico e configurações de BIOS.
+│   ├── JOURNAL.md          # Diário de Bordo (Erros, tentativas e aprendizados).
 │   ├── runbooks/           # Manuais de "Como Fazer" (Cold Boot, Disaster Recovery).
-│   └── lab/                # Ambientes efêmeros (Pentest, Testes isolados).
+│   ├── security/           # Políticas (Modelo de Ameaça, Hardening, IAM).
+│   └── services/           # Detalhes técnicos das Aplicações.
 │
-├── provisioning/           # Infraestrutura (Criação de Recursos)
+├── provisioning/           # Infraestrutura (Criação de Recursos).
 │   ├── proxmox-host/       # Configs manuais do Host (Rede, Boot, Criptografia).
-│   │   ├── cmdline.conf    # Parâmetros de Kernel (IOMMU, IP Estático).
-│   │   ├── crypttab.conf   # Otimização de performance NVMe + LUKS.
-│   │   ├── interfaces.conf # Configuração das Bridges e VLANs.
-│   │   └── hook-scripts/   # Scripts de systemd/udev (Fixação de MAC).
-│   ├── terraform/          # Código para criar VMs/LXC automaticamente.
-│   └── cloud/              # Recursos externos (Backblaze B2, DNS público).
+│   └── terraform/          # Código para criar VMs/LXC automaticamente.
 │
-├── configuration/          # Configuração (Instalação de Software)
-│   ├── inventory/          # Lista de IPs e Grupos para o Ansible.
-│   ├── playbooks/          # Automação (Instalar Docker, Endurecer SSH).
-│   └── roles/              # Funções modulares e reutilizáveis do Ansible.
+├── kubernetes/             # O Cluster (Talos Linux) [Em Construção].
 │
-├── kubernetes/             # O Cluster (Talos Linux)
-│   ├── talos-config/       # YAMLs declarativos do Sistema Operacional.
-│   └── manifests/          # Aplicações K8s (ArgoCD, Namespaces, Storage).
-│
-└── scripts/                # Automação e Utilitários (Bash)
-    ├── backup-bitcoin.sh        # Snapshot atômico da wallet (sem corromper).
-    ├── nut-shutdown.sh          # Lógica de desligamento por bateria fraca.
-    └── update-initramfs-hook.sh # Automação pós-update de Kernel.
+└── scripts/                # Automação e Utilitários (Bash).
+    ├── backup-bitcoin.sh   # Snapshot atômico da wallet.
+    └── nut-shutdown.sh     # Lógica de desligamento por bateria fraca.
 ```
 
 ---

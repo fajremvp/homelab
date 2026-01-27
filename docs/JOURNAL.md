@@ -753,5 +753,5 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 - **Validação de Memória:** Executei o **MemTest86 V11.5** por 6 horas e 17 minutos.
     - **Resultado:** 48/48 testes completados com **0 Erros**.
     - *Telemetria:* XMP validado a 3192 MT/s. A temperatura máxima da CPU ficou em 48°C, validando a instalação do cooler AK400.
-![Evidência do MemTest86](../assets/benchmarks/MemTest86.jpeg)
+![Evidência do MemTest86](https://github.com/fajremvp/homelab/blob/main/docs/assets/benchmarks/MemTest86.jpeg)
 - **Configuração da BIOS:** Apliquei as configurações críticas na Gigabyte B760M.
