@@ -244,7 +244,7 @@
         dest: "{{ alertmanager_dir }}/config.yml"
         owner: fajre
         group: docker
-        mode: '0600' # Protegido (tem token)
+        mode: '0644' # Protegido (tem token)
       notify: Restart Alertmanager
 
     # Garante permissão da regra de alerta (o rsync já levou, mas garantimos leitura)
