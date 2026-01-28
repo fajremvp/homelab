@@ -77,7 +77,7 @@ Esta implementação assume um modelo de ameaça específico para ambiente domé
 **Objetivo:** Monitoramento de nós satélites (Virtualização e Segurança).
 
 - [ ] **Proxmox (Host):** Node Exporter (apt) + Promtail/Alloy (Logs do Hypervisor).
-- [ ] **Vault (VM):** Node Exporter (Binário standalone) com firewall restrito (Allow 9100 from DockerHost only).
+- [X] **Vault (VM):** Node Exporter (Binário standalone) com firewall restrito (Allow 9100 from DockerHost only).
 - [X] **Raspberry Pi (Management):** Monitoramento de recursos (CPU/RAM/Temp) via Node Exporter.
 
 ### Fase 3 – Infraestrutura Física
@@ -85,7 +85,7 @@ Esta implementação assume um modelo de ameaça específico para ambiente domé
 
 - [ ] **Switch/AP:** Coleta via SNMP Exporter.
 - [ ] **Energia:** Monitoramento de UPS (NUT Exporter).
-- [ ] **Segurança de Rede:** CrowdSec (Logs de firewall e banimentos).
+- [X] **Segurança de Rede:** CrowdSec (Logs de firewall e banimentos).
 
 ### Fase 4 – Refinamento e Inteligência
 **Objetivo:** Transformar dados em alertas acionáveis.
