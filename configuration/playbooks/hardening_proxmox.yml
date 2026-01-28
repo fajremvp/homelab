@@ -61,6 +61,13 @@
         state: present
       notify: Restart SSH
 
+    # --- MONITORAMENTO ---
+    - name: Instalar Node Exporter (Métricas do Host Físico)
+      apt:
+        name: prometheus-node-exporter
+        state: present
+        update_cache: yes
+
   handlers:
     - name: Restart Fail2Ban
       service:

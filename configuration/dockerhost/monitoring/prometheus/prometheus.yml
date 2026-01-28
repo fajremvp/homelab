@@ -11,6 +11,16 @@ scrape_configs:
     static_configs:
       - targets: ['10.10.30.10:9100']
 
+  # --- Proxmox (Host Físico) ---
+  - job_name: 'proxmox-host'
+    static_configs:
+      - targets: ['192.168.0.200:9100']
+
+  # --- Vault (VM Vault) ---
+  - job_name: 'vault-node'
+    static_configs:
+      - targets: ['10.10.40.10:9100']
+
   # cAdvisor
   - job_name: 'dockerhost-cadvisor'
     static_configs:

@@ -133,6 +133,16 @@
       when: "'dockerhost' in group_names" # Só faz no DockerHost, Vault não tem docker
       notify: Restart Docker
 
+    # --- FIREWALL (VAULT ONLY) ---
+    - name: Liberar métricas (9100) para o DockerHost no Vault
+      ufw:
+        rule: allow
+        port: '9100'
+        proto: tcp
+        from_ip: 10.10.30.10  # IP do DockerHost (Onde roda o Prometheus)
+        comment: "Allow Prometheus Scrape"
+      when: "'vault' in group_names"  # CRÍTICO: Não rodar no DockerHost (que não usa UFW)
+
     # --- MONITORAMENTO NATIVO ---
     - name: Instalar Node Exporter (Sistema)
       apt:
