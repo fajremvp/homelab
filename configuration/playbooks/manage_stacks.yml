@@ -217,7 +217,8 @@
         delete: no
         recursive: yes
         rsync_opts:
-          - "--exclude=.env" 
+          - "--exclude=.env"
+      notify: Restart Prometheus
 
     - name: Gerar .env do Monitoring
       copy:
@@ -242,4 +243,9 @@
     - name: Restart CrowdSec
       community.docker.docker_container:
         name: crowdsec
+        restart: yes
+
+    - name: Restart Prometheus
+      community.docker.docker_container:
+        name: prometheus
         restart: yes
