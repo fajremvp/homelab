@@ -14,6 +14,6 @@ receivers:
       - url: 'http://ntfy:80/alertas_infra' # Tópico do Ntfy local
         send_resolved: true
         http_config:
-          Reusa a variável do prompt
+          # Reusa a variável do prompt
           bearer_token: "{{ ntfy_token }}"
         max_alerts: 5
