@@ -4,6 +4,37 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-27
+**Status:** ❌ Falha (Experimento Abortado)
+
+**Foco:** Implementação de IA Local (RAG Assistant) e Benchmark de Performance CPU-Only.
+
+- **Objetivo:** Criar um assistente "Jarvis" soberano (Ollama + Open WebUI) rodando no hardware existente (i5-12400 + 64GB RAM) capaz de ler a documentação do Homelab (RAG).
+
+- **Infraestrutura Provisionada:**
+    - Criado LXC `110 (AI-Node)` na VLAN 30 com 24GB de RAM dedicados e 4 vCores.
+    - Automação via Ansible: Playbook `setup_ai_node.yml` implementado para deploy da stack Docker + Clonagem do Repositório para contexto.
+    - **Correção de Runtime:** Necessário remover limites de `ulimit/memlock` do Docker Compose, pois containers LXC não permitem controle direto de memória do Kernel do Host.
+
+- **Benchmark de Modelos (CPU Inference):**
+    - **Teste 1: Cohere Command-R (35B):**
+        - *Expectativa:* Alta capacidade de RAG e citações precisas.
+        - *Realidade:* Inviável. O modelo de ~20GB saturou a banda de memória DDR4. Latência de resposta superior a 6 minutos.
+    - **Teste 2: Llama 3.1 (8B Instruct):**
+        - *Expectativa:* Modelo equilibrado padrão de mercado.
+        - *Realidade:* Geração lenta (~3-5 tokens/s). A experiência de chat em tempo real foi frustrante e "travada".
+    - **Teste 3: Llama 3.2 (3B):**
+        - *Expectativa:* Modelo "Edge" otimizado para latência baixa.
+        - *Realidade:* Melhor velocidade, mas ainda aquém da instantaneidade necessária para um assistente fluido. A inteligência reduzida também comprometeu a análise de documentos complexos.
+
+- **Veredito Técnico:**
+    - A inferência de LLMs modernos depende criticamente de largura de banda de memória (VRAM/RAM) e processamento paralelo massivo (Cores CUDA).
+    - O Intel i5-12400 (mesmo com AVX2) não possui throughput suficiente para sustentar uma experiência de chat agradável sem GPU dedicada.
+
+- **Ação de Contenção (Cleanup):**
+    - **Infraestrutura:** Container LXC 110 destruído e recursos (24GB RAM) devolvidos ao Host.
+    - **Código:** Revertidos commits de infraestrutura (`hosts.ini`, playbooks) para manter o repositório limpo de "código morto".
+    - **Futuro:** Projeto suspenso até a aquisição de acelerador de hardware (GPU Nvidia ou NPU dedicada).
 ## 2026-01-25
 **Status:** ✅ Sucesso (Security Incident Response & Hardening)
 

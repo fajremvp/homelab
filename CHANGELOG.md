@@ -14,6 +14,15 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Colocar consulta de DNS do modem para meus próprios.
 
 ---
+
+## [2026-01-27] - AI Experiment & Cleanup
+### Adicionado (Added)
+- **Experimental:** Criado playbook `setup_ai_node.yml` e configuração de inventário para stack de Inteligência Artificial Local (Ollama + Open WebUI).
+
+### Removido (Removed)
+- **Revert:** Removida toda a infraestrutura de IA (LXC AI-Node e Playbooks) após validação de performance.
+    - *Motivo:* A execução de modelos LLM (Command-R, Llama 3.1) em CPU (i5-12400) provou-se inviável para uso interativo devido à alta latência de inferência.
+
 ## [2026-01-25] - Security Incident Response & Hardening
 ### Adicionado (Added)
 - **CrowdSec Observability:** Habilitado endpoint Prometheus (`0.0.0.0:6060`) e notificações via Ntfy (tópico `alertas_infra`).
