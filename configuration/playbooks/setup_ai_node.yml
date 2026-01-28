@@ -23,6 +23,7 @@
         name:
           - curl
           - wget
+          - gnupg
           - git
           - rsync
           - htop
