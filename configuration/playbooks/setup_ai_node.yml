@@ -126,12 +126,7 @@
               container_name: ollama
               volumes:
                 - ollama_data:/root/.ollama
-              restart: always
-              # Otimização CPU: Evita que o Docker limite threads
-              ulimits:
-                memlock:
-                  soft: -1
-                  hard: -1
+              restart: always 
               networks:
                 - ai-net
 
