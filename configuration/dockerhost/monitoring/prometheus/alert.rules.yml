@@ -1,0 +1,42 @@
+groups:
+  - name: infra_alerts
+    rules:
+      # Alerta Crítico: Se qualquer servidor (Job) cair por 1 min
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instância {{ $labels.instance }} está DOWN"
+          description: "O alvo {{ $labels.instance }} do job {{ $labels.job }} não responde há mais de 1 minuto."
+
+      # Espaço em Disco: Aviso com menos de 10% livre
+      - alert: HostOutOfDiskSpace
+        expr: (node_filesystem_avail_bytes * 100) / node_filesystem_size_bytes < 10 and ON (instance, device, mountpoint) node_filesystem_readonly == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host {{ $labels.instance }} sem espaço"
+          description: "Disco com menos de 10% livre ({{ $value | printf \"%.2f\" }}%)"
+
+      # RAM Crítica: Acima de 90%
+      - alert: HostHighRamUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host {{ $labels.instance }} RAM Crítica"
+          description: "Uso de RAM acima de 90% ({{ $value | printf \"%.2f\" }}%)"
+
+      # CPU Alta: Média acima de 90% por 10 min
+      - alert: HostHighCpuLoad
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 90
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host {{ $labels.instance }} CPU Alta"
+          description: "CPU acima de 90% por 10 minutos."

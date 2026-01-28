@@ -30,6 +30,7 @@
     base_dir: "/opt/services"
     auth_dir: "/opt/auth"
     mon_dir: "/opt/monitoring"
+    alertmanager_dir: "{{ mon_dir }}/alertmanager"
 
   tasks:
     # --- 1. PREPARAÇÃO ---
@@ -210,7 +211,21 @@
         group: docker
         mode: '0750'
 
-    - name: Sincronizar configs de Monitoring
+    # --- MONITORAMENTO ---
+    - name: Criar diretórios de Monitoring
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: fajre
+        group: docker
+        mode: '0750'
+      loop:
+        - "{{ mon_dir }}"
+        - "{{ alertmanager_dir }}"
+
+    # Sincroniza arquivos estáticos (Prometheus, Grafana, Loki)
+    # Exclui os templates para não sobrescrever com arquivo cru
+    - name: Sincronizar configs de Monitoring (Base)
       synchronize:
         src: "../dockerhost/monitoring/"
         dest: "{{ mon_dir }}/"
@@ -218,7 +233,25 @@
         recursive: yes
         rsync_opts:
           - "--exclude=.env"
+          - "--exclude=alertmanager/config.yml"    # Ignora se tiver local
+          - "--exclude=alertmanager/config.yml.j2" # Não copia o template .j2 pro servidor
       notify: Restart Prometheus
+
+    # Gera a config do Alertmanager injetando o Token do prompt
+    - name: Configurar Alertmanager (Com Token)
+      template:
+        src: "../dockerhost/monitoring/alertmanager/config.yml.j2"
+        dest: "{{ alertmanager_dir }}/config.yml"
+        owner: fajre
+        group: docker
+        mode: '0600' # Protegido (tem token)
+      notify: Restart Alertmanager
+
+    # Garante permissão da regra de alerta (o rsync já levou, mas garantimos leitura)
+    - name: Ajustar permissão das regras de alerta
+      file:
+        path: "{{ mon_dir }}/prometheus/alert.rules.yml"
+        mode: '0644'
 
     - name: Gerar .env do Monitoring
       copy:
@@ -248,4 +281,9 @@
     - name: Restart Prometheus
       community.docker.docker_container:
         name: prometheus
+        restart: yes
+
+    - name: Restart Alertmanager
+      community.docker.docker_container:
+        name: alertmanager
         restart: yes
