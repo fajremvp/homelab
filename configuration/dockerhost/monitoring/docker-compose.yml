@@ -11,6 +11,7 @@ services:
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
+      - ./prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml:ro
     networks:
       - monitoring
 
