@@ -41,6 +41,7 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 **Foco:** Implementação de IA Local (RAG Assistant) e Benchmark de Performance CPU-Only.
 
 - **Objetivo:** Criar um assistente "Jarvis" soberano (Ollama + Open WebUI) rodando no hardware existente (i5-12400 + 64GB RAM) capaz de ler a documentação do Homelab (RAG).
+- **E o Clawdbot?** É uma ferramenta de agente autônomo. Ele executa coisas. Para ele ser útil, ele precisa de permissão de escrita e execução. No meu Homelab focado em segurança ("Default Deny"), instalar um agente que varre o sistema e tem acesso ao shell é pedir para ser hackeado ou sofrer um acidente catastrófico (ex: alucinação de IA deletando configs ou vazar dados). É "hype" de X, não infraestrutura séria. Talvez esperar o hype abaixar, ver o que a comunidade está achando e implementar com cuidados no futuro.
 
 - **Infraestrutura Provisionada:**
     - Criado LXC `110 (AI-Node)` na VLAN 30 com 24GB de RAM dedicados e 4 vCores.
