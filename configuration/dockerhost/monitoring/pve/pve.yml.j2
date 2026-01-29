@@ -1,4 +1,3 @@
 default:
-  user: "monitoring@pve!exporter" # Token ID fixo
-  token: "{{ pve_token_secret }}" # Ansible preenche
-  verify_ssl: false# Seu Token ID fixo
+  api_token: "monitoring@pve!exporter={{ pve_token_secret }}"
+  verify_ssl: false
