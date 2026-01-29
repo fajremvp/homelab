@@ -4,6 +4,37 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-28
+**Status:** ✅ Sucesso (Com alta complexidade resolvida)
+
+**Foco:** Observabilidade Ativa (Alertas) e Monitoramento de Virtualização (Proxmox/LXC).
+
+- **CrowdSec (Correção Crítica):**
+    - **Sintoma:** Container CrowdSec em loop de erro DNS (`connection refused` para `127.0.0.53`).
+    - **Causa:** O container herdava o `/etc/resolv.conf` do Host (systemd-resolved), mas não tinha acesso ao loopback do host.
+    - **Solução:** Forçado DNS explícito (`10.10.30.5`, `1.1.1.1`) no `docker-compose.yml`. Comunicação com a CAPI e Bouncer restabelecida.
+
+- **Alertmanager & Ntfy (Observabilidade Ativa):**
+    - Implementado `alert.rules.yml` no Prometheus (Regras: InstanceDown, DiskSpace, HighRAM, HighCPU).
+    - Configurado Alertmanager para enviar notificações JSON via Webhook para o Ntfy local (`deny-all` com Token).
+    - **Troubleshooting:**
+        - Erro de permissão (`0600`) no arquivo de config gerado pelo Ansible impedia leitura pelo usuário `nobody` do container. Ajustado para `0644`.
+        - Erro de volume: O arquivo de regras não estava mapeado no `docker-compose`. Corrigido.
+    - **Teste:** Exeutado `systemctl stop prometheus-node-exporter`, após cerca de 4 minutos foi recebido o alerta no ntfy.
+
+- **Expansão de Agentes (Node Exporter):**
+    - Instalado `prometheus-node-exporter` nativo no Host Físico (Proxmox) e na VM Vault.
+    - **Network:** Ajustada regra UFW no Vault para permitir entrada na porta 9100 apenas vinda do DockerHost (`10.10.30.10`).
+
+- **Proxmox VE Exporter (O Desafio do Dia):**
+    - **Objetivo:** Monitorar métricas individuais de LXCs e VMs (que o Node Exporter não vê).
+    - **Incidente (Dependency Hell):** A imagem `prompve/prometheus-pve-exporter:latest` contém uma versão da biblioteca `proxmoxer` incompatível com os parâmetros `token` ou `api_token` do script de inicialização. Causou *crash loop*.
+    - **Workaround:** Revertido método de autenticação para `user/password` no `pve.yml`.
+    - **Alertas:** Criadas regras inteligentes usando `rate()` para CPU de VMs, evitando falsos positivos.
+
+- **Grafana as Code:**
+    - Dashboard ID 10347 (Proxmox VE) importado, higienizado (remoção de IDs fixos) e salvo como código em `provisioning/dashboards/proxmox-ve.json` para persistência via Ansible.
+
 ## 2026-01-27
 **Status:** ❌ Falha (Experimento Abortado)
 

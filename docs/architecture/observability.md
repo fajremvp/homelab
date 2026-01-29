@@ -73,12 +73,14 @@ Esta implementação assume um modelo de ameaça específico para ambiente domé
 - [x] **Notificação:** Ntfy self-hosted com validação SSL no Android.
 - [x] **Backup:** Integração com Restic.
 
-### Fase 2 – Expansão de Agentes [EM ANDAMENTO]
+### Fase 2 – Expansão de Agentes [CONCLUÍDO]
 **Objetivo:** Monitoramento de nós satélites (Virtualização e Segurança).
 
-- [ ] **Proxmox (Host):** Node Exporter (apt) + Promtail/Alloy (Logs do Hypervisor).
-- [X] **Vault (VM):** Node Exporter (Binário standalone) com firewall restrito (Allow 9100 from DockerHost only).
-- [X] **Raspberry Pi (Management):** Monitoramento de recursos (CPU/RAM/Temp) via Node Exporter.
+- [x] **Proxmox (Host):** Node Exporter (Métricas de OS via apt) + PVE Exporter (Métricas de Cluster via API).
+- [ ] **Proxmox (Logs):** Promtail/Alloy (Coleta de syslogs do Hypervisor) - *Adiado para manter o host limpo*.
+- [x] **Vault (VM):** Node Exporter (Binário standalone) com firewall restrito (Allow 9100 from DockerHost only).
+- [x] **Raspberry Pi (Management):** Monitoramento de recursos (CPU/RAM/Temp) via Node Exporter.
+- [x] **Alertas:** Pipeline de alertas críticos (Instance Down, Resource Exhaustion) via Alertmanager -> Ntfy.
 
 ### Fase 3 – Infraestrutura Física
 **Objetivo:** Visibilidade de rede e energia.

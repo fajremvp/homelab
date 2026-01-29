@@ -12,8 +12,26 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Fazer uma bancadinha/rack pra deixar tudo
 - Encontrar outro Nobreak.
 - Colocar consulta de DNS do modem para meus próprios.
+- Automatizar testes de alertas.
+- Saber se um container caiu, cAdvisor...
 
 ---
+
+## [2026-01-28] - Observabilidade Fase 2 Completa
+### Adicionado (Added)
+- **Alerting Pipeline:** Implementado Alertmanager integrado ao Ntfy com autenticação Bearer Token.
+- **Alert Rules:** Criadas regras de disparo para indisponibilidade de host, saturação de disco/CPU/RAM e falha de coletores.
+- **Proxmox Monitoring:** Implementado `prometheus-pve-exporter` para coleta de métricas granulares de LXCs e VMs.
+- **Dashboards as Code:** Adicionado dashboard `proxmox-ve.json` (Baseado no ID 10347) via provisionamento automático.
+- **Host Monitoring:** Deploy automático do Node Exporter no Proxmox Host e Vault VM via Ansible.
+
+### Corrigido (Fixed)
+- **CrowdSec DNS:** Corrigida falha de resolução de nomes forçando servidores DNS no container, resolvendo a falha de comunicação com a CAPI.
+- **Alertmanager Permissions:** Ajustada permissão do arquivo de configuração (`0644`) para evitar *CrashLoopBackOff* por erro de leitura.
+- **PVE Exporter Auth:** Contornado bug de biblioteca da imagem Docker migrando de Token Auth para Password Auth.
+
+### Segurança (Security)
+- **Firewall Vault:** Regra UFW adicionada para permitir tráfego na porta 9100 estritamente a partir do IP do DockerHost.
 
 ## [2026-01-27] - AI Experiment & Cleanup
 ### Adicionado (Added)
