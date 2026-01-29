@@ -26,8 +26,8 @@
       prompt: "VAULTWARDEN SecretID"
       private: yes
 
-    - name: pve_token_secret
-      prompt: "Digite o Secret do Token Proxmox (monitoring)"
+    - name: pve_password
+      prompt: "Digite a SENHA do usuário monitoring@pve"
       private: yes
 
   vars:
