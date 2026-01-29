@@ -113,6 +113,45 @@
       apt:
         name: prometheus-node-exporter
         state: present
+    
+    # Tailscale (VPN)
+    - name: Habilitar IP Forwarding (Necessário para Roteamento)
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        state: present
+        reload: yes
+
+    - name: Adicionar chave GPG do Tailscale (Trixie)
+      get_url:
+        url: https://pkgs.tailscale.com/stable/debian/trixie.noarmor.gpg
+        dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+        mode: '0644'
+
+    - name: Adicionar repositório do Tailscale (Trixie)
+      get_url:
+        url: https://pkgs.tailscale.com/stable/debian/trixie.tailscale-keyring.list
+        dest: /etc/apt/sources.list.d/tailscale.list
+        mode: '0644'
+
+    - name: Instalar Tailscale
+      apt:
+        name: tailscale
+        state: latest
+        update_cache: yes
+
+    - name: Levantar Tailscale (Apenas Roteamento)
+      command: >
+        tailscale up 
+        --authkey={{ tailscale_auth_key }} 
+        --advertise-routes=192.168.0.0/24 
+        --advertise-tags=tag:rpi
+        --accept-dns=false 
+      register: tailscale_start
+      changed_when: "'Success' in tailscale_start.stdout"
+      failed_when: 
+        - tailscale_start.rc != 0
+        - "'already' not in tailscale_start.stderr"
 
   handlers:
     - name: Restart SSH
