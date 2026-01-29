@@ -249,13 +249,13 @@
 
     # --- NOVA TASK: Configurar PVE Exporter ---
     - name: Configurar PVE Exporter (Com Token)
-    template:
-      src: "../dockerhost/monitoring/pve/pve.yml.j2"
-      dest: "{{ pve_dir }}/pve.yml"
-      owner: fajre
-      group: docker
-      mode: '0644' # Leitura para o container (usuário nobody)
-    notify: Restart PveExporter
+      template:
+        src: "../dockerhost/monitoring/pve/pve.yml.j2"
+        dest: "{{ pve_dir }}/pve.yml"
+        owner: fajre
+        group: docker
+        mode: '0644' # Leitura para o container (usuário nobody)
+      notify: Restart PveExporter
 
     # Garante permissão da regra de alerta (o rsync já levou, mas garantimos leitura)
     - name: Ajustar permissão das regras de alerta
