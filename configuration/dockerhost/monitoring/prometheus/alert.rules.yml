@@ -40,3 +40,16 @@ groups:
         annotations:
           summary: "Host {{ $labels.instance }} CPU Alta"
           description: "CPU acima de 90% por 10 minutos."
+  
+  - name: pve_alerts
+    rules:
+      # Só avisa se o Exporter morrer (não consegue ler o Proxmox)
+      - alert: PveExporterDown
+        expr: up{job="proxmox-ve"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PVE Exporter Inacessível"
+          description: "Falha ao coletar métricas do Proxmox."
+

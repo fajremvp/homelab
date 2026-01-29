@@ -26,11 +26,16 @@
       prompt: "VAULTWARDEN SecretID"
       private: yes
 
+    - name: pve_token_secret
+      prompt: "Digite o Secret do Token Proxmox (monitoring)"
+      private: yes
+
   vars:
     base_dir: "/opt/services"
     auth_dir: "/opt/auth"
     mon_dir: "/opt/monitoring"
     alertmanager_dir: "{{ mon_dir }}/alertmanager"
+    pve_dir: "{{ mon_dir }}/pve"
 
   tasks:
     # --- 1. PREPARAÇÃO ---
@@ -203,15 +208,6 @@
       notify: Restart CrowdSec
 
     # --- MONITORAMENTO ---
-    - name: Criar diretório de Monitoring
-      file:
-        path: "{{ mon_dir }}"
-        state: directory
-        owner: fajre
-        group: docker
-        mode: '0750'
-
-    # --- MONITORAMENTO ---
     - name: Criar diretórios de Monitoring
       file:
         path: "{{ item }}"
@@ -222,6 +218,7 @@
       loop:
         - "{{ mon_dir }}"
         - "{{ alertmanager_dir }}"
+        - "{{ pve_dir }}"
 
     # Sincroniza arquivos estáticos (Prometheus, Grafana, Loki)
     # Exclui os templates para não sobrescrever com arquivo cru
@@ -235,6 +232,9 @@
           - "--exclude=.env"
           - "--exclude=alertmanager/config.yml"    # Ignora se tiver local
           - "--exclude=alertmanager/config.yml.j2" # Não copia o template .j2 pro servidor
+          # Protege o arquivo de secrets
+          - "--exclude=pve/pve.yml"
+          - "--exclude=pve/pve.yml.j2"
       notify: Restart Prometheus
 
     # Gera a config do Alertmanager injetando o Token do prompt
@@ -246,6 +246,16 @@
         group: docker
         mode: '0644' # Protegido (tem token)
       notify: Restart Alertmanager
+
+    # --- NOVA TASK: Configurar PVE Exporter ---
+    - name: Configurar PVE Exporter (Com Token)
+    template:
+      src: "../dockerhost/monitoring/pve/pve.yml.j2"
+      dest: "{{ pve_dir }}/pve.yml"
+      owner: fajre
+      group: docker
+      mode: '0644' # Leitura para o container (usuário nobody)
+    notify: Restart PveExporter
 
     # Garante permissão da regra de alerta (o rsync já levou, mas garantimos leitura)
     - name: Ajustar permissão das regras de alerta
@@ -286,4 +296,9 @@
     - name: Restart Alertmanager
       community.docker.docker_container:
         name: alertmanager
+        restart: yes
+    
+    - name: Restart PveExporter
+      community.docker.docker_container:
+        name: pve-exporter
         restart: yes

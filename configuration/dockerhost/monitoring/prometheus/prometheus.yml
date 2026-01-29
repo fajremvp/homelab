@@ -50,3 +50,19 @@ scrape_configs:
       - targets: ['10.10.30.10:6060']
         labels:
           machine: 'dockerhost'
+
+  # --- Proxmox VE (LXC/VMs) ---
+  - job_name: 'proxmox-ve'
+    metrics_path: /pve
+    params:
+      module: [default]
+    static_configs:
+      - targets:
+        - 192.168.0.200  # IP do Proxmox
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: pve-exporter:9221  # Nome do container + Porta interna

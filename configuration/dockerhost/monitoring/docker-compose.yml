@@ -122,6 +122,17 @@ services:
       - "traefik.http.routers.ntfy.tls.certresolver=step_ca"
       - "traefik.http.services.ntfy.loadbalancer.server.port=80"
       - "traefik.docker.network=proxy"
+  
+  # --- PROXMOX EXPORTER ---
+  pve-exporter:
+    image: prompve/prometheus-pve-exporter:latest
+    container_name: pve-exporter
+    restart: unless-stopped
+    # NÃO se mapeia ports. O acesso é interno via rede "monitoring".
+    volumes:
+      - ./pve/pve.yml:/etc/prometheus/pve.yml:ro
+    networks:
+      - monitoring
 
 networks:
   monitoring:
