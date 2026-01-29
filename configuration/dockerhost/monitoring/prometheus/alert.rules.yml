@@ -43,7 +43,7 @@ groups:
   
   - name: pve_alerts
     rules:
-      # Só avisa se o Exporter morrer (não consegue ler o Proxmox)
+      # Alerta de Vida ou Morte do Monitoramento
       - alert: PveExporterDown
         expr: up{job="proxmox-ve"} == 0
         for: 1m
@@ -51,5 +51,28 @@ groups:
           severity: critical
         annotations:
           summary: "PVE Exporter Inacessível"
-          description: "Falha ao coletar métricas do Proxmox."
+          description: "O container exporter caiu ou o Proxmox rejeitou a senha."
+
+      # CPU Alta em VM/LXC (Acima de 90% da capacidade alocada por 5m)
+      # rate() calcula a velocidade do uso por segundo.
+      # Se uma VM tem 2 vCores e usa 1.8 vCores/s, isso é 90%.
+      - alert: PveGuestHighCpu
+        expr: (rate(pve_guest_cpu_usage_seconds_total[5m]) / pve_guest_cpu_count) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "VM {{ $labels.name }} ({{ $labels.vmid }}) fritando CPU"
+          description: "Uso de CPU acima de 90% por 5 minutos."
+
+      # RAM Alta em VM/LXC (Acima de 90% do limite)
+      # Gauge direto: Uso / Limite
+      - alert: PveGuestHighMem
+        expr: (pve_guest_memory_usage_bytes / pve_guest_memory_limit_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "VM {{ $labels.name }} ({{ $labels.vmid }}) sem RAM"
+          description: "Uso de memória atingiu {{ $value | printf \"%.1f\" }}% do limite."
 
