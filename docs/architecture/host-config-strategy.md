@@ -11,9 +11,9 @@ A configuração de boot foi simplificada para evitar "Boot Loops" causados por 
     * **IOMMU:** Habilitado preferencialmente via BIOS. Parâmetros como `intel_iommu=on` são opcionais se a BIOS já expõe os grupos IOMMU corretamente para Passthrough.
 
 * **Desbloqueio Remoto (Dropbear no Initramfs):**
-    * **Estratégia Anti-Lockout:** O `initramfs.conf` está configurado com `IP=dhcp`.
-    * **Justificativa:** Isso garante que, se eu levar o servidor para outra casa ou mudar o roteador, ele pegará um IP novo automaticamente e permitirá o desbloqueio via SSH, sem ficar preso tentando acessar um Gateway estático inexistente.
-    * **Interface:** Definida como `DEVICE=enp4s0` (nome nativo do hardware) para garantir que o Dropbear suba a placa correta antes mesmo do sistema operacional renomeá-la.
+    * **Estratégia Determinística:** O `initramfs.conf` está configurado com IP estático `IP=192.168.0.200::192.168.0.1:255.255.255.0:homelab:enp4s0:off`.
+    * **Justificativa:** Garante acesso previsível via VPN de Emergência (Raspberry Pi) em cenários de desastre onde o roteador/DHCP está inoperante.
+    * **Interface:** Definida como `DEVICE=enp4s0` (nome nativo do hardware) para garantir que o Dropbear suba a placa correta antes mesmo do sistema operacional renomeá-la para `nic0`.
 
 ## Identidade de Rede e Interfaces
 

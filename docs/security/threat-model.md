@@ -54,6 +54,4 @@ Todos os dados do sistema, VMs, containers, logs e metadados ficam **ilegíveis 
 A combinação de:
 - ZFS Mirror
 - LUKS2
-- Swap dentro do pool criptografado
-
-fornece um bom equilíbrio entre **segurança física**, **estabilidade** e **performance** para um servidor doméstico 24/7.
+- Swap dentro do pool criptografado fornece um bom equilíbrio entre **segurança física**, **estabilidade** e **performance** para um servidor doméstico 24/7.

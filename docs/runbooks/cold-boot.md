@@ -3,21 +3,15 @@
 * **Switch**: Configurado para salvar VLANs na memória Flash, garantindo que a rede esteja pronta quando o SO do Proxmox terminar de carregar.
 * **Sequência de Desbloqueio (Cold Boot):**
      1. **Energia Volta:** Servidor liga (Restore on AC Loss).
-     2. **Initramfs:** Carrega o Dropbear SSH na porta 2222.
-     3. **Acesso Remoto (Via Pi - Bypass):**
+     2. **Initramfs:** Carrega o Dropbear SSH na porta `2222` no IP `192.168.0.200`.
+     3. **Acesso Remoto (Via Pi - Out-of-Band):**
          - O Pi (conectado direto ao Modem) sobe a VPN Tailscale automaticamente.
-         - Conectar na VPN de Emergência -> SSH para o Pi.
-         - No Pi: Desbloquear a partição de dados (`cryptroot-unlock`).
-         - No Pi: Usar a chave SSH resgatada para acessar o Proxmox (`ssh -p 2222 root@10.10.10.1`).
-     4. **Boot:** O ZFS monta e os serviços (OPNsense, Vault, etc.) iniciam conforme a ordem de prioridade.
+         - **Ação:** Conectar na VPN via Celular ou Notebook Arch.
+         - **Conexão:** `ssh -p 2222 root@192.168.0.200` (A rota é provida pelo Pi).
+         - **Desbloqueio:** No prompt BusyBox, rodar `cryptroot-unlock` e inserir a senha.
+     4. **Boot:** O ZFS (Proxmox) monta e os serviços iniciam conforme a ordem de prioridade.
 
- 	- Atualmente: (Usando DHCP do modem, sem ip dado pelo OPNsense ainda (10.10.10...)
-    	- **Initramfs:** Carrega o Dropbear SSH na porta 2222 via interface `enp4s0`.
-		- **Procedimento de Desbloqueio:**
-    		1. No notebook Arch, garantir IP `10.10.10.99`.
-    		2. Executar: `ssh -p 2222 root@10.10.10.1`.
-    		3. No prompt do BusyBox, rodar: `cryptroot-unlock`.
-    		4. Digitar a senha do LUKS e aguardar a queda da conexão.
+ 	- Se já estiver na rede local ou conectado ao cabo de rede no modem, não é necessaŕio utilizar a VPN.
 
 ### Ordem de Boot e Desligamento (Start/Shutdown Ordering)
 
