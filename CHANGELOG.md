@@ -369,7 +369,7 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 ## [2025-12-19] - Validação de Hardware
 ### Adicionado (Added)
 - **Burn-in Test:** Validação de memória RAM (MemTest86) concluída com 0 erros (Duração: 6h 17m).
-- **Evidência:** Adicionado screenshot do resultado do MemTest86 em `docs/assets/benchmarks/`.
+- **Evidência:** Adicionado screenshot do resultado do MemTest86 em `docs/assets/benchmarks/MemTest86.jpeg`.
 
 ### Alterado (Changed)
 - **BIOS:** Configurações críticas aplicadas para virtualização:

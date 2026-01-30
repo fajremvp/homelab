@@ -13,7 +13,7 @@
 | **Kernel / Sysctl** | Desabilitar IPv6 se não usado, desabilitar forwarding de pacotes (exceto se for router), proteção contra ataques ICMP e SYN flood. | Debian / Alpine. |
 | **CrowdSec** | Agente instalado em cada host enviando logs para o LAPI central. Detecta Brute Force local e reporta para bloqueio no OPNsense. | Todas as VMs expostas a serviços. |
 | **Talos Linux** | O hardening é nativo (Imutável, Ephemeral, Read-only FS). Acesso à API do cluster protegido por mTLS com rotação de certificados. | Nodes do Cluster. |
-| **Brute Force (SSH)** | **Fail2Ban** configurado com `mode=aggressive`. Whitelist estrita para VLANs de Gestão. Backend conectado ao `systemd-journald`. | Todas as VMs Debian/Proxmox. |
+| **Brute Force (SSH)** | **Fail2Ban** configurado com `mode=aggressive`. Whitelist estrita para VLANs de Gestão. Backend conectado ao `systemd-journald`. | Todas as VMs Debian/Proxmox/Rpi. |
 
 ### Diretrizes de Segurança para DockerHost
 

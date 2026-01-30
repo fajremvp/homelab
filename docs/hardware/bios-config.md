@@ -24,3 +24,4 @@
     * **Telemetria:**
         * Velocidade da RAM: 3192 MT/s (Confirmação de XMP Ativo)
         * Temperatura Máx CPU: 48°C (Validação da montagem do Cooler AK400)
+    ![Evidência do MemTest86](https://github.com/fajremvp/homelab/blob/main/docs/assets/benchmarks/MemTest86.jpeg)

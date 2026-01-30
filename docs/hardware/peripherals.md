@@ -22,35 +22,14 @@
 
 ## UPS (Nobreak) — NHS Gamer Play Senoidal 1000VA
 
-### Identificação
-- **Fabricante:** NHS
-- **Modelo:** Gamer Play Senoidal 1000VA
-- **Part Number:** 91.G0.010000
-- **Status:** Adquirido em 21/01/2026 (Aguardando entrega).
+    - DEVE SER COMPATÍVEL COM NUT!
 
 ### Especificações Elétricas
-- **Potência:** 1000 VA / 600 W (Fator de Potência 0.6).
 - **Forma de Onda:** **Senoidal Pura** (Obrigatório para fontes com PFC Ativo como a MSI MAG A750GL).
-- **Entrada:** Bivolt Automático (120V - 220V) - *Full Range*.
-- **Saída:** 120V (Padrão de fábrica).
-- **Tomadas:** 6 × NBR 14136 (10A).
-- **Proteções:** Curto-circuito, Sobrecarga, Sub/Sobretensão e Surtos (Varistor).
-
-### Armazenamento de Energia
-- **Baterias Internas:** 2 × 7Ah / 12V Chumbo-ácida VRLA (Sistema 24V).
-- **Autonomia Estimada:** ~25 a 35 minutos (Considerando carga média do Homelab de ~160W).
-- **Expansão:** Possui engate para módulo de bateria externa.
 
 ### Gerenciamento e Integração (Linux/NUT)
 - **Interface:** USB tipo B.
-- **Protocolo:** Compatível com **NHS / SEC2400** (MegaTec).
-- **Driver NUT:** `blazer_usb` ou `nutdrv_qx`.
 - **Topologia:** USB → Raspberry Pi (NUT Master) → Rede → Proxmox (NUT Slave).
-
-### Justificativa Técnica
-- **Protocolo Aberto:** Ao contrário do Ragtech (proprietário/binário), o NHS utiliza padrões de mercado documentados, garantindo monitoramento nativo no Linux sem "gambiarras".
-- **Resiliência:** O banco de baterias em 24V oferece o dobro de autonomia comparado a nobreaks de entrada (12V), fundamental para evitar *flapping* (ligar/desligar) em oscilações curtas de energia.
-- **Construção:** Gabinete metálico com pintura epóxi oferece melhor blindagem eletromagnética e dissipação térmica que carcaças de plástico ABS.
 
 ---
 
@@ -185,3 +164,8 @@
 - **Status:** Devolução iniciada em 2026-01-17.
 - **Motivo:** Incompatibilidade com Linux/NUT.
 - **Diagnóstico:** O chipset Microchip (`04d8:000a`) utiliza um protocolo binário proprietário (resposta `0xca` para comandos padrão), impedindo o monitoramento aberto sem engenharia reversa instável.
+
+### UPS (Nobreak) — NHS Gamer Play Senoidal 1000VA
+- **Status:** Devolvido em 28/01/2026.
+- **Motivo:** Incompatibilidade de Protocolo.
+- **Diagnóstico:** O modelo utiliza um protocolo proprietário ou implementação USB não-standard que não foi reconhecida pelos drivers `blazer_usb` ou `nutdrv_qx` do NUT, impedindo o monitoramento automatizado.
