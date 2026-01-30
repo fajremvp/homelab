@@ -1,0 +1,26 @@
+// Tailscale Policy for RPi
+// Apply at: https://login.tailscale.com/admin/acls
+{
+  // Define quem manda na Tag (Admin)
+  "tagOwners": {
+    "tag:rpi": ["meu.email@exemplo.com"], // <--- MUDAR NO PAINEL
+  },
+
+  // ACLs: O que é permitido?
+  "acls": [
+    // Regra Única e Absoluta:
+    // Origem: SÓ EU (Celular/Arch logado na minha conta)
+    // Destino: Apenas a porta 2222 (Dropbear) no IP fixo do Proxmox.
+    {
+      "action": "accept",
+      "src": ["seu.email@exemplo.com"], // <--- MUDAR NO PAINEL
+      "dst": [
+        "192.168.0.200:2222",
+      ],
+    },
+  ],
+
+  // SSH via Tailscale desabilitado explicitamente.
+  // O RPi é uma caixa preta de passagem.
+  "ssh": [],
+}
