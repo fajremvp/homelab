@@ -62,3 +62,46 @@ O OPNsense não utilizar Restic. Ele utilizar o plugin `os-git-backup`.
 2.  **Instalar** o plugin `os-git-backup`.
 3.  **Configurar** o repositório Git (`ssh://github.com/...`) e a chave SSH RSA.
 4.  **Aguardar** o plugin baixar o `config.xml` mais recente e aplicar automaticamente.
+
+## Acesso de Emergência (Out-of-Band)
+
+Utilizar em caso o servidor estar travado na tela de senha (LUKS) e eu estiver fora da rede local.
+
+### Pré-requisitos
+1.  **Meu celular ou Arch** com cliente Tailscale instalado e autenticado.
+2.  **Chave Privada SSH** (Ed25519) carregada no dispositivo cliente.
+
+### Procedimento de Desbloqueio (Via Android/Celular)
+1.  **Desativar outras VPNs:** O Android não suporta VPNs simultâneas (ex: desligue o ProtonVPN).
+2.  **Ativar Tailscale:** Conectar à malha VPN.
+3.  **Acessar Shell:** Abrir o Termux ou cliente SSH.
+4.  **Conectar:**
+    ```bash
+    ssh root@192.168.0.200 -p 2222
+    ```
+5.  **Desbloquear:** Digitar `cryptroot-unlock` e inserir a passphrase do disco.
+6.  **Encerrar:** Assim que o comando retornar sucesso, desconecte o Tailscale e reative sua VPN de privacidade.
+
+### Procedimento no Arch Linux (Client) & Troubleshooting DNS
+
+#### Conectar
+O comando deve aceitar explicitamente as rotas anunciadas pelo RPi.
+```bash
+sudo tailscale up --accept-routes
+```
+#### Desconectar e Corrigir DNS
+- Ao desconectar, o `systemd-resolved` pode falhar ao restaurar o DNS original, deixando o sistema sem navegação.
+1. **Desconectar:**
+   ```bash
+   sudo tailscale down
+   ```
+2. **Validar conectividade:**
+   ```bash
+   ping google.com
+   ```
+3. **Se falhar (Name Resolution Error):** Forçar o NetworkManager a renovar o DHCP e a tabela DNS:
+   ```bash
+   sudo systemctl restart NetworkManager
+   ```
+### Janela de Acesso
+- A porta 2222 (Dropbear) só existe durante a fase de initramfs. Após o início do boot do Proxmox, a conexão será recusada (Connection Refused). Isso é o comportamento esperado.
