@@ -17,6 +17,16 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ---
 
+## [2026-01-29] - Emergency Access Completed
+### Adicionado (Added)
+- **VPN Out-of-Band:** Implementado Tailscale no Raspberry Pi com roteamento para a rede nativa (`192.168.0.0/24`).
+- **ACLs Estritas:** Política de segurança "Zero Trust" no Tailscale, restringindo o acesso apenas à porta 2222 do Proxmox e a minha própria conta.
+- **Boot Determinístico:** Configurado IP Estático (`192.168.0.200`) no initramfs do Proxmox para garantir acesso SSH sem DHCP.
+- **Client Access:** Provisionadas chaves SSH de emergência para dispositivos móveis (Android/Termux).
+
+### Alterado (Changed)
+- **Network Interface:** IP do Dropbear fixado, antes DHCP.
+
 ## [2026-01-28] - Observabilidade Fase 2 Completa
 ### Adicionado (Added)
 - **Alerting Pipeline:** Implementado Alertmanager integrado ao Ntfy com autenticação Bearer Token.

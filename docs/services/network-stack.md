@@ -27,8 +27,9 @@
     * **Configuração:** O OPNsense atuará como cliente **WireGuard** (conectado à ProtonVPN).
     * **Kill Switch:** Regras de firewall forçarão o tráfego de certas VLANs (ex: Downloads) a sair *apenas* pelo túnel VPN.
 * **VPN 3: Acesso de Emergência (Out-of-Band):** `[Raspberry Pi]`
-    * **Justificativa:** Instância secundária do Tailscale/Headscale rodando diretamente no Pi.
-    * **Cenário de Uso:** Se o Proxmox ou o DockerHost travarem (derrubando a VPN 1), eu conecto nesta VPN de emergência para acessar a VLAN de Gerenciamento (10) e reiniciar o servidor via IPMI/SSH ou acessar o console do Switch.
+    * **Justificativa:** Instância secundária do Tailscale rodando diretamente no Pi.
+    * **Cenário de Uso:** Acesso exclusivo para **Desbloqueio de Disco (Dropbear)** fora de casa.
+    * **Segurança:** Protegido por ACLs que impedem movimento lateral para a rede interna.
 * **Tor (Gateway/Proxy):** `[VM - OPNsense (Policy)]`
     * **Justificativa:** A forma mais fácil de "alterar" é criar uma regra de roteamento no OPNsense. Assim, pode-se definir que certos IPs (ex: uma VM de "privacidade") tenham todo o tráfego roteado pela rede Tor, enquanto outros usam a VPN ou a WAN normal.
 * **AdGuard Home e Unbound (DNS):**

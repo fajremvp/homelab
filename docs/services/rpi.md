@@ -11,18 +11,22 @@ O Raspberry Pi atua como um nó de borda (Edge Node), fisicamente separado da in
 
 ## Serviços em Execução
 
-### 1. NUT Server (Network UPS Tools) [Master]
+### 1. NUT Server (Network UPS Tools)
 * **Hardware:** Conectado via USB ao Nobreak Ragtech.
 * **Função:** Monitora tensão, carga e estado da bateria.
 * **Comunicação:** Expõe o status via rede (Porta 3493) ou VPN (Tailscale) para que o Proxmox (Slave) saiba quando iniciar o desligamento gracioso.
 * **Por que no Pi?** Evita *bootloops* no servidor principal (onde o servidor liga, detecta bateria baixa via USB e desliga imediatamente). O Pi atua como árbitro externo.
 
-### 2. Emergency VPN (Tailscale/Headscale)
-* **Objetivo:** Permitir acesso remoto (Out-of-Band) caso o OPNsense ou Proxmox falhem.
-* **ACLs (Restrição):**
-    * Este nó (`rpi-mgmt`) tem permissão de saída **apenas** para o IP do Dropbear do Proxmox (`192.168.x.x:2222` ou IP de emergência).
-    * Bloqueado acesso lateral a qualquer outra VLAN ou serviço interno.
-* **Estado:** O arquivo de estado da VPN (`tailscaled.state`) é o único dado persistente de identidade. Se o Pi for roubado, a revogação deste nó no painel administrativo invalida o acesso imediatamente.
+### 2. Emergency VPN (Tailscale)
+* **Objetivo:** Permitir acesso remoto (Out-of-Band) para desbloqueio de disco (LUKS) via Dropbear.
+* **Implementação:**
+    * O RPi atua como um *Subnet Router*, anunciando a rota `192.168.0.0/24` (Rede do Modem).
+    * O serviço roda diretamente no OS (sem Docker) para máxima resiliência.
+* **ACLs (Restrição via Painel):**
+    * **Tag:** `tag:rpi`.
+    * **Política:** Acesso de saída permitido **estritamente** para `192.168.0.200:2222`.
+    * **Bloqueio:** Qualquer tentativa de acesso lateral (SSH no próprio RPi ou acesso à LAN doméstica) é bloqueada pela ACL da VPN.
+* **Estado:** A chave de autenticação é configurada via Ansible (`hardening_rpi.yml`). Em caso de roubo, a revogação da máquina no painel Tailscale corta o acesso imediatamente.
 
 ### 3. DNS Secundário (AdGuard Home)
 * **Função:** Alta Disponibilidade. Se o AdGuard principal (LXC no Proxmox) cair ou estiver reiniciando, os clientes DHCP alternam automaticamente para este IP.

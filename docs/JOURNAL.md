@@ -4,6 +4,38 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-29
+**Status:** ✅ Sucesso (Acesso Out-of-Band & Disaster Recovery)
+
+**Foco:** Implementação da VPN (Tailscale) no RPi.
+
+- **VPN de Emergência (Raspberry Pi):**
+    - **Objetivo:** Criar um túnel direto para desbloquear a criptografia LUKS (via Dropbear) do servidor fora de casa.
+    - **Implementação:**
+        - Raspberry Pi configurado como *Subnet Router* (`192.168.0.0/24`) via Ansible (Playbook `hardening_rpi.yml`).
+        - **Segurança (ACLs):** Configurado no painel da Tailscale para bloqueio total (Default Deny).
+        - **Regra:** A tag `tag:rpi` permite tráfego de saída **exclusivamente** para o IP `192.168.0.200` na porta `2222` (Dropbear). Nenhum acesso lateral à rede doméstica é permitido. Somente usuários com minha conta podem acessar.
+
+- **Fixação de IP de Boot (Proxmox):**
+    - **Problema:** O Dropbear no initramfs dependia de DHCP. Antes eu utilizava `nmap -p 2222 --open 192.168.0.0/24` para saber qual era o IP do Dropbear na rede.
+    - **Ação Manual (Bootstrap):** Editado `/etc/initramfs-tools/initramfs.conf` no Host.
+    - **Configuração:** `IP=192.168.0.200::192.168.0.1:255.255.255.0:homelab:enp4s0:off`.
+    - **Interface:** Confirmado o uso de `enp4s0` (Nome de Kernel) em vez de `nic0` (Nome Systemd).
+    - **Resultado:** IP estático, reduzindo perda de tempo procurando o IP.
+
+- **Configuração de Clientes:**
+    - **Android (Termux):** Gerado par de chaves `ssh-ed25519` e adicionado ao `/etc/dropbear-initramfs/authorized_keys` via Proxmox desbloqueado.
+    - **Arch:** Instalado cliente Tailscale e validado acesso com `--accept-routes`.
+
+- **Incidente de DNS (Arch Linux):**
+    - **Sintoma:** Após desconectar a VPN (`tailscale down`), a internet no notebook parou de funcionar (`ping google.com` falhava, mas `1.1.1.1` funcionava).
+    - **Causa:** O `NetworkManager` não reverteu corretamente as configurações de DNS (MagicDNS) ao sair do túnel.
+    - **Solução:** `sudo systemctl restart NetworkManager`. Conectividade restaurada imediatamente.
+
+- **Teste de Fogo (Disaster Recovery):**
+    - Simulado corte de Wi-Fi e acesso via 5G.
+    - Conexão SSH no Dropbear realizada com sucesso através do túnel. Desbloqueio de disco validado.
+
 ## 2026-01-28
 **Status:** ✅ Sucesso (Com alta complexidade resolvida)
 
