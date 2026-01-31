@@ -1,4 +1,2 @@
-# Tor Hidden Service Configuration
 HiddenServiceDir /var/lib/tor/hidden_service/
-# Mapeia a porta 80 do Onion (padrão) para a 8080 do Relay
 HiddenServicePort 80 relay:8080
