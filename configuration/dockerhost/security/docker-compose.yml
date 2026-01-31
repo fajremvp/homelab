@@ -5,7 +5,6 @@ services:
     restart: unless-stopped
     dns:
       - 10.10.30.5
-      - 1.1.1.1
     environment:
       # Boot limpo sem Authentik para evitar crash
       - COLLECTIONS=crowdsecurity/traefik crowdsecurity/http-cve firix/authentik

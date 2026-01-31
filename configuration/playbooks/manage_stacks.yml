@@ -56,6 +56,7 @@
         - "{{ base_dir }}/traefik"
         - "{{ base_dir }}/vaultwarden"
         - "{{ base_dir }}/whoami"
+        - "{{ base_dir }}/nostr"
         - "{{ auth_dir }}/authentik"
 
     # --- 3. SINCRONIZAÇÃO (GIT -> SERVER) ---
@@ -206,6 +207,22 @@
         project_src: "/opt/security"
         state: present
       notify: Restart CrowdSec
+
+    # --- NOSTR STACK ---
+    - name: Sincronizar stack Nostr
+      synchronize:
+        src: "../dockerhost/services/nostr/"
+        dest: "/opt/services/nostr/"
+        delete: yes
+        recursive: yes
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--chown={{ ansible_user }}:{{ ansible_user }}"
+
+    - name: Deploy Nostr Stack
+      community.docker.docker_compose_v2:
+        project_src: "/opt/services/nostr"
+        state: present
 
     # --- MONITORAMENTO ---
     - name: Criar diretórios de Monitoring

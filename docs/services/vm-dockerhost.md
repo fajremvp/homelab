@@ -65,10 +65,10 @@ Para manter a organização e facilitar backups, o DockerHost segue estritamente
 
 | Caminho | Propósito | Exemplo de Conteúdo |
 | :--- | :--- | :--- |
-| `/opt/traefik` | Ingress & Edge | `docker-compose.yml`, `acme.json` |
-| `/opt/services` | Aplicações Gerais | `whoami/`, `stirling-pdf/`, `syncthing/` |
-| `/opt/auth` | Identidade e Segurança | `authentik/`, `vaultwarden/` |
-| `/opt/monitoring` | Observabilidade | `grafana/`, `prometheus/`, `crowdsec/` |
+| `/opt/services` | Aplicações Gerais | `traefik/`, `vaultwarden/`, `whoami/` |
+| `/opt/auth` | Identidade e Segurança | `authentik/` |
+| `/opt/monitoring` | Observabilidade | `grafana/`, `prometheus/`, `alertmanager/`, `alloy/`, `loki/` |
+| `opt/security` | Segurança | `crowdsec/` |
 | `/opt/utils` | Scripts e Ferramentas | Scripts de manutenção local |
 
 **Política de Logs:**

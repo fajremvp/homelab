@@ -1,0 +1,45 @@
+services:
+  relay:
+    image: scsibug/nostr-rs-relay:latest
+    container_name: nostr-relay
+    restart: unless-stopped
+    user: "1000:1000" # Roda como usuário padrão para evitar problemas de permissão no SQLite
+    volumes:
+      - ./data:/var/lib/nostr-rs-relay
+      - ./config/config.toml:/usr/src/app/config.toml:ro
+    environment:
+      - RUST_LOG=info
+    networks:
+      - tor-net
+      - proxy 
+    # Labels do Traefik (Acesso Local Seguro via wss://nostr.home)
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nostr.rule=Host(`nostr.home`)"
+      - "traefik.http.routers.nostr.entrypoints=websecure"
+      - "traefik.http.routers.nostr.tls=true"
+      - "traefik.http.services.nostr.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.nostr-headers.headers.customrequestheaders.Upgrade=websocket"
+      - "traefik.http.middlewares.nostr-headers.headers.customrequestheaders.Connection=Upgrade"
+      - "traefik.http.routers.nostr.middlewares=nostr-headers"
+
+  tor:
+    image: ghcr.io/torproject/tor:latest
+    container_name: nostr-tor
+    restart: unless-stopped
+    # Tor precisa ser root inicialmente para definir permissões na pasta hidden_service
+    # Depois ele faz drop privilege automaticamente.
+    user: root 
+    volumes:
+      - ./config/torrc:/etc/tor/torrc:ro
+      - ./tor-keys:/var/lib/tor/hidden_service/
+    networks:
+      - tor-net
+    depends_on:
+      - relay
+
+networks:
+  tor-net:
+    internal: true # Isolado da internet normal
+  proxy:
+    external: true # Conecta no Traefik
