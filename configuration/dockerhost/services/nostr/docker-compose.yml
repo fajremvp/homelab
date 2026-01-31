@@ -24,7 +24,7 @@ services:
       - "traefik.http.routers.nostr.middlewares=nostr-headers"
 
   tor:
-    image: ghcr.io/torproject/tor:latest
+    image: osminogin/tor-simple:latest
     container_name: nostr-tor
     restart: unless-stopped
     # Tor precisa ser root inicialmente para definir permissões na pasta hidden_service
