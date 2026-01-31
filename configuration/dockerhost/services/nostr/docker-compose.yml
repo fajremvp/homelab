@@ -40,6 +40,6 @@ services:
 
 networks:
   tor-net:
-    internal: true # Isolado da internet normal
+    driver: bridge
   proxy:
     external: true # Conecta no Traefik
