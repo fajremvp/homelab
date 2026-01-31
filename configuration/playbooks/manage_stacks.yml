@@ -225,8 +225,8 @@
       file:
         path: "/opt/services/nostr/tor-keys"
         state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "root"
+        group: "root"
         mode: '0700'
 
     - name: Deploy Nostr Stack
