@@ -218,6 +218,16 @@
         rsync_opts:
           - "--chmod=D0755,F0644"
           - "--chown={{ ansible_user }}:{{ ansible_user }}"
+          - "--exclude=tor-keys/**" # Protege as chaves geradas de serem apagadas
+
+    # Tor exige permissão 700 estrita
+    - name: Corrigir permissões da pasta Tor Keys
+      file:
+        path: "/opt/services/nostr/tor-keys"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0700'
 
     - name: Deploy Nostr Stack
       community.docker.docker_compose_v2:
