@@ -15,13 +15,11 @@ services:
     # Labels do Traefik (Acesso Local Seguro via wss://nostr.home)
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.nostr.rule=Host(`nostr.home`)"
       - "traefik.http.routers.nostr.entrypoints=websecure"
       - "traefik.http.routers.nostr.tls=true"
       - "traefik.http.services.nostr.loadbalancer.server.port=8080"
-      - "traefik.http.middlewares.nostr-headers.headers.customrequestheaders.Upgrade=websocket"
-      - "traefik.http.middlewares.nostr-headers.headers.customrequestheaders.Connection=Upgrade"
-      - "traefik.http.routers.nostr.middlewares=nostr-headers"
 
   tor:
     image: osminogin/tor-simple:latest
