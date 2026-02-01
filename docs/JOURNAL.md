@@ -4,6 +4,55 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-01-31
+**Status:** ✅ Sucesso (Sovereignty & Privacy)
+
+**Foco:** Implementação de Relay Nostr Soberano, Tor Hidden Service e Auditoria de Clientes.
+
+- **Arquitetura Soberana (Nostr):**
+    - **Stack:** Implementado `scsibug/nostr-rs-relay` (Rust) com backend SQLite.
+    - **Segurança:** Configurada **Whitelist** de PubKey. O relay é público para leitura, mas restrito para escrita (apenas minha chave privada pode postar), atuando como um "Cofre Digital" pessoal.
+    - **Acesso Híbrido:**
+        1.  **Local (LAN):** Via `wss://nostr.home` (Alta performance/baixa latência).
+        2.  **Mundial (Tor):** Via Hidden Service `.onion` (Anonimato e resistência à censura).
+
+- **Permissões e CRLF (Tor):**
+    - **Incidente 1 (Permissões):** O Tor entrava em crash loop (`Permissions on directory ... are too permissive`).
+        - *Causa:* O Ansible sincronizava a pasta `tor-keys` com permissões do usuário `fajre` (1000), mas o processo Tor rodava como `root`.
+        - *Correção:* Ajustada task no Ansible para forçar `owner: root` e `mode: 0700` na pasta de chaves.
+    - **Incidente 2 (Sintaxe/CRLF):** O Tor falhava com `Unparseable address`.
+        - *Causa:* O arquivo `torrc` criado no editor local continha quebras de linha ou caracteres ocultos incompatíveis.
+        - *Correção:* Recriação do arquivo diretamente no servidor via `printf` limpo e posterior sincronização Git.
+
+- **Roteamento e "Split-Brain" (Traefik):**
+    - **Sintoma:** Acesso local (`nostr.home`) retornava `504 Gateway Timeout`, mas `wget` interno funcionava.
+    - **Causa:** O container estava em duas redes (`tor-net` e `proxy`). O Traefik tentava rotear pelo IP da rede Tor (invisível para ele).
+    - **Correção:** Adicionada label explícita `traefik.docker.network=proxy` no `docker-compose.yml` para forçar a rota correta e removido vários middlewares desnecessários e bloquedores.
+
+- **Auditoria de Clientes (Client-Side vs Cache):**
+    - **Fenômeno:** Posts feitos via celular (Amethyst) não apareciam no PC (Primal Web), apesar de constarem no banco de dados (validado via ferramenta CLI `nak`).
+    - **Descoberta:** O **Primal** utiliza um cache centralizado proprietário e não indexa relays privados/locais/Tor.
+    - **Solução:** Migração no Desktop para o **Coracle** (Web Client que realiza conexões diretas via Socket no navegador), permitindo visualização real dos dados soberanos.
+
+- **Amethyst & Tor Nativo:**
+    - Validado que o cliente Android **Amethyst** possui suporte nativo a endereços `.onion` (via `kmp-tor` embutido).
+    - *Nota:* O certificado SSL local (`mkcert`) é rejeitado pelo Android, tornando o acesso via `.onion` a via preferencial no mobile.
+
+## 2026-01-30
+**Status:** ✅ Sucesso (Maintenance & Stability)
+
+**Foco:** Revisão de Repositório e Estabilidade do CrowdSec.
+
+- **Repo Hygiene:**
+    - Revisão estrutural de todas as documentações para garantir conformidade com o estado atual da infraestrutura.
+
+- **CrowdSec Stability Fix (DNS Loop):**
+    - **Sintoma:** O container `crowdsec` entrava em *Crash Loop* (restart a cada 15s) e o Grafana exibia "No Data".
+    - **Erro no Log:** `dial udp 1.1.1.1:53: connect: network is unreachable`.
+    - **Causa Raiz:** A política de Firewall "Default Deny" na VLAN SERVER (30) bloqueia consultas DNS diretas para a internet (UDP/53). O container estava configurado com um outro DNS externo (`1.1.1.1`) no `docker-compose.yml`.
+    - **Correção:** Removio esse DNS e deixado somente o DNS do container para o AdGuard Home interno (`10.10.30.5`), que possui permissão de saída explícita no firewall.
+    - **Resultado:** O container estabilizou, baixou as regras do Hub e o Bouncer no OPNsense conectou com sucesso (HTTP 200).
+
 ## 2026-01-29
 **Status:** ✅ Sucesso (Acesso Out-of-Band & Disaster Recovery)
 

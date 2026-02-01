@@ -83,7 +83,13 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
     * **Justificativa:** Um "servidor" centralizado para rodar todos os aplicativos em contêineres Docker. Isso mantém o Host Proxmox limpo. (Uma VM oferece melhor isolamento; um LXC é mais leve).
     * **Serviços rodando neste Host (Docker):**
     	* `Stalwart Mail Server`: A escolha definitiva. Servidor moderno escrito em **Rust** (memory-safe). Substitui Postfix/Dovecot/Rspamd por um binário único e eficiente. Suporta JMAP/IMAP/SMTP e consome apenas ~150MB de RAM. Também com aliases. Já aviso que não enviarei e-mails, somente receber (estou ciente da dificuldade de manter a famosa "reputação"). Uso de SMTP Relay externo ou e-mail comum que já uso (Tuta e Proton) caso haja bloqueio da porta 25 pelo ISP.
-    	* `Nostr Relay (Strfry)`: Servidor de retransmissão de alta performance escrito em C++. Configurado com *whitelist* de escrita (apenas sua chave privada pode postar/fazer backup) e leitura pública. Garante soberania dos dados e resistência à censura. Será exposto também via Tor (Onion Service).
+        * `Nostr Relay (nostr-rs-relay)`: [Implementado em 2026-01-31]
+        - **Motivo:** Garantir soberania e resiliência. Caso eu seja banido de relays públicos, continuo com meu próprio relay operando normalmente. Além disso, ele funciona como backup pessoal do meu conteúdo e da minha presença no Nostr, independente de terceiros.
+        - **Tecnologia:** Rust (Substituiu a ideia inicial do Strfry/C++ pelo suporte ao whitelist nativo).
+        - **Privacidade:** Configurado com *whitelist* de escrita (apenas minha chave privada pode postar).
+        - **Acesso:**
+            - **Local:** `wss://nostr.home` (Alta performance).
+            - **Tor:** Hidden Service `.onion` (Soberania e acesso externo sem abrir portas na WAN).	
       * **Authentik (Identity Provider):** `[DockerHost]`
           - **Local:** `/opt/auth/authentik`
           - **Versão:** `2025.10.3` (Stable).

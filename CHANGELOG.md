@@ -16,6 +16,20 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Saber se um container caiu, cAdvisor...
 
 ---
+## [2026-01-31] - Sovereign Communication Stack
+### Adicionado (Added)
+- **Nostr Relay:** Implementado servidor `nostr-rs-relay` no DockerHost com persistência SQLite.
+- **Tor Hidden Service:** Configurado container Tor sidecar para expor o Relay via rede Onion (`.onion`) isolada.
+- **Whitelist Security:** Configuração de restrição de publicação (NIP-01) permitindo escrita apenas para a chave mestre do proprietário.
+- **Ansible Automation:** Adicionada task de sincronização (`synchronize`) e deploy do stack Nostr no playbook `manage_stacks.yml`, com tratamento especial para permissões de chaves Tor (`mode 0700`).
+
+### Corrigido (Fixed)
+- **Traefik Routing:** Corrigido erro de *Gateway Timeout* em containers multi-rede forçando a rede de proxy via label `traefik.docker.network`.
+- **Tor Permissions:** Corrigida falha de boot do Tor ajustando o *ownership* da pasta de chaves para `root` via Ansible.
+
+## [2026-01-30] - Stability & Maintenance
+### Corrigido (Fixed)
+- **CrowdSec DNS:** Resolvido loop de reinício do container CrowdSec apontando a resolução de DNS para o AdGuard interno (`10.10.30.5`), contornando o bloqueio de saída da VLAN 30.
 
 ## [2026-01-29] - Emergency Access Completed
 ### Adicionado (Added)
