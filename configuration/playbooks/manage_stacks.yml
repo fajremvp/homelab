@@ -149,6 +149,14 @@
         mode: '0644'
       notify: Reload Systemd
 
+    # Tailscale NAT Service (Fix de Roteamento)
+    - name: Instalar Tailscale NAT Service
+      copy:
+        src: "../dockerhost/services/tailscale/tailscale-nat.service"
+        dest: "/etc/systemd/system/tailscale-nat.service"
+        mode: '0644'
+      notify: Reload Systemd
+
     # --- 6. ATIVAÇÃO DOS SERVIÇOS ---
 
     # Grupo A: Docker Compose Puro (Sem segredos do Vault)
@@ -174,7 +182,13 @@
       service:
         name: vaultwarden-vault
         state: started
-        enabled: yes 
+        enabled: yes
+
+    - name: Habilitar e Iniciar Tailscale NAT Service
+      service:
+        name: tailscale-nat
+        state: started
+        enabled: yes
     
     # --- SECURITY STACK (CROWDSEC) ---
     - name: Criar diretório de Security

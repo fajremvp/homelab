@@ -16,6 +16,16 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Saber se um container caiu, cAdvisor...
 
 ---
+## [2026-02-02] - Remote Access & VPN Routing
+### Adicionado (Added)
+- **Tailscale Subnet Router:** Implementado no DockerHost anunciando a rede `10.10.0.0/16`.
+- **Systemd NAT Service:** Criado `tailscale-nat.service` para persistência de regras de Masquerading e Forwarding, contornando limitações de roteamento de retorno e bloqueios do Docker.
+- **Ansible AuthKey:** Implementada injeção segura de chaves Tailscale via `.env` e `vars_prompt`.
+
+### Alterado (Changed)
+- **Vault Firewall:** Atualizada regra UFW na VM Vault para permitir SSH vindo do DockerHost (Jump Server scenario).
+- **Tailscale ACLs:** Política refinada para usar origem por e-mail explícito (`src: ["email"]`) em vez de tags ou grupos automáticos, garantindo controle granular sobre quem acessa a rede interna e manter `tag:rpi` restrito ao Dropbear.
+
 ## [2026-01-31] - Sovereign Communication Stack
 ### Adicionado (Added)
 - **Nostr Relay:** Implementado servidor `nostr-rs-relay` no DockerHost com persistência SQLite.

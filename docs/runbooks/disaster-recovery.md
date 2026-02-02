@@ -86,6 +86,7 @@ Utilizar em caso o servidor estar travado na tela de senha (LUKS) e eu estiver f
 
 #### Conectar
 O comando deve aceitar explicitamente as rotas anunciadas pelo RPi.
+**AVISO:** NUNCA executar este comando se estiver fisicamente conectado à mesma rede Wi-Fi/Cabo que o servidor. Isso causa loop de roteamento. Usar apenas via 5G ou redes externas.
 ```bash
 sudo tailscale up --accept-routes
 ```

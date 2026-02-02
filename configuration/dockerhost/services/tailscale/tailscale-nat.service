@@ -1,0 +1,14 @@
+[Unit]
+Description=Tailscale NAT and Forwarding Rules
+After=network.target tailscaled.service
+
+[Service]
+Type=oneshot
+# Habilita o tráfego atravessar o servidor (fura o bloqueio do Docker)
+ExecStart=/usr/sbin/iptables -I FORWARD 1 -i tailscale0 -j ACCEPT
+ExecStart=/usr/sbin/iptables -I FORWARD 1 -o tailscale0 -j ACCEPT
+# Habilita o mascaramento (NAT) para a rede interna aceitar a volta
+ExecStart=/usr/sbin/iptables -t nat -I POSTROUTING 1 -s 100.64.0.0/10 -o ens18 -j MASQUERADE
+
+[Install]
+WantedBy=multi-user.target

@@ -56,6 +56,8 @@
 | Raspberry Pi | Proxmox (Dropbear) | TCP/SSH 2222 | Acesso de emergência para desbloqueio de disco (Via VPN). |
 | Proxmox | Raspberry Pi | TCP 3493 (NUT) | Leitura de status de bateria. |
 | TRUSTED (20) | ISP LAN | UDP 53 (DNS) | Failover: Clientes acessam AdGuard Secundário (192.168.0.5) se o Primário cair. |
+| VPN (Tailscale) | SERVER (30) | HTTPS/SSH | Acesso remoto via Gateway DockerHost (com NAT). |
+| VPN (Tailscale) | SECURE (40) | SSH (22) | Acesso ao Vault via DockerHost como **Jump Server** (`ssh -J dockerhost vault`). |
 
 ## Estrutura de Interfaces (OPNsense)
    - Para referência de manutenção (Drivers VirtIO).

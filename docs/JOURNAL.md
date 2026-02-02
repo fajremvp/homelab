@@ -4,6 +4,32 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-02-02
+**Status:** ✅ Sucesso (Remote Access & VPN Architecture)
+
+**Foco:** Implementação de VPN Primária (Tailscale Subnet Router) no DockerHost e Automação de AuthKey.
+
+- **VPN Primária (DockerHost):**
+    - **Objetivo:** Permitir acesso total à rede de serviços (`10.10.0.0/16`) de fora de casa.
+    - **Arquitetura de Roteamento:**
+        - Habilitado `IP Forwarding` no Kernel via Ansible.
+        - **Desafio do Retorno (Return Path):** O firewall OPNsense descartava pacotes voltando para a rede VPN (`100.x.y.z`) pois desconhecia a rota.
+        - **Solução (NAT):** Implementado **Masquerading** (`iptables -t nat ...`) na interface do DockerHost. O tráfego da VPN agora "finge" ser o próprio DockerHost, garantindo que as respostas voltem corretamente.
+        - **Bypass do Docker:** Adicionadas regras na chain `FORWARD` para permitir que o tráfego da interface `tailscale0` atravesse o bloqueio padrão do Docker.
+    - **Persistência:** Criado serviço `tailscale-nat.service` (Systemd) para reaplicar as regras de firewall no boot automaticamente.
+
+- **Automação e Autenticação:**
+    - Migrado para **AuthKey Reutilizável** injetada via arquivo `.env` protegido (`0600`).
+    - Diretório `state/` excluído da sincronização do Ansible (`rsync_opts`) para evitar perda de identidade da máquina a cada deploy.
+
+- **Acesso ao Vault (Jump Server):**
+    - O acesso SSH direto via VPN ao Vault (`10.10.40.10`) era bloqueado pelo UFW (Allow apenas Trusted/Mgmt).
+    - **Ajuste:** Liberado SSH vindo do IP do DockerHost (`10.10.30.10`).
+    - **Fluxo:** VPN -> SSH DockerHost -> SSH Vault (Jump Host Pattern).
+
+- **DNS (Split Horizon):**
+    - Configurado **Split DNS** no painel Tailscale apontando `*.home` para o AdGuard (`10.10.30.5`).
+    - Isso permite acessar serviços internos (ex: `https://vaultwarden.home`) via VPN sem expor o DNS para o resto da internet.
 ## 2026-01-31
 **Status:** ✅ Sucesso (Sovereignty & Privacy)
 

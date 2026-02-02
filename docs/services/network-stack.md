@@ -15,21 +15,23 @@
             - VLAN Hardware Filtering: **Disable** (Para compatibilidade com VirtIO/Proxmox).
     * **NAT:** Modo **Hybrid Outbound NAT** ativado. Regras manuais criadas para garantir saída das VLANs (`10.10.x.0/24`) pela WAN.
 
-* **VPN 1: Acesso Remoto (Inbound - Tailscale (Plano Personal/Free)):** `[DockerHost]`
-	* **Serviço**: Utilizará o Tailscale Oficial (Plano Personal/Free).
-	* **Traffic Shaping (QoS):** Uso de **Limiters (Pipes)** no OPNsense atrelados a um Alias do IP do Bitcoin Node.
-	    - Regra: "Source IP: Bitcoin Node" -> Upload Max: 50% da banda total. Prioridade: Low.
-	    - Garante que a propagação de blocos não sature o upload (bufferbloat) derrubando chamadas VoIP/Jitsi.
-    * **Justificativa:** Garante conexão imediata e robusta mesmo atrás de CGNAT (comum em provedores residenciais no Brasil), sem necessidade de IP público, VPS externo ou configurações complexas de porta. O tráfego é criptografado ponto-a-ponto.
+* **VPN 1: Acesso Remoto (Inbound - Tailscale):** `[DockerHost]`
+	* **Função:** Porta de entrada fora de casa.
+	* **Modo:** Subnet Router (`10.10.0.0/16`) com NAT Masquerading e IP Forwarding.
+	* **Acesso:** Permite conexão a todos os serviços web (`*.home`), Dashboards e SSH dos servidores (exceto serviços rodando na LAN (192.168.0.x)).
+	* **DNS:** Configurado via Split DNS para resolver domínios `.home` usando o AdGuard local (`10.10.30.5`).
+	* **Segurança:** Acesso restrito via ACL ao e-mail do proprietário.
 
 * **VPN 2: Privacidade (Outbound - Cliente WireGuard):** `[VM - OPNsense]`
     * **Justificativa:** Para o servidor acessar a internet sem ser rastreado.
     * **Configuração:** O OPNsense atuará como cliente **WireGuard** (conectado à ProtonVPN).
     * **Kill Switch:** Regras de firewall forçarão o tráfego de certas VLANs (ex: Downloads) a sair *apenas* pelo túnel VPN.
+
 * **VPN 3: Acesso de Emergência (Out-of-Band):** `[Raspberry Pi]`
     * **Justificativa:** Instância secundária do Tailscale rodando diretamente no Pi.
     * **Cenário de Uso:** Acesso exclusivo para **Desbloqueio de Disco (Dropbear)** fora de casa.
-    * **Segurança:** Protegido por ACLs que impedem movimento lateral para a rede interna.
+    * **Segurança:** Protegido por ACLs estritas (`tag:rpi`) que permitem tráfego APENAS para `192.168.0.200:2222`. Movimento lateral bloqueado.
+
 * **Tor (Gateway/Proxy):** `[VM - OPNsense (Policy)]`
     * **Justificativa:** A forma mais fácil de "alterar" é criar uma regra de roteamento no OPNsense. Assim, pode-se definir que certos IPs (ex: uma VM de "privacidade") tenham todo o tráfego roteado pela rede Tor, enquanto outros usam a VPN ou a WAN normal.
 * **AdGuard Home e Unbound (DNS):**
