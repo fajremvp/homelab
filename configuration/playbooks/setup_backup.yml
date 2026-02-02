@@ -30,7 +30,7 @@
 
     # --- 3. SCRIPTS DE BACKUP ---
 
-    # DOCKERHOST
+    # DOCKERHOST (Com Dump Consistente do PostgreSQL)
     - name: Script Backup DockerHost
       copy:
         dest: "/usr/local/bin/backup-daily.sh"
@@ -38,16 +38,27 @@
         content: |
           #!/bin/bash
           source /etc/restic-env.sh
-          echo "--> [DockerHost] Backup iniciado..."
           
-          # Backup de serviços e autenticação
+          echo "--> [DockerHost] 1. Dump do Banco Authentik..."
+          
+          # Tenta fazer o dump. O nome do container DEVE ser exato.
+          # Se o comando falhar, o script avisa mas continua o backup dos arquivos (melhor algo que nada).
+          if docker exec authentik-postgres pg_dump -U authentik authentik > /opt/auth/authentik/authentik_dump.sql; then
+              echo "    Sucesso: Dump SQL gerado em /opt/auth/authentik/authentik_dump.sql"
+          else
+              echo "    ERRO CRÍTICO: Falha ao gerar dump do PostgreSQL. O banco pode estar inconsistente."
+          fi
+
+          echo "--> [DockerHost] 2. Backup Restic iniciado..."
+          
+          # O Restic agora vai copiar o arquivo .sql gerado acima, garantindo um restore fácil.
           restic backup /opt/services /opt/auth /opt/monitoring /opt/security /opt/utils /etc/vault \
             --exclude="*.log" \
             --exclude="*.sqlite3-wal" \
             --tag "dockerhost"
           
           restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
-      when: "'dockerhost' in group_names"
+      when: "'dockerhost' in group_names" 
 
     # VAULT (Snapshot Versionado + Auto-Renovação)
     - name: Script Backup Vault
