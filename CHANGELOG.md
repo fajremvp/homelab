@@ -16,7 +16,7 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Saber se um container caiu, cAdvisor...
 
 ---
-## [2026-02-02] - Remote Access & VPN Routing
+## [2026-02-01] - Remote Access & VPN Routing
 ### Adicionado (Added)
 - **Tailscale Subnet Router:** Implementado no DockerHost anunciando a rede `10.10.0.0/16`.
 - **Systemd NAT Service:** Criado `tailscale-nat.service` para persistência de regras de Masquerading e Forwarding, contornando limitações de roteamento de retorno e bloqueios do Docker.

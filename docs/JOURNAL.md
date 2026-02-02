@@ -4,7 +4,7 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
-## 2026-02-02
+## 2026-02-01
 **Status:** ✅ Sucesso (Remote Access & VPN Architecture)
 
 **Foco:** Implementação de VPN Primária (Tailscale Subnet Router) no DockerHost e Automação de AuthKey.

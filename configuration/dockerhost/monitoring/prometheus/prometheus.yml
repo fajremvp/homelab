@@ -68,6 +68,6 @@ scrape_configs:
         replacement: pve-exporter:9221  # Nome do container + Porta interna
 
   - job_name: 'tailscale-vpn'
+    metrics_path: /debug/metrics
     static_configs:
       - targets: ['10.10.30.10:9002']
-    metrics_path: /metrics
