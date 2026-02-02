@@ -57,6 +57,7 @@
         - "{{ base_dir }}/vaultwarden"
         - "{{ base_dir }}/whoami"
         - "{{ base_dir }}/nostr"
+        - "{{ base_dir }}/tailscale"
         - "{{ auth_dir }}/authentik"
 
     # --- 3. SINCRONIZAÇÃO (GIT -> SERVER) ---
@@ -232,6 +233,22 @@
     - name: Deploy Nostr Stack
       community.docker.docker_compose_v2:
         project_src: "/opt/services/nostr"
+        state: present
+
+    # --- TAILSCALE (PRIMARY VPN) ---
+    - name: Sincronizar stack Tailscale
+      synchronize:
+        src: "../dockerhost/services/tailscale/"
+        dest: "/opt/services/tailscale/"
+        delete: yes
+        recursive: yes
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--chown={{ ansible_user }}:{{ ansible_user }}"
+
+    - name: Deploy Tailscale Stack
+      community.docker.docker_compose_v2:
+        project_src: "/opt/services/tailscale"
         state: present
 
     # --- MONITORAMENTO ---

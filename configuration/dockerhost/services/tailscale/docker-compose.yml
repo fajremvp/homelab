@@ -1,0 +1,18 @@
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    hostname: dockerhost-vpn
+    restart: unless-stopped
+    network_mode: host # Usa a rede do host diretamente para performance
+    privileged: true   # Necessário para criar interfaces de rede
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./state:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun # Acesso direto ao dispositivo TUN
+    environment:
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false # Usa Kernel networking (Mais rápido/estável)
+      - TS_ROUTES=10.10.0.0/16 # Anuncia TODAS as VLANs de uma vez

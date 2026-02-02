@@ -18,6 +18,15 @@
         "192.168.0.200:2222",
       ],
     },
+    // Permite acesso completo à rede interna quando conectado via DockerHost VPN.
+    {
+      "action": "accept",
+      "src": ["fogacafajrereidopvp@gmail.com"],
+      "dst": [
+        "dockerhost-vpn:*", // Acesso ao próprio container da VPN
+        "10.10.0.0/16:*",   // Acesso a TODAS as VLANs (10, 20, 30, 40)
+      ],
+    },
   ],
 
   // SSH via Tailscale desabilitado explicitamente.
