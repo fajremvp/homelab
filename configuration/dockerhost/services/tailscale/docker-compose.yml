@@ -16,3 +16,4 @@ services:
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_USERSPACE=false # Usa Kernel networking (Mais rápido/estável)
       - TS_ROUTES=10.10.0.0/16 # Anuncia TODAS as VLANs de uma vez
+      - TS_AUTHKEY=${TS_AUTHKEY}

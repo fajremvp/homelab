@@ -30,6 +30,10 @@
       prompt: "Digite a SENHA do usuário monitoring@pve"
       private: yes
 
+    - name: tailscale_authkey
+      prompt: "Cole a Tailscale Auth Key (tskey-auth-...)"
+      private: yes
+
   vars:
     base_dir: "/opt/services"
     auth_dir: "/opt/auth"
@@ -245,6 +249,17 @@
         rsync_opts:
           - "--chmod=D0755,F0644"
           - "--chown={{ ansible_user }}:{{ ansible_user }}"
+          - "--exclude=state/**"
+          - "--exclude=.env"
+
+    - name: Gerar .env do Tailscale
+      copy:
+        dest: "/opt/services/tailscale/.env"
+        content: |
+          TS_AUTHKEY={{ tailscale_authkey }}
+        owner: fajre
+        group: docker
+        mode: '0600' # (só root lê)
 
     - name: Deploy Tailscale Stack
       community.docker.docker_compose_v2:
