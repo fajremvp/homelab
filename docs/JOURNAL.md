@@ -4,6 +4,34 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-02-02
+**Status:** ✅ Sucesso (Observabilidade Total & Integridade de Dados)
+
+**Foco:** Blindagem do Backup do Authentik, Métricas de VPN e Implementação de SIEM (Logs de Auditoria).
+
+- **Backup "À Prova de Balas" (Integridade):**
+    - **Risco Identificado:** O backup via Restic copiava os arquivos do PostgreSQL (`/var/lib/postgresql/data`) com o banco rodando, o que garantiria um restore corrompido.
+    - **Solução:** Alterado o script de backup no Ansible para executar um `pg_dump` (Dump Lógico) para um arquivo `.sql` antes da execução do Restic.
+    - **Resultado:** Agora tem um arquivo estático e consistente do banco de dados do Authentik salvo diariamente.
+
+- **Observabilidade da VPN (Tailscale):**
+    - **Desafio:** As métricas nativas não apareciam. O comando `curl` na porta 9002 falhava.
+    - **Diagnóstico:** A variável `TS_EXTRA_ARGS` usada para passar flags no `docker-compose` aplica-se apenas ao comando de login (`tailscale up`), não ao daemon de fundo.
+    - **Correção:** Migrado para a variável `TS_TAILSCALED_EXTRA_ARGS` e utilizada a flag de debug (`--debug=0.0.0.0:9002`), já que a flag dedicada de métricas foi removida/renomeada nas versões recentes.
+    - **Resultado:** Prometheus agora coleta uso de memória e tráfego de pacotes do túnel VPN.
+
+- **SIEM Leve (Loki & Alloy):**
+    - **Objetivo:** Responder à pergunta "Quem está acessando meu servidor e o que estão executando?".
+    - **Incidente 1 (O Arquivo Fantasma):**
+        - *Sintoma:* O container do Alloy falhava ao iniciar com erro de "is a directory".
+        - *Causa:* O arquivo `/var/log/auth.log` não existia no Host. O Docker, ao tentar montar o volume, criou uma pasta com esse nome.
+        - *Solução:* Removida a pasta manualmente e criado o arquivo via `touch`. Adicionada tarefa no Ansible para garantir a existência do arquivo *antes* do deploy do container.
+    - **Incidente 2 (Rejeição Temporal):**
+        - *Sintoma:* Logs não apareciam no Grafana. Logs do Alloy mostravam erro 400 do Loki.
+        - *Causa:* O Alloy tentava ler o histórico do `journald` desde o início (dias atrás). O Loki rejeita logs fora da janela de ingestão configurada.
+        - *Solução:* Configurado `max_age = "1h"` no `config.alloy` para focar apenas no presente.
+    - **Vitória:** Logs de execução de `sudo` (Auditoria de Privilégio) e conexões SSH agora são visíveis e consultáveis no Grafana.
+        - Para o futuro: configurar regras no Loki/Alertmanager para notificar via Ntfy sobre execução de `sudo` e falhas repetidas de SSH.
 ## 2026-02-01
 **Status:** ✅ Sucesso (Remote Access & VPN Architecture)
 

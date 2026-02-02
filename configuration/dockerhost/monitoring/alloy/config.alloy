@@ -4,13 +4,23 @@ loki.write "local_loki" {
   }
 }
 
-loki.source.journal "journal_logs" {
-  max_age = "12h"
+// Logs do Systemd (Journald Binário)
+loki.source.journal "read_host_journal" {
+  max_age = "1h"
   path    = "/var/log/journal"
-  labels  = {component = "system_logs"}
+  labels  = {job = "systemd-journal", host = "dockerhost"}
   forward_to = [loki.write.local_loki.receiver]
 }
 
+// Logs de Arquivo Texto (Fallback e Auth)
+loki.source.file "host_auth_logs" {
+  targets = [
+    {__path__ = "/var/log/auth.log", job = "auth_logs", host = "dockerhost"},
+  ]
+  forward_to = [loki.write.local_loki.receiver]
+}
+
+// Docker Discovery (Mantido)
 discovery.docker "linux" {
   host = "unix:///var/run/docker.sock"
 }
@@ -18,13 +28,13 @@ discovery.docker "linux" {
 discovery.relabel "docker_logs" {
   targets = discovery.docker.linux.targets
   rule {
-    source_labels = ["__meta_docker_container_id"]
-    target_label  = "__path__"
-    replacement   = "/var/lib/docker/containers/${1}/${1}-json.log"
+    source_labels = ["__meta_docker_container_name"]
+    target_label  = "container"
   }
 }
 
-loki.source.file "docker_logs" {
+loki.source.docker "docker_logs" {
+  host       = "unix:///var/run/docker.sock"
   targets    = discovery.relabel.docker_logs.output
   forward_to = [loki.write.local_loki.receiver]
 }

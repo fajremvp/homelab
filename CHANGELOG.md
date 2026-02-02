@@ -14,8 +14,22 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Colocar consulta de DNS do modem para meus próprios.
 - Automatizar testes de alertas.
 - Saber se um container caiu, cAdvisor...
+- Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-02-02] - SIEM, VPN Metrics & Backup Integrity
+### Adicionado (Added)
+- **Backup Consistente (Authentik):** Implementado `pg_dump` automatizado no script de backup diário. O banco PostgreSQL agora é exportado para `.sql` antes da execução do Restic, garantindo integridade dos dados de identidade.
+- **VPN Observability:** Habilitado servidor de debug no Tailscale (`--debug=0.0.0.0:9002`) para expor métricas internas. Configurado Prometheus para scrap do endpoint `/debug/metrics`.
+- **SIEM Leve (Loki + Alloy):**
+    - Habilitada ingestão de logs de auditoria do Linux (`/var/log/auth.log`) para rastrear sessões SSH e execução de comandos `sudo`.
+    - Habilitada ingestão do `systemd-journal` para logs gerais do sistema e Docker.
+
+### Corrigido (Fixed)
+- **Tailscale Config:** Substituída variável depreciada `TS_EXTRA_ARGS` por `TS_TAILSCALED_EXTRA_ARGS` para passar flags corretamente ao daemon na imagem oficial.
+- **Alloy Ingestion:**
+    - Corrigido erro "File is a directory" criando o arquivo `auth.log` vazio via Ansible antes da montagem do volume.
+    - Corrigido erro "Timestamp too old" ajustando `max_age` para `1h`, impedindo o Alloy de tentar processar logs históricos rejeitados pelo Loki.
 ## [2026-02-01] - Remote Access & VPN Routing
 ### Adicionado (Added)
 - **Tailscale Subnet Router:** Implementado no DockerHost anunciando a rede `10.10.0.0/16`.

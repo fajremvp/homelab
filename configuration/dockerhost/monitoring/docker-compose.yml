@@ -70,15 +70,25 @@ services:
     image: grafana/alloy:v1.12.1
     container_name: alloy
     restart: unless-stopped
+    user: root
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     volumes:
       - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro # Requer driver json-file
+      # Journald do host
       - /var/log/journal:/var/log/journal:ro
+      # Machine-ID (necessário pro journal reader)
       - /etc/machine-id:/etc/machine-id:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro # Metadata Discovery
+      # Log de auth (SSH/Sudo) – só existe em distros que usam isso
+      - /var/log/auth.log:/var/log/auth.log:ro
+      # Docker socket (metadata discovery)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # (Opcional) logs JSON do Docker se você ainda usa isso
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    ports:
+      - "12345:12345"
     networks:
       - monitoring
+      - proxy
 
   # --- EXPORTER DE CONTAINERS ---
   cadvisor:

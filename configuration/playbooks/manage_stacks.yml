@@ -344,7 +344,20 @@
         owner: fajre
         group: docker
         mode: '0600'
-        force: no 
+        force: no
+
+    # --- FIX PARA ALLOY (SIEM) ---
+    # Garante que o arquivo de log existe para o Docker não criar uma pasta no lugar
+    - name: Garantir existência do auth.log para o Alloy
+      file:
+        path: "/var/log/auth.log"
+        state: touch
+        owner: root
+        group: adm
+        mode: '0640'
+        modification_time: preserve
+        access_time: preserve
+
 
     - name: Start/Update Monitoring Stack
       community.docker.docker_compose_v2:
