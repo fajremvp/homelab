@@ -66,3 +66,8 @@ scrape_configs:
         target_label: instance
       - target_label: __address__
         replacement: pve-exporter:9221  # Nome do container + Porta interna
+
+  - job_name: 'tailscale-vpn'
+    static_configs:
+      - targets: ['10.10.30.10:9002']
+    metrics_path: /metrics
