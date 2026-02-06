@@ -15,12 +15,12 @@
 ### Topologia de Cabos (Router-on-a-Stick)
 - **Porta LAN 1:** Conectada à **Porta 8** do Switch TP-Link.
 - **Porta LAN 2:** (Livre).
-- **Porta LAN 3:** (Livre).
-- **Porta LAN 4:** Conectada ao Raspiberry Pi.
+- **Porta LAN 3:** Conectada ao Raspiberry Pi.
+- **Porta LAN 4:** (Livre).
 
 ---
 
-## UPS (Nobreak) — NHS Gamer Play Senoidal 1000VA
+## UPS (Nobreak)
 
     - DEVE SER COMPATÍVEL COM NUT!
 
