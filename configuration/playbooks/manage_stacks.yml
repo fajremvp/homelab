@@ -57,33 +57,39 @@
         group: docker
         mode: '0755'
       loop:
-        - "{{ base_dir }}/traefik"
-        - "{{ base_dir }}/vaultwarden"
-        - "{{ base_dir }}/whoami"
-        - "{{ base_dir }}/nostr"
-        - "{{ base_dir }}/tailscale"
-        - "{{ auth_dir }}/authentik"
+        - "{{ base_dir }}"       # /opt/services
+        - "{{ auth_dir }}"       # /opt/auth
+        - "{{ mon_dir }}"        # /opt/monitoring
+        - "/opt/security"
 
     # --- 3. SINCRONIZAÇÃO (GIT -> SERVER) ---
-    - name: Deploy Configs (Traefik, Vaultwarden, Whoami)
-      copy:
-        src: "../dockerhost/{{ item.src }}/"
-        dest: "{{ base_dir }}/{{ item.dest }}/"
-        owner: fajre
-        group: docker
-        mode: '0644'
+    - name: Deploy Configs (Traefik, Vaultwarden, Whoami, Nostr, Tailscale)
+      synchronize:
+        src: "../dockerhost/services/{{ item }}/"
+        dest: "{{ base_dir }}/{{ item }}/"
+        recursive: yes
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--exclude=.env"
+          - "--exclude=data/"      # Protege dados do Vaultwarden/Nostr se estiverem na pasta
+          - "--exclude=tor-keys/"  # Protege chaves do Nostr
+          - "--exclude=state/"     # Protege estado do Tailscale
       loop:
-        - { src: 'traefik', dest: 'traefik' }
-        - { src: 'vaultwarden', dest: 'vaultwarden' }
-        - { src: 'whoami', dest: 'whoami' }
+        - traefik
+        - vaultwarden
+        - whoami
+        - nostr
+        - tailscale
 
-    - name: Deploy Configs (Authentik)
-      copy:
-        src: "../dockerhost/authentik/"
+    - name: Deploy Auth Stack (Authentik)
+      synchronize:
+        src: "../dockerhost/auth/authentik/"
         dest: "{{ auth_dir }}/authentik/"
-        owner: fajre
-        group: docker
-        mode: '0644'
+        recursive: yes
+        rsync_opts:
+          - "--exclude=.env"
+          - "--exclude=media/"
+          - "--exclude=custom-templates/"
 
     # --- 4. PERMISSÕES E SCRIPTS ---
     - name: Tornar scripts start-with-vault executáveis
@@ -136,7 +142,7 @@
     # Authentik Service
     - name: Instalar Authentik Systemd Service
       copy:
-        src: "../dockerhost/authentik/authentik-vault.service"
+        src: "../dockerhost/auth/authentik/authentik-vault.service"
         dest: "/etc/systemd/system/authentik-vault.service"
         mode: '0644'
       notify: Reload Systemd
@@ -144,12 +150,12 @@
     # Vaultwarden Service
     - name: Instalar Vaultwarden Systemd Service
       copy:
-        src: "../dockerhost/vaultwarden/vaultwarden-vault.service"
+        src: "../dockerhost/services/vaultwarden/vaultwarden-vault.service"
         dest: "/etc/systemd/system/vaultwarden-vault.service"
         mode: '0644'
       notify: Reload Systemd
 
-    # Tailscale NAT Service (Fix de Roteamento)
+    # Tailscale NAT Service
     - name: Instalar Tailscale NAT Service
       copy:
         src: "../dockerhost/services/tailscale/tailscale-nat.service"
