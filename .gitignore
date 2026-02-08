@@ -88,3 +88,4 @@ secrets.yaml
 # --- CERTIFICADOS E CHAVES PRIVADAS ---
 acme.json
 traefik-backup.tar.gz
+*.bkp

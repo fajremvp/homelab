@@ -3,7 +3,10 @@
 Repositório central de "Infrastructure as Code" (IaC) e documentação do meu homelab.
 Focado em aprendizado, soberania de dados e segurança.
 
-**Diagrama/Mapa:**
+---
+
+**Diagrama/Mapa atual:**
+
 ![Homelab Diagram/Map](diagram/diagram.png)
 
 ---
@@ -18,35 +21,36 @@ homelab/
 ├── README.md               # Este arquivo.
 │
 ├── configuration/          # Gerenciamento de Configuração (Ansible & GitOps).
-│   ├── dockerhost/         # Stacks de Serviços (Docker Compose & Systemd).
-│   │   ├── authentik/      # Identity Provider & SSO.
-│   │   ├── monitoring/     # Stack LGM (Loki, Grafana, Prometheus, Alloy).
-│   │   ├── security/       # CrowdSec (IDS/IPS e Bouncers).
-│   │   ├── traefik/        # Ingress Controller & Certificados.
-│   │   └── vaultwarden/    # Gerenciador de Senhas.
-│   ├── inventory/          # Inventário de Hosts e Grupos (hosts.ini).
-│   ├── playbooks/          # Automação (Hardening, Backups, Deploys).
-│   └── vault/              # Políticas e configurações do HashiCorp Vault.
+│   ├── dockerhost/         # Stacks de Microsserviços (Docker Compose).
+│   │   ├── authentik/      # Identity Provider (SSO, OIDC) + Vault Integration.
+│   │   ├── monitoring/     # Observabilidade PLG (Prometheus, Loki, Grafana, Alloy).
+│   │   ├── security/       # Camada de Defesa (CrowdSec IDS/IPS).
+│   │   ├── services/       # Aplicações Soberanas (Nostr Relay + Tor, Tailscale).
+│   │   ├── traefik/        # Edge Router & Certificados (Ingress).
+│   │   ├── vaultwarden/    # Gestão de Senhas (Self-hosted).
+│   │   └── whoami/         # Debug & Connectivity Tests.
+│   ├── inventory/          # Inventário de Hosts (hosts.ini).
+│   ├── playbooks/          # Automação (Hardening, Backups, Setup de Stacks).
+│   └── vault/              # Políticas ACL (HCL) e configurações do HashiCorp Vault.
 │
-├── docs/                   # A "Wiki" do Lab (Documentação Viva).
-│   ├── architecture/       # Decisões de Design (Rede, Energia, Observabilidade).
-│   ├── hardware/           # Inventário Físico e configurações de BIOS.
-│   ├── JOURNAL.md          # Diário de Bordo (Erros, tentativas e aprendizados).
-│   ├── runbooks/           # Manuais de "Como Fazer" (Cold Boot, Disaster Recovery).
-│   ├── security/           # Políticas (Modelo de Ameaça, Hardening, IAM).
-│   └── services/           # Detalhes técnicos das Aplicações.
+├── diagram/                # Topologia Visual.
+│   ├── diagram.drawio      # Fonte editável (Diagrama como Código).
+│   └── diagram.png         # Renderização atual da arquitetura.
 │
-├── provisioning/           # Infraestrutura (Criação de Recursos).
-│   ├── proxmox-host/       # Configs manuais do Host (Rede, Boot, Criptografia).
-│   └── terraform/          # Código para criar VMs/LXC automaticamente.
+├── docs/                   # Base de Conhecimento (Knowledge Base).
+│   ├── architecture/       # Decisões de Design (Network Topology, Observability).
+│   ├── assets/             # Evidências e Benchmarks (MemTest, Logs).
+│   ├── hardware/           # Inventário Físico, BIOS e BOM (Bill of Materials).
+│   ├── JOURNAL.md          # Diário de Engenharia (Lessons Learned).
+│   ├── runbooks/           # Procedimentos Operacionais (Disaster Recovery, Cold Boot).
+│   ├── security/           # Governança (Threat Model, Zero Trust, Key Management).
+│   └── services/           # Documentação Técnica dos Serviços (Bitcoin Node, LXCs).
 │
-├── kubernetes/             # O Cluster (Talos Linux) [Em Construção].
+├── provisioning/           # Infraestrutura como Código (IaC).
+│   ├── proxmox-host/       # Configs Críticas (Network Interfaces, LUKS Encryption).
+│   ├── tailscale/          # ACLs de Rede Mesh (HuJSON).
+│   └── terraform/          # Provisionamento de VMs/LXCs (Em desenvolvimento).
 │
-└── scripts/                # Automação e Utilitários (Bash).
-    ├── backup-bitcoin.sh   # Snapshot atômico da wallet.
-    └── nut-shutdown.sh     # Lógica de desligamento por bateria fraca.
+└── LICENSE                 # MIT License.
 ```
 
----
-
-## ✅ Todo List
