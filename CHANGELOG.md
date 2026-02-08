@@ -17,6 +17,18 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-02-08] - Refatoração Estrutural e Correção de Rede
+### Alterado (Changed)
+- **Estrutura de Diretórios (DockerHost):** Reorganização massiva dos serviços no servidor e no repositório.
+    - Migrado de estrutura plana (`/opt/traefik`, `/opt/vaultwarden`) para estrutura semântica:
+        - `/opt/services/`: Aplicações gerais (Traefik, Vaultwarden, Nostr, Whoami, Tailscale).
+        - `/opt/auth/`: Serviços de Identidade (Authentik).
+    - Objetivo: Facilitar políticas de backup granulares e permissões.
+- **Automação Ansible:** Atualizado playbook `manage_stacks.yml` para utilizar `synchronize` com a nova estrutura de pastas, mantendo a persistência de dados (`--exclude=data/`).
+
+### Corrigido (Fixed)
+- **CrowdSec Network Isolation:** Resolvido incidente onde o container `crowdsec` perdeu a conexão com a rede bridge `proxy` após a implementação das regras de NAT da VPN.
+    - Solução: `force-recreate` do container para reaplicar as regras de iptables do Docker e reatar a interface de rede.
 ## [2026-02-02] - SIEM, VPN Metrics & Backup Integrity
 ### Adicionado (Added)
 - **Backup Consistente (Authentik):** Implementado `pg_dump` automatizado no script de backup diário. O banco PostgreSQL agora é exportado para `.sql` antes da execução do Restic, garantindo integridade dos dados de identidade.

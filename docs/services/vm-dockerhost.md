@@ -65,9 +65,9 @@ Para manter a organização e facilitar backups, o DockerHost segue estritamente
 
 | Caminho | Propósito | Exemplo de Conteúdo |
 | :--- | :--- | :--- |
-| `/opt/services` | Aplicações Gerais | `traefik/`, `vaultwarden/`, `whoami/` |
-| `/opt/auth` | Identidade e Segurança | `authentik/` |
-| `/opt/monitoring` | Observabilidade | `grafana/`, `prometheus/`, `alertmanager/`, `alloy/`, `loki/` |
+| `/opt/services` | Aplicações Gerais | `traefik/`, Apps e Serviços |
+| `/opt/auth` | Stacks de Identidade | `authentik/` |
+| `/opt/monitoring` | Stack de Observabilidade | `grafana/`, `prometheus/`, `alertmanager/`, `alloy/`, `loki/` |
 | `opt/security` | Segurança | `crowdsec/` |
 | `/opt/utils` | Scripts e Ferramentas | Scripts de manutenção local |
 
@@ -148,8 +148,8 @@ O CrowdSec atua como o sistema de detecção de intrusão (IDS) baseado em logs.
 ## Gestão de Segredos (Vault Integration)
 O DockerHost não armazena senhas de banco de dados em arquivos de texto (`.env` ou `docker-compose.yml`).
 
-* **Mecanismo:** Script de Boot (`start-with-vault.sh`).
-* **Trigger:** Serviço Systemd `authentik-vault.service`.
+* **Mecanismo:** Script de Boot (`start-with-vault.sh`) localizado agora em `/opt/auth/authentik` e `/opt/services/vaultwarden`.
+* **Trigger:** Serviço Systemd `authentik-vault.service` e `vaultwarden-vault.service`.
 * **Fluxo:**
     1. Lê `SecretID` protegido em `/etc/vault/`.
     2. Autentica no Vault (`vault.home`).

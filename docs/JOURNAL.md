@@ -4,6 +4,28 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-02-08
+**Status:** ✅ Sucesso (Refactoring & Troubleshooting)
+
+**Foco:** Organização Semântica de Diretórios e Correção de Conectividade do CrowdSec.
+
+- **Reestruturação de Diretórios:**
+    - **Problema:** A pasta `configuration/dockerhost` estava se tornando um "lixão" de pastas misturadas, e o servidor refletia essa desorganização na raiz de `/opt/`.
+    - **Ação:** Implementada segregação funcional:
+        - `/opt/services`: Para infraestrutura de aplicação (Traefik, Vaultwarden, Nostr, Tailscale).
+        - `/opt/auth`: Isolamento para o stack de Identidade (Authentik).
+        - `/opt/monitoring` e `/opt/security`: Mantidos como estavam.
+    - **Automação:** Refatorado `manage_stacks.yml` para sincronizar estas pastas recursivamente, com cuidado crítico de adicionar `rsync_opts: "--exclude=data/"` para não sobrescrever bancos de dados em produção com pastas vazias do Git.
+    - **Resultado:** O comando `tree` no servidor agora reflete uma arquitetura limpa e escalável.
+
+- **Incidente CrowdSec:**
+    - **Sintoma:** O container `crowdsec` entrou em *Crash Loop* com erro `dial udp 10.10.30.5:53: connect: network is unreachable`.
+    - **Diagnóstico Inicial:** Suspeita de conflito com as regras de `iptables` inseridas ontem pelo `tailscale-nat.service` (VPN).
+    - **Investigação Forense:**
+        - O comando `docker network inspect proxy` revelou que o container `crowdsec` **não estava listado** na rede, apesar de estar definido no `docker-compose.yml`. Ele estava "órfão" em execução, sem gateway.
+    - **Causa Raiz:** Inconsistência de estado do Docker Daemon. Após alterações manuais de iptables (pelo serviço de VPN) e restarts de serviço, o Docker perdeu a referência de rede do container antigo. Reiniciar o serviço Docker não foi suficiente para corrigir o vínculo.
+    - **Solução Definitiva:** Executado `docker compose up -d --force-recreate` na pasta `/opt/security`. Isso forçou a destruição do container "zumbi" e a criação de um novo, injetando corretamente as interfaces de rede e DNS.
+    - **Validação:** Logs mostram conexão imediata com a LAPI local e o Bouncer do OPNsense (`HTTP 200`).
 ## 2026-02-02
 **Status:** ✅ Sucesso (Observabilidade Total & Integridade de Dados)
 
