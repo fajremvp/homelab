@@ -3,7 +3,8 @@
 Repositório central de "Infrastructure as Code" (IaC) e documentação do meu homelab.
 Focado em aprendizado, soberania de dados e segurança.
 
-**Status:** 🚧 Em Construção
+**Diagrama/Mapa:**
+![Homelab Diagram/Map](diagram/diagram.png)
 
 ---
 

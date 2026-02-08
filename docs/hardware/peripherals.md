@@ -9,8 +9,6 @@
 ### Configuração Crítica
 - **Wi-Fi:** Totalmente desabilitado (2.4 GHz e 5 GHz).
   - *Motivo:* Eliminar vetores de ataque sem fio e evitar interferência com o Access Point dedicado.
-- **DHCP:** Ativado.
-  - Fornece endereços IP para o Dropbear, a WAN do OPNsense e para o Raspberry Pi.
 
 ### Topologia de Cabos (Router-on-a-Stick)
 - **Porta LAN 1:** Conectada à **Porta 8** do Switch TP-Link.
@@ -61,8 +59,8 @@
 ### Função
 - Fornece conectividade sem fio segmentada por VLAN.
 - Mapeamento Multi-SSID:
-  - SSID "Casa" → VLAN 20
-  - SSID "IoT" → VLAN 50
+  - SSID "Homelab_Trusted" → VLAN 20
+  - SSID "Homelab_IoT" → VLAN 50
 
 ### Especificações
 - **Padrão:** Wi-Fi 6 (802.11ax), retrocompatível com ac/n/g/b/a.
@@ -95,7 +93,7 @@
 #### Fonte de Alimentação Dedicada — CanaKit (Oficial-equivalente)
 - **Especificação:** 5V / 3.5A (USB-C, sem Power Delivery).
 - **Marca:** CanaKit (Referência internacional para Raspberry Pi).
-- **Cabo:** 18 AWG espesso, comprimento ~1,5 m (5 pés).
+- **Cabo:** 18 AWG espesso, comprimento ~1,5m.
 - **Certificação:** UL Listed.
 - **Recursos Elétricos:** Filtro de ruído integrado para estabilidade sob carga contínua.
 - **Justificativa Técnica:** Fonte comprovadamente estável para Raspberry Pi 4 com SSD USB 3.0, eliminando eventos de undervoltage e throttling sob carga. Além disso, fontes comuns de celular (ou genéricas de 3A) causam queda de tensão (*Brownout*) ao alimentar SSDs via USB 3.0, resultando em erros de I/O (`uas_eh_device_reset_handler`) e corrupção de dados. A amperagem extra (3.5A) oferece a margem necessária para estabilidade 24/7.
