@@ -8,6 +8,10 @@
       prompt: "Digite a senha de Admin do Grafana"
       private: yes  # Isso esconde o que for digitado
 
+    - name: healthchecks_uuid
+      prompt: "Digite o UUID do Healthchecks.io (parte final da URL)"
+      private: no
+
     - name: ntfy_token
       prompt: "Digite o Token do CrowdSec (Ntfy)"
       private: yes
@@ -347,10 +351,11 @@
         dest: "{{ mon_dir }}/.env"
         content: |
           GRAFANA_PASSWORD={{ grafana_password }}
+          HEALTHCHECKS_URL=https://hc-ping.com/{{ healthchecks_uuid }}
         owner: fajre
         group: docker
         mode: '0600'
-        force: no
+        force: yes
 
     # --- FIX PARA ALLOY (SIEM) ---
     # Garante que o arquivo de log existe para o Docker não criar uma pasta no lugar
