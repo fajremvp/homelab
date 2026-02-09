@@ -25,6 +25,7 @@ Adoção de padrões de arquitetura corporativa (Enterprise Patterns), porém ad
 | **Host Metrics** | Node Exporter | Serviço Systemd (Nativo) | Isolamento de falhas: se o Docker cair, ainda temos métricas do OS. |
 | **Container Metrics** | cAdvisor | Container Privilegiado | Granularidade por cgroup que o Node Exporter não oferece. |
 | **Ingress** | Traefik | TLS Termination | Centraliza SSL e protege dashboards (Grafana) atrás do Authentik. |
+| **Uptime (Externo)** | Heartbeat (Curl) | Push para Healthchecks.io | Garante notificação mesmo em caso de falha total de energia/internet (Dead Man's Switch). |
 
 ---
 
@@ -85,6 +86,7 @@ Esta implementação assume um modelo de ameaça específico para ambiente domé
 ### Fase 3 – Infraestrutura Física
 **Objetivo:** Visibilidade de rede e energia.
 
+- [x] **Disponibilidade Global:** Dead Man's Switch (Healthchecks.io) monitorando o DockerHost.
 - [ ] **Switch/AP:** Coleta via SNMP Exporter.
 - [ ] **Energia:** Monitoramento de UPS (NUT Exporter).
 - [X] **Segurança de Rede:** CrowdSec (Logs de firewall e banimentos).

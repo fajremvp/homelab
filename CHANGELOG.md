@@ -18,6 +18,12 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ---
 ## [2026-02-08] - Refatoração Estrutural e Correção de Rede
+### Adicionado (Added)
+- **Dead Man's Switch (Healthchecks.io):** Implementado monitoramento de disponibilidade externo.
+    - Container leve (`curlimages/curl`) no DockerHost envia "heartbeats" a cada 5 minutos.
+    - Política de Alerta: Notificação imediata via e-mail se o servidor deixar de responder por mais de 7 minutos (5m intervalo + 2m tolerância).
+    - Segurança: UUID do serviço injetado via Ansible Prompt/Environment, mantendo o repositório público sanitizado.
+
 ### Alterado (Changed)
 - **Estrutura de Diretórios (DockerHost):** Reorganização massiva dos serviços no servidor e no repositório.
     - Migrado de estrutura plana (`/opt/traefik`, `/opt/vaultwarden`) para estrutura semântica:

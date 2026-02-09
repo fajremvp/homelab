@@ -169,3 +169,7 @@ O DockerHost realiza backups diários, criptografados e incrementais para o Back
     * `/opt/auth` (Authentik, Vaultwarden).
 * **Exclusões:** Logs (`*.log`), arquivos temporários de banco (`*.sqlite3-wal`) e caches.
 * **Retenção:** 7 dias, 4 semanas, 6 meses.
+
+* **Heartbeat (Dead Man's Switch):**
+    - Container dedicado que pinga um serviço externo a cada 5 minutos.
+    - Garante que eu saiba se o servidor travou, perdeu energia ou internet, situações onde o Alertmanager/Ntfy interno não conseguiria enviar alertas.

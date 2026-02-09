@@ -26,6 +26,18 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
     - **Causa Raiz:** Inconsistência de estado do Docker Daemon. Após alterações manuais de iptables (pelo serviço de VPN) e restarts de serviço, o Docker perdeu a referência de rede do container antigo. Reiniciar o serviço Docker não foi suficiente para corrigir o vínculo.
     - **Solução Definitiva:** Executado `docker compose up -d --force-recreate` na pasta `/opt/security`. Isso forçou a destruição do container "zumbi" e a criação de um novo, injetando corretamente as interfaces de rede e DNS.
     - **Validação:** Logs mostram conexão imediata com a LAPI local e o Bouncer do OPNsense (`HTTP 200`).
+
+- **Dead Man's Switch ("Quem vigia o vigia?"):**
+    - **Cenário de Risco:** Identificado que uma falha catastrófica de hardware ou energia no DockerHost mataria também o sistema de alertas (Alertmanager/Ntfy), resultando em silêncio total (falso positivo de normalidade).
+    - **Solução:** Implementação de monitoramento passivo externo (Healthchecks.io).
+    - **Implementação Técnica:**
+        - Adicionado container `heartbeat` no stack de monitoramento executando um loop infinito de `curl` a cada 300 segundos.
+        - **Segurança de Código:** O UUID da URL não foi hardcodado no Git. Atualizado o `manage_stacks.yml` para solicitar o UUID no prompt e injetar no `.env` do servidor como `HEALTHCHECKS_URL`.
+    - **Troubleshooting:**
+        - Enfrentei erro de validação no Docker Compose (`additional properties 'heartbeat' not allowed`).
+        - *Causa:* Erro de indentação (espaços extras) que colocou o serviço `heartbeat` dentro da definição do serviço `ntfy`.
+        - *Correção:* Ajuste de indentação YAML.
+    - **Validação:** Desligamento do servidor. O serviço externo detectou a ausência do ping e disparou o alerta por e-mail após o tempo de tolerância (Grace Time) de 2 minutos.
 ## 2026-02-02
 **Status:** ✅ Sucesso (Observabilidade Total & Integridade de Dados)
 
