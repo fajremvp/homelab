@@ -15,22 +15,21 @@ Focado em aprendizado, soberania de dados e segurança.
 
 ```text
 homelab/
+├── .gitignore              # Regras de exclusão (Segurança/Dados sensíveis).
 ├── ansible.cfg             # Configuração central do Ansible.
-├── CHANGELOG.md            # Histórico executivo de mudanças e versões.
-├── LICENSE
+├── CHANGELOG.md            # Histórico formal de mudanças e versões.
+├── LICENSE                 # MIT License
 ├── README.md               # Este arquivo.
 │
 ├── configuration/          # Gerenciamento de Configuração (Ansible & GitOps).
 │   ├── dockerhost/         # Stacks de Microsserviços (Docker Compose).
-│   │   ├── authentik/      # Identity Provider (SSO, OIDC) + Vault Integration.
+│   │   ├── auth/           # Gestão de Identidade e Acesso (Authentik).
 │   │   ├── monitoring/     # Observabilidade PLG (Prometheus, Loki, Grafana, Alloy).
 │   │   ├── security/       # Camada de Defesa (CrowdSec IDS/IPS).
-│   │   ├── services/       # Aplicações Soberanas (Nostr Relay + Tor, Tailscale).
-│   │   ├── traefik/        # Edge Router & Certificados (Ingress).
-│   │   ├── vaultwarden/    # Gestão de Senhas (Self-hosted).
-│   │   └── whoami/         # Debug & Connectivity Tests.
+│   │   └── services/       # Aplicações e Infraestrutura (Traefik, VPNs, Vaultwarden, Nostr).
 │   ├── inventory/          # Inventário de Hosts (hosts.ini).
 │   ├── playbooks/          # Automação (Hardening, Backups, Setup de Stacks).
+│   ├── roles/              # Roles reutilizáveis do Ansible.
 │   └── vault/              # Políticas ACL (HCL) e configurações do HashiCorp Vault.
 │
 ├── diagram/                # Topologia Visual.
@@ -42,15 +41,16 @@ homelab/
 │   ├── assets/             # Evidências e Benchmarks (MemTest, Logs).
 │   ├── hardware/           # Inventário Físico, BIOS e BOM (Bill of Materials).
 │   ├── JOURNAL.md          # Diário de Engenharia (Lessons Learned).
+│   ├── kubernetes/         # Manifestos e configs para o cluster k8s (Talos).
+│   ├── lab/                # Ambientes de teste e Pentest.
 │   ├── runbooks/           # Procedimentos Operacionais (Disaster Recovery, Cold Boot).
 │   ├── security/           # Governança (Threat Model, Zero Trust, Key Management).
-│   └── services/           # Documentação Técnica dos Serviços (Bitcoin Node, LXCs).
+│   └── services/           # Documentação Técnica dos Serviços (VMs e LXCs).
 │
-├── provisioning/           # Infraestrutura como Código (IaC).
-│   ├── proxmox-host/       # Configs Críticas (Network Interfaces, LUKS Encryption).
-│   ├── tailscale/          # ACLs de Rede Mesh (HuJSON).
-│   └── terraform/          # Provisionamento de VMs/LXCs (Em desenvolvimento).
-│
-└── LICENSE                 # MIT License.
+└── provisioning/           # Infraestrutura como Código (IaC).
+    ├── cloud/              # Provisionamento de recursos em nuvem.
+    ├── proxmox-host/       # Configs Críticas (Network Interfaces, LUKS Encryption).
+    ├── tailscale/          # ACLs de Rede Mesh (HuJSON).
+    └── terraform/          # Provisionamento de VMs/LXCs.
 ```
 

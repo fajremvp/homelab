@@ -1,0 +1,49 @@
+---
+- name: Setup de Armazenamento Adicional (Mídia)
+  hosts: dockerhost
+  become: yes
+
+  vars:
+    # /dev/sda (500GB)
+    target_disk: "/dev/sda"
+    mount_point: "/mnt/media"
+    owner_user: "fajre"
+    owner_group: "docker"
+
+  tasks:
+    - name: Garantir ferramentas de sistema de arquivos (ext4)
+      apt:
+        name: e2fsprogs
+        state: present
+
+    - name: Criar sistema de arquivos ext4 no disco inteiro
+      community.general.filesystem:
+        fstype: ext4
+        dev: "{{ target_disk }}"
+        # "-m 0" remove a reserva de 5% para root (ganha ~25GB de espaço útil)
+        # "-L media_disk" dá um nome (Label) ao volume
+        opts: "-m 0 -L media_disk"
+
+    - name: Criar diretório de montagem
+      file:
+        path: "{{ mount_point }}"
+        state: directory
+        mode: '0755'
+
+    - name: Montar disco (e persistir no fstab)
+      mount:
+        path: "{{ mount_point }}"
+        src: "{{ target_disk }}"
+        fstype: ext4
+        opts: defaults,noatime
+        state: mounted
+
+    - name: Ajustar permissões para Docker
+      file:
+        path: "{{ mount_point }}"
+        state: directory
+        owner: "{{ owner_user }}"
+        group: "{{ owner_group }}"
+        # 0775 = Dono (fajre) e Grupo (docker) escrevem. Outros leem.
+        mode: '0775'
+        recurse: yes
