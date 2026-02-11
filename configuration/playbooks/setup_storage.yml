@@ -4,8 +4,8 @@
   become: yes
 
   vars:
-    # /dev/sda (500GB)
-    target_disk: "/dev/sda"
+    # ATUALIZADO: Aponta para sdb (realidade atual) para segurança
+    target_disk: "/dev/sdb"
     mount_point: "/mnt/media"
     owner_user: "fajre"
     owner_group: "docker"
@@ -16,12 +16,11 @@
         name: e2fsprogs
         state: present
 
+    # Esta tarefa será "skipped" ou "ok" porque o disco já tem o label media_disk
     - name: Criar sistema de arquivos ext4 no disco inteiro
       community.general.filesystem:
         fstype: ext4
         dev: "{{ target_disk }}"
-        # "-m 0" remove a reserva de 5% para root (ganha ~25GB de espaço útil)
-        # "-L media_disk" dá um nome (Label) ao volume
         opts: "-m 0 -L media_disk"
 
     - name: Criar diretório de montagem
@@ -33,7 +32,9 @@
     - name: Montar disco (e persistir no fstab)
       mount:
         path: "{{ mount_point }}"
-        src: "{{ target_disk }}"
+        # MUDANÇA: Usar o LABEL em vez do dispositivo (/dev/sdb)
+        # Isso garante que o boot funcione mesmo se o disco mudar de nome
+        src: "LABEL=media_disk"
         fstype: ext4
         opts: defaults,noatime
         state: mounted
@@ -44,6 +45,5 @@
         state: directory
         owner: "{{ owner_user }}"
         group: "{{ owner_group }}"
-        # 0775 = Dono (fajre) e Grupo (docker) escrevem. Outros leem.
         mode: '0775'
         recurse: yes
