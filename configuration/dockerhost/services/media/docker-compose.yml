@@ -8,7 +8,7 @@ services:
     devices:
       - /dev/net/tun:/dev/net/tun
     ports:
-      - "8080:8080" # WebUI do qBittorrent (Acessa via IP do Gluetun)
+      - "8085:8080" # MUDANÇA: Expor a porta 8080 interna (qBit) na porta 8085 externa
       # Portas de Torrent (UDP/TCP) não são expostas aqui fixas, 
       # o ProtonVPN abre dinamicamente via NAT-PMP.
     environment:
