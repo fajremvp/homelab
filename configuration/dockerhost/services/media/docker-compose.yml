@@ -197,6 +197,8 @@ services:
   flaresolverr:
     image: flaresolverr/flaresolverr:latest
     container_name: flaresolverr
+    dns:
+      - 10.10.30.5
     environment:
       - LOG_LEVEL=info
       - LOG_HTML=false
