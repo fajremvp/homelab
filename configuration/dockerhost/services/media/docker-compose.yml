@@ -193,6 +193,20 @@ services:
       - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
       - "traefik.http.routers.jellyseerr.middlewares=authentik"
 
+  # --- CLOUDFLARE SOLVER ---
+  flaresolverr:
+    image: flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=info
+      - LOG_HTML=false
+      - CAPTCHA_SOLVER=none
+      - TZ=America/Sao_Paulo
+    restart: unless-stopped
+    networks:
+      - media_net
+      # Não precisa de 'proxy' ou labels do Traefik, pois só o Prowlarr conversa com ele internamente.
+
 networks:
   media_net:
     internal: true
