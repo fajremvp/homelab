@@ -8,28 +8,28 @@ services:
     devices:
       - /dev/net/tun:/dev/net/tun
     ports:
-      - "8085:8080" # MUDANÇA: Expor a porta 8080 interna (qBit) na porta 8085 externa
-      # Portas de Torrent (UDP/TCP) não são expostas aqui fixas, 
-      # o ProtonVPN abre dinamicamente via NAT-PMP.
+      - "8085:8080"
     environment:
       - VPN_SERVICE_PROVIDER=protonvpn
       - VPN_TYPE=wireguard
       - WIREGUARD_PRIVATE_KEY=${VPN_WIREGUARD_PRIVATE_KEY}
       - SERVER_COUNTRIES=Brazil,United States
-      # Ativa o Port Forwarding para velocidade máxima
       - VPN_PORT_FORWARDING=on
       - VPN_PORT_FORWARDING_PROVIDER=protonvpn
     restart: unless-stopped
     networks:
       - media_net
-      - proxy # Gluetun conecta no Traefik, qBittorrent pega carona
+      - proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      # Router para o qBittorrent (mas apontando para este container)
       - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.home`)"
       - "traefik.http.routers.qbittorrent.entrypoints=websecure"
       - "traefik.http.routers.qbittorrent.tls=true"
-      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
       - "traefik.http.routers.qbittorrent.middlewares=authentik"
+      # Aponta para a porta 8080 INTERNA do qBittorrent (que trafega via localhost deste container)
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
 
   # --- DOWNLOAD CLIENT (TORRENT) ---
   qbittorrent:
@@ -42,10 +42,8 @@ services:
       - WEBUI_PORT=8080
     volumes:
       - ./config/qbittorrent:/config
-      # Mapeamento ÚNICO para Hardlinks funcionarem
       - /mnt/media/data:/data
     restart: unless-stopped
-    # Usa a rede do Gluetun. 
     network_mode: service:gluetun
     depends_on:
       gluetun:
@@ -67,6 +65,7 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.home`)"
       - "traefik.http.routers.prowlarr.entrypoints=websecure"
       - "traefik.http.routers.prowlarr.tls=true"
@@ -91,6 +90,7 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.radarr.rule=Host(`radarr.home`)"
       - "traefik.http.routers.radarr.entrypoints=websecure"
       - "traefik.http.routers.radarr.tls=true"
@@ -114,6 +114,7 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.sonarr.rule=Host(`sonarr.home`)"
       - "traefik.http.routers.sonarr.entrypoints=websecure"
       - "traefik.http.routers.sonarr.tls=true"
@@ -137,6 +138,7 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.bazarr.rule=Host(`bazarr.home`)"
       - "traefik.http.routers.bazarr.entrypoints=websecure"
       - "traefik.http.routers.bazarr.tls=true"
@@ -161,6 +163,7 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.home`)"
       - "traefik.http.routers.jellyfin.entrypoints=websecure"
       - "traefik.http.routers.jellyfin.tls=true"
@@ -183,7 +186,8 @@ services:
       - proxy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.jellyseerr.rule=Host(`seerr.home`)"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.jellyseerr.rule=Host(`jellyseerr.home`)"
       - "traefik.http.routers.jellyseerr.entrypoints=websecure"
       - "traefik.http.routers.jellyseerr.tls=true"
       - "traefik.http.services.jellyseerr.loadbalancer.server.port=5055"
