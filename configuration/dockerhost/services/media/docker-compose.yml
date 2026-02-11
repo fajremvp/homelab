@@ -23,6 +23,13 @@ services:
     networks:
       - media_net
       - proxy # Gluetun conecta no Traefik, qBittorrent pega carona
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.home`)"
+      - "traefik.http.routers.qbittorrent.entrypoints=websecure"
+      - "traefik.http.routers.qbittorrent.tls=true"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+      - "traefik.http.routers.qbittorrent.middlewares=authentik"
 
   # --- DOWNLOAD CLIENT (TORRENT) ---
   qbittorrent:
