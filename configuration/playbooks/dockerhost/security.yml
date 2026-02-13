@@ -1,0 +1,45 @@
+---
+- name: Setup Security Stack (CrowdSec)
+  hosts: dockerhost
+  become: yes
+
+  vars_files:
+    - _vars_common.yml
+
+  vars_prompt:
+    - name: ntfy_token
+      prompt: "Digite o Token do CrowdSec (Ntfy)"
+      private: yes
+
+  tasks:
+    - name: Sync CrowdSec
+      synchronize:
+        src: "../../dockerhost/security/"
+        dest: "{{ sec_dir }}/"
+        delete: yes
+        recursive: yes
+        rsync_opts:
+          - "--exclude=*.j2"
+          - "--exclude=crowdsec/notifications/http.yaml"
+      notify: Restart CrowdSec
+
+    - name: Configurar Notificação CrowdSec (Com Token)
+      template:
+        src: "../../dockerhost/security/crowdsec/notifications/http.yaml.j2"
+        dest: "{{ sec_dir }}/crowdsec/notifications/http.yaml"
+        owner: fajre
+        group: docker
+        mode: '0600'
+      notify: Restart CrowdSec
+
+    - name: Start Security Stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ sec_dir }}"
+        state: present
+      notify: Restart CrowdSec
+
+  handlers:
+    - name: Restart CrowdSec
+      community.docker.docker_container:
+        name: crowdsec
+        restart: yes

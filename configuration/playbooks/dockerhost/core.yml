@@ -1,0 +1,91 @@
+---
+- name: Setup Core Infrastructure (Traefik & Network)
+  hosts: dockerhost
+  become: yes
+
+  vars_files:
+    - _vars_common.yml
+
+  vars_prompt:
+    - name: tailscale_authkey
+      prompt: "Cole a Tailscale Auth Key (tskey-auth-...)"
+      private: yes
+
+  tasks:
+    - name: Garantir dependências python do Docker
+      apt:
+        name: python3-docker
+        state: present
+
+    - name: Criar diretórios base
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: fajre
+        group: docker
+        mode: '0755'
+      loop:
+        - "{{ base_dir }}"
+        - "{{ auth_dir }}"
+        - "{{ mon_dir }}"
+        - "{{ sec_dir }}"
+
+    # --- TRAEFIK ---
+    - name: Sync Traefik
+      synchronize:
+        src: "../../dockerhost/services/traefik/"
+        dest: "{{ base_dir }}/traefik/"
+        recursive: yes
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--exclude=.env"
+
+    - name: Start Traefik
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/traefik"
+        state: present
+
+    # --- TAILSCALE ---
+    - name: Sync Tailscale
+      synchronize:
+        src: "../../dockerhost/services/tailscale/"
+        dest: "{{ base_dir }}/tailscale/"
+        delete: yes
+        recursive: yes
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--chown={{ ansible_user }}:{{ ansible_user }}"
+          - "--exclude=state/**"
+          - "--exclude=.env"
+
+    - name: Gerar .env do Tailscale
+      copy:
+        dest: "{{ base_dir }}/tailscale/.env"
+        content: |
+          TS_AUTHKEY={{ tailscale_authkey }}
+        owner: fajre
+        group: docker
+        mode: '0600'
+
+    - name: Instalar Tailscale NAT Service
+      copy:
+        src: "../../dockerhost/services/tailscale/tailscale-nat.service"
+        dest: "/etc/systemd/system/tailscale-nat.service"
+        mode: '0644'
+      notify: Reload Systemd
+
+    - name: Habilitar e Iniciar Tailscale NAT Service
+      service:
+        name: tailscale-nat
+        state: started
+        enabled: yes
+
+    - name: Start Tailscale Stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/tailscale"
+        state: present
+
+  handlers:
+    - name: Reload Systemd
+      systemd:
+        daemon_reload: yes

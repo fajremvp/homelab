@@ -1,0 +1,110 @@
+---
+- name: Setup Monitoring Stack
+  hosts: dockerhost
+  become: yes
+
+  vars_files:
+    - _vars_common.yml
+
+  vars_prompt:
+    - name: grafana_password
+      prompt: "Digite a senha de Admin do Grafana"
+      private: yes
+    - name: healthchecks_uuid
+      prompt: "Digite o UUID do Healthchecks.io"
+      private: yes
+    - name: pve_password
+      prompt: "Digite a SENHA do usuário monitoring@pve"
+      private: yes
+
+  tasks:
+    - name: Criar diretórios de Monitoring
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: fajre
+        group: docker
+        mode: '0750'
+      loop:
+        - "{{ mon_dir }}"
+        - "{{ alertmanager_dir }}"
+        - "{{ pve_dir }}"
+
+    - name: Sync Monitoring Configs (Base)
+      synchronize:
+        src: "../../dockerhost/monitoring/"
+        dest: "{{ mon_dir }}/"
+        delete: no
+        recursive: yes
+        rsync_opts:
+          - "--exclude=.env"
+          - "--exclude=alertmanager/config.yml"
+          - "--exclude=alertmanager/config.yml.j2"
+          - "--exclude=pve/pve.yml"
+          - "--exclude=pve/pve.yml.j2"
+      notify: Restart Prometheus
+
+    - name: Configurar Alertmanager (Com Token)
+      template:
+        src: "../../dockerhost/monitoring/alertmanager/config.yml.j2"
+        dest: "{{ alertmanager_dir }}/config.yml"
+        owner: fajre
+        group: docker
+        mode: '0644'
+      notify: Restart Alertmanager
+
+    - name: Configurar PVE Exporter (Com Token)
+      template:
+        src: "../../dockerhost/monitoring/pve/pve.yml.j2"
+        dest: "{{ pve_dir }}/pve.yml"
+        owner: fajre
+        group: docker
+        mode: '0644'
+      notify: Restart PveExporter
+
+    - name: Ajustar permissão das regras de alerta
+      file:
+        path: "{{ mon_dir }}/prometheus/alert.rules.yml"
+        mode: '0644'
+
+    - name: Gerar .env do Monitoring
+      copy:
+        dest: "{{ mon_dir }}/.env"
+        content: |
+          GRAFANA_PASSWORD={{ grafana_password }}
+          HEALTHCHECKS_URL=https://hc-ping.com/{{ healthchecks_uuid }}
+        owner: fajre
+        group: docker
+        mode: '0600'
+        force: yes
+
+    - name: Garantir existência do auth.log para o Alloy
+      file:
+        path: "/var/log/auth.log"
+        state: touch
+        owner: root
+        group: adm
+        mode: '0640'
+        modification_time: preserve
+        access_time: preserve
+
+    - name: Start Monitoring Stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ mon_dir }}"
+        state: present
+
+  handlers:
+    - name: Restart Prometheus
+      community.docker.docker_container:
+        name: prometheus
+        restart: yes
+
+    - name: Restart Alertmanager
+      community.docker.docker_container:
+        name: alertmanager
+        restart: yes
+    
+    - name: Restart PveExporter
+      community.docker.docker_container:
+        name: pve-exporter
+        restart: yes

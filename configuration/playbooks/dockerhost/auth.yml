@@ -1,0 +1,74 @@
+---
+- name: Setup Identity Stack (Authentik)
+  hosts: dockerhost
+  become: yes
+
+  vars_files:
+    - _vars_common.yml
+
+  vars_prompt:
+    - name: authentik_role_id
+      prompt: "AUTHENTIK RoleID"
+      private: no
+    - name: authentik_secret_id
+      prompt: "AUTHENTIK SecretID"
+      private: yes
+
+  tasks:
+    - name: Sync Authentik
+      synchronize:
+        src: "../../dockerhost/auth/authentik/"
+        dest: "{{ auth_dir }}/authentik/"
+        recursive: yes
+        rsync_opts:
+          - "--exclude=.env"
+          - "--exclude=media/"
+          - "--exclude=custom-templates/"
+
+    - name: Tornar script start-with-vault executável
+      file:
+        path: "{{ auth_dir }}/authentik/start-with-vault.sh"
+        mode: '0755'
+
+    # --- VAULT SECRETS ---
+    - name: Criar diretório de segredos Vault
+      file:
+        path: "/etc/vault"
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+
+    - name: Gravar Authentik RoleID
+      copy:
+        content: "{{ authentik_role_id }}"
+        dest: "/etc/vault/authentik.roleid"
+        owner: root
+        group: root
+        mode: '0600'
+    - name: Gravar Authentik SecretID
+      copy:
+        content: "{{ authentik_secret_id }}"
+        dest: "/etc/vault/authentik.secretid"
+        owner: root
+        group: root
+        mode: '0600'
+
+    # --- SERVICE ---
+    - name: Instalar Authentik Systemd Service
+      copy:
+        src: "../../dockerhost/auth/authentik/authentik-vault.service"
+        dest: "/etc/systemd/system/authentik-vault.service"
+        mode: '0644'
+      notify: Reload Systemd
+
+    - name: Habilitar e Iniciar Authentik com Vault
+      service:
+        name: authentik-vault
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: Reload Systemd
+      systemd:
+        daemon_reload: yes

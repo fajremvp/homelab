@@ -4,6 +4,15 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-02-13
+**Status:** ✅ Sucesso (Fragmentação do Manage_Stacks.yml)
+
+**Foco:** Tornar o uso do Ansible mais prático e menos trabalhoso.
+
+- **Ação:** O playbook `manage_stacks.yml` foi dividido em arquivos menores.
+- **Motivo:** Evitar rodar o playbook completo toda vez que se faz uma alteração e facilitar a gestão de chaves, tokens e senhas.
+- **Resultado:** Mais agilidade na manutenção e menor risco de erro ao manipular variáveis sensíveis.
+
 ## 2026-02-12
 **Status:** ✅ Sucesso (Decomposição de Stack Desnecessária)
 

@@ -17,6 +17,11 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-02-13] - Fragmentação do Playbook Manage_Stacks
+### Alterado (Changed)
+- **Ansible Playbook (`manage_stacks.yml`):** Fragmentado em múltiplos arquivos menores.
+- **Objetivo:** Evitar ter que rodar todo o playbook para pequenas alterações e facilitar o gerenciamento de tokens, senhas e variáveis sensíveis.
+
 ## [2026-02-12] - Decomposição de Stack de Mídia
 ### Removido (Removed)
 - **Serviços (Containers):** Removida a Stack completa de mídias: Jellyfin, Jellyseerr, Radarr, Sonarr, Bazarr, Prowlarr, FlareSolverr, Gluetun e qBittorrent.

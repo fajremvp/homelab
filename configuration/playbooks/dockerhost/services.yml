@@ -1,0 +1,101 @@
+---
+- name: Setup Application Services
+  hosts: dockerhost
+  become: yes
+
+  vars_files:
+    - _vars_common.yml
+
+  vars_prompt:
+    - name: vaultwarden_role_id
+      prompt: "VAULTWARDEN RoleID"
+      private: no
+    - name: vaultwarden_secret_id
+      prompt: "VAULTWARDEN SecretID"
+      private: yes
+
+  tasks:
+    # --- WHOAMI ---
+    - name: Sync Whoami
+      synchronize:
+        src: "../../dockerhost/services/whoami/"
+        dest: "{{ base_dir }}/whoami/"
+        recursive: yes
+
+    - name: Start Whoami
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/whoami"
+        state: present
+
+    # --- NOSTR ---
+    - name: Sync Nostr Stack
+      synchronize:
+        src: "../../dockerhost/services/nostr/"
+        dest: "{{ base_dir }}/nostr/"
+        delete: yes
+        recursive: yes
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--chown={{ ansible_user }}:{{ ansible_user }}"
+          - "--exclude=tor-keys/**"
+
+    - name: Corrigir permissões da pasta Tor Keys
+      file:
+        path: "{{ base_dir }}/nostr/tor-keys"
+        state: directory
+        owner: "root"
+        group: "root"
+        mode: '0700'
+
+    - name: Start Nostr Stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/nostr"
+        state: present
+
+    # --- VAULTWARDEN ---
+    - name: Sync Vaultwarden
+      synchronize:
+        src: "../../dockerhost/services/vaultwarden/"
+        dest: "{{ base_dir }}/vaultwarden/"
+        recursive: yes
+        rsync_opts:
+          - "--exclude=.env"
+          - "--exclude=data/"
+
+    - name: Tornar script start-with-vault executável
+      file:
+        path: "{{ base_dir }}/vaultwarden/start-with-vault.sh"
+        mode: '0755'
+
+    - name: Gravar Vaultwarden RoleID
+      copy:
+        content: "{{ vaultwarden_role_id }}"
+        dest: "/etc/vault/vaultwarden.roleid"
+        owner: root
+        group: root
+        mode: '0600'
+    - name: Gravar Vaultwarden SecretID
+      copy:
+        content: "{{ vaultwarden_secret_id }}"
+        dest: "/etc/vault/vaultwarden.secretid"
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Instalar Vaultwarden Systemd Service
+      copy:
+        src: "../../dockerhost/services/vaultwarden/vaultwarden-vault.service"
+        dest: "/etc/systemd/system/vaultwarden-vault.service"
+        mode: '0644'
+      notify: Reload Systemd
+
+    - name: Habilitar e Iniciar Vaultwarden com Vault
+      service:
+        name: vaultwarden-vault
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: Reload Systemd
+      systemd:
+        daemon_reload: yes

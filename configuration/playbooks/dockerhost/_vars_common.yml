@@ -1,0 +1,6 @@
+base_dir: "/opt/services"
+auth_dir: "/opt/auth"
+mon_dir: "/opt/monitoring"
+sec_dir: "/opt/security"
+alertmanager_dir: "{{ mon_dir }}/alertmanager"
+pve_dir: "{{ mon_dir }}/pve"
