@@ -12,7 +12,7 @@ Implementação realizada em: 2025-12-27.
 | **Kernel** | Linux 6.x | Guest Agent ativado para telemetria no host. |
 | **vCPU** | 2 Cores | Type: `host` (Repassa instruções AES-NI da CPU real). |
 | **RAM** | 8 GB | Ballooning: **Não** (Desativado para estabilidade de serviços Java/ZFS). |
-| **Disco** | 32 GB (SCSI) | Storage: `local-zfs`. <br> **Otimizações:** SSD Emulation (On), Discard (On), IO Thread (On), Async IO (Threads). |
+| **Disco 1 (Boot)** | 32 GB (SCSI 0) | Storage: `local-zfs`. Sistema Operacional. |
 | **Rede** | `vmbr0` (VirtIO) | **VLAN Tag: 30** (Rede SERVER). Firewall do Proxmox: Desligado. |
 
 ## Estratégia de Ingress e Proxy Reverso (Traefik)

@@ -4,6 +4,83 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-02-12
+**Status:** ✅ Sucesso (Decomposição de Stack Desnecessária)
+
+**Foco:** Remoção da Stack de Mídia e Simplificação do Server.
+
+- **Decisão (O Carro na Garagem):**
+    - Após refletir sobre o uso real, decidi descontinuar toda a stack de mídia.
+    - **Motivo:** Manter essa infraestrutura complexa sem uso frequente é um desperdício de recursos e tempo de manutenção. Como quase não vejo filmes/séries (prefiro resumos ou baixar pontualmente no Arch), manter isso seria como "ter um carro que só fica na garagem para nada".
+- **Resultados dos Testes:**
+    - A stack chegou a funcionar: o qBittorrent via VPN (Gluetun) e o Jellyfin estavam operacionais e acessíveis pelo Arch Linux.
+    - **Falhas:** Dificuldade persistente na conexão com a TV (VLAN IOT) e na automação de legendas (Bazarr).
+- **Ações Realizadas:**
+    - Remoção de todos os containers da Stack Arr (Radarr, Sonarr, Prowlarr, FlareSolverr, Bazarr, Jellyfin, Jellyseerr, Gluetun e qBittorrent).
+    - Desmontagem e remoção do disco virtual de 500GB dedicado a mídias no Proxmox.
+    - Limpeza das regras de firewall específicas para a TV no OPNsense.
+## 2026-02-11
+**Status:** ✅ Sucesso (Disaster Recovery & Stabilization)
+
+**Foco:** Recuperação de Falha Crítica de Boot e Estabilização de Storage.
+
+- **O Incidente (Boot Loop):**
+    - Após desligar o servidor ontem, ao ligá-lo hoje, o DockerHost não respondeu ao Ping nem conectou à VPN.
+    - **Sintoma no Console:** O sistema caiu em *Emergency Mode* (Shell de root bloqueado).
+    - **Logs de Erro:**
+        - `[FAILED] Failed to mount mnt-media.mount /mnt/media.`
+        - `[DEPEND] Dependency failed for local-fs.target.` 
+    - **Causa Raiz:** Mudança na topologia de dispositivos SCSI.
+        - Ontem, o disco de 500GB era `/dev/sda` e o Boot era `/dev/sdb`.
+        - Hoje, o Proxmox inverteu: Boot virou `/dev/sda`.
+        - O `/etc/fstab` tentou montar o disco de boot (sda) na pasta `/mnt/media` com sistema de arquivos incorreto, travando o boot.
+
+- **Operação de Resgate (GRUB Hack):**
+    - Como o acesso SSH estava morto e o root bloqueado, utilizei a edição de parâmetros de Kernel no GRUB.
+    - **Ação:** Adicionado `init=/bin/bash` na linha de boot do Linux (`Ctrl+x` para bootar).
+    - **Acesso:** Obtido shell de root com sistema de arquivos *Read-Only*.
+
+- **O Desafio do Teclado (VNC Bug):**
+    - Ao tentar editar o `fstab` com `nano`, descobri que as teclas `Ctrl` e `Shift` não funcionavam no console NoVNC do Proxmox, impedindo de salvar o arquivo ou digitar `#` para comentar a linha falha.
+    - **Solução (Stream Editor):** Reiniciei o processo de resgate e utilizei o `sed` para deletar a linha problemática sem precisar de editor interativo:
+        1. `mount -o remount,rw /` (Tornar disco gravável).
+        2. `sed -i '/mnt\/media/d' /etc/fstab` (Deletar qualquer linha contendo o mount point).
+        3. `echo b > /proc/sysrq-trigger` (O ">" também não funcionava, então fiz via GUI do Proxmox mesmo (Stop e Start)).
+
+- **Correção Definitiva (Ansible):**
+    - Com o servidor online (sem o disco de mídia), corrigi o playbook `setup_storage.yml`.
+    - **Mudança:** Substituído o alvo fixo `src: /dev/sda` por `src: LABEL=media_disk`.
+    - **Resultado:** O Ansible remontou o disco corretamente. O uso de LABEL garante que o boot funcione independente da ordem que o Proxmox apresente os cabos virtuais.
+
+## 2026-02-10
+**Status:** ✅ Sucesso (Media Automation Stack)
+
+**Foco:** Implementação da Stack Arr (Servidor de Mídia) com VPN Isolada.
+
+- **Infraestrutura de Storage:**
+    - Adicionado disco virtual de 500GB (`Raw disk image`) ao DockerHost.
+    - Formatado como `ext4` (sem reserva de root `-m 0`) via Ansible.
+    - **Estrutura de Pastas:** Criada hierarquia unificada `/mnt/media/data/{torrents,media}` para permitir **Hardlinks Atômicos** (Atomic Moves). Isso impede que o download e a cópia final ocupem o dobro do espaço em disco.
+
+- **VPN & Privacidade (Gluetun):**
+    - Implementado container `gluetun` conectado à ProtonVPN (WireGuard).
+    - **Funcionalidade:** O container `qbittorrent` não tem rede própria; ele usa `network_mode: service:gluetun`. Se a VPN cair, o torrent para imediatamente (Kill Switch nativo).
+    - **Port Forwarding:** Habilitado NAT-PMP para garantir conectividade com peers.
+
+- **Troubleshooting de Deploy:**
+    - **Conflito de Portas:** O container `crowdsec` falhou ao iniciar.
+        - *Causa:* Ambos CrowdSec e qBittorrent tentaram usar a porta `8080` do host.
+        - *Correção:* Mapeada a WebUI do qBittorrent para a porta `8085` no `docker-compose.yml`.
+    - **Erro de Permissão (PGID):** Ajustado `PGID=989` (Grupo Docker) nos containers para garantir acesso de escrita no disco montado.
+
+- **Incidente de Roteamento (Traefik 504):**
+    - **Sintoma:** Serviços como Radarr e Sonarr retornavam *Gateway Timeout* intermitente.
+    - **Diagnóstico:** Os containers estavam conectados a duas redes (`media_net` interna e `proxy` externa). O Traefik estava resolvendo o IP da rede interna (172.18.x.x), a qual ele não tem acesso.
+    - **Solução:** Adicionada a label `traefik.docker.network=proxy` em todos os serviços. Isso força o Traefik a utilizar apenas o IP da rede compartilhada de ingress.
+
+- **Integração Authentik:**
+    - Criados *Proxy Providers* manuais para cada serviço (`*.home`), garantindo camada de autenticação única antes de acessar as aplicações.
+    - Adicionado middleware `authentik` nas labels do Traefik para forçar o login.
 ## 2026-02-08
 **Status:** ✅ Sucesso (Refactoring & Troubleshooting)
 

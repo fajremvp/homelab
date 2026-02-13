@@ -17,6 +17,36 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-02-12] - Decomposição de Stack de Mídia
+### Removido (Removed)
+- **Serviços (Containers):** Removida a Stack completa de mídias: Jellyfin, Jellyseerr, Radarr, Sonarr, Bazarr, Prowlarr, FlareSolverr, Gluetun e qBittorrent.
+- **Armazenamento:** Removido o disco secundário de 500GB (SCSI 1) do DockerHost e o ponto de montagem `/mnt/media`.
+- **Rede:** Removidas as regras de firewall de tráfego interno (Inter-VLAN) entre a VLAN 50 (IOT) e a porta 8096 do DockerHost.
+
+### Alterado (Changed)
+- **Otimização de Recursos:** Liberação de 500GB de storage no `local-zfs` e redução do overhead de CPU/RAM no DockerHost.
+## [2026-02-11] - Infrastructure Stabilization & Boot Recovery
+### Corrigido (Fixed)
+- **Boot Failure (Emergency Mode):** Resolvida falha crítica de inicialização do DockerHost.
+    - *Causa:* O Proxmox alterou a ordem dos discos virtuais (SCSI) após um reboot. O disco de boot (32GB) assumiu `/dev/sda` e o sistema tentou montá-lo como se fosse o disco de dados `/mnt/media`, causando pânico no systemd (`Dependency failed for local-fs.target`).
+    - *Correção:* Alterada a estratégia de montagem no Ansible para utilizar `LABEL=media_disk` (UUID/Label) em vez do caminho do dispositivo (`/dev/sda`), garantindo persistência independente da ordem de hardware.
+
+## [2026-02-10] - Implementation of Media Stack
+### Adicionado (Added)
+- **Storage:** Adicionado disco virtual de 500GB ao DockerHost, formatado em `ext4` e montado em `/mnt/media`.
+- **Media Stack (Arr):** Implementação completa da suíte de automação de mídia via Docker Compose:
+    - **Serviços:** Jellyfin, Jellyseerr, Radarr, Sonarr, Bazarr, Prowlarr.
+    - **Download:** qBittorrent roteado através de VPN.
+    - **Privacidade:** Container `gluetun` atuando como Gateway VPN (ProtonVPN WireGuard) com *Kill Switch* e *Port Forwarding* (NAT-PMP).
+- **Ansible:**
+    - Criado playbook `setup_storage.yml` para gestão de discos.
+    - Atualizado `manage_stacks.yml` para injetar chave privada WireGuard via prompt seguro.
+
+### Corrigido (Fixed)
+- **Port Conflict:** Alterada porta externa do qBittorrent/Gluetun para `8085` para resolver conflito com a LAPI do CrowdSec na porta `8080`.
+- **Traefik Routing (Split-Brain):** Resolvido erro `504 Gateway Timeout` nos serviços de mídia.
+    - *Causa:* Os containers possuíam duas interfaces de rede (`media_net` e `proxy`). O Traefik tentava rotear pelo IP da rede interna inacessível.
+    - *Solução:* Forçada a rede de saída via label `traefik.docker.network=proxy` em todos os serviços.
 ## [2026-02-08] - Refatoração Estrutural e Correção de Rede
 ### Adicionado (Added)
 - **Dead Man's Switch (Healthchecks.io):** Implementado monitoramento de disponibilidade externo.

@@ -16,10 +16,6 @@
       prompt: "Digite o Token do CrowdSec (Ntfy)"
       private: yes
 
-    - name: vpn_wireguard_private_key
-      prompt: "Cole a Chave Privada WireGuard (ProtonVPN)"
-      private: yes
-
     - name: authentik_role_id
       prompt: "AUTHENTIK RoleID"
       private: no
@@ -69,7 +65,6 @@
         - "{{ auth_dir }}"       # /opt/auth
         - "{{ mon_dir }}"        # /opt/monitoring
         - "/opt/security"
-        - "/opt/services/media"
 
     # --- 3. SINCRONIZAÇÃO (GIT -> SERVER) ---
     - name: Deploy Configs (Traefik, Vaultwarden, Whoami, Nostr, Tailscale)
@@ -99,30 +94,6 @@
           - "--exclude=.env"
           - "--exclude=media/"
           - "--exclude=custom-templates/"
-
-    # --- MEDIA STACK (ARR) ---
-    - name: Sincronizar Stack de Mídia
-      synchronize:
-        src: "../dockerhost/services/media/"
-        dest: "/opt/services/media/"
-        recursive: yes
-        rsync_opts:
-          - "--exclude=.env"
-          - "--exclude=config/" # Não sobrescrever configs dos apps
-    
-    - name: Gerar .env da Mídia (VPN Key)
-      copy:
-        dest: "/opt/services/media/.env"
-        content: |
-          VPN_WIREGUARD_PRIVATE_KEY={{ vpn_wireguard_private_key }}
-        owner: fajre
-        group: docker
-        mode: '0600'
-    
-    - name: Deploy Media Stack
-      community.docker.docker_compose_v2:
-        project_src: "/opt/services/media"
-        state: present
 
     # --- 4. PERMISSÕES E SCRIPTS ---
     - name: Tornar scripts start-with-vault executáveis
