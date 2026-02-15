@@ -17,6 +17,12 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-02-15] - CrowdSec Stability Fix
+### Corrigido (Fixed)
+- **CrowdSec:** Resolvido problema crítico de conectividade ("Network Unreachable") causado por corrupção de estado de rede do Docker.
+    - **Ação:** Implementado procedimento de `force-recreate` para garantir que o container receba novas interfaces de rede em caso de falha de comunicação DNS.
+    - **Resultado:** Comunicação restabelecida entre LAPI (DockerHost) e Bouncer (OPNsense).
+
 ## [2026-02-13] - Fragmentação do Playbook Manage_Stacks
 ### Alterado (Changed)
 - **Ansible Playbook (`manage_stacks.yml`):** Fragmentado em múltiplos arquivos menores.

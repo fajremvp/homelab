@@ -95,6 +95,30 @@
         state: started
         enabled: yes
 
+    # --- ACTUAL BUDGET ---
+    - name: Sync Actual Budget
+      synchronize:
+        src: "../../dockerhost/services/actualbudget/"
+        dest: "{{ base_dir }}/actualbudget/"
+        recursive: yes
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--chown={{ ansible_user }}:{{ ansible_user }}"
+          - "--exclude=data/"
+
+    - name: Garantir diretório de dados do Actual Budget
+      file:
+        path: "{{ base_dir }}/actualbudget/data"
+        state: directory
+        mode: '0755'
+        owner: "root" 
+        group: "root"
+
+    - name: Start Actual Budget
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/actualbudget"
+        state: present
+
   handlers:
     - name: Reload Systemd
       systemd:

@@ -4,6 +4,21 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-02-15
+**Status:** ✅ Sucesso (CrowdSec Resurrection)
+
+**Foco:** Resolução definitiva do erro "Network Unreachable" no CrowdSec.
+
+- **O Incidente (Zombie Container):**
+    - **Sintoma:** O container `crowdsec` entrava em *Crash Loop* logo após iniciar, falhando ao tentar resolver DNS (`dial udp 10.10.30.5:53: connect: network is unreachable`) ou conectar à API central.
+    - **Diagnóstico:** Estado de rede inconsistente no Docker Daemon. O container existia e rodava, mas sua interface de rede virtual estava "órfã" ou desconectada da bridge `proxy`, impedindo o roteamento de saída. Simplesmente reiniciar (`restart`) não resolvia pois reutilizava o container defeituoso.
+- **A Solução:**
+    - Executado `docker compose up -d --force-recreate` na pasta `/opt/security`.
+    - **Efeito:** O comando forçou a destruição do container antigo e a criação de um novo do zero, reatribuindo corretamente as interfaces de rede e rotas.
+- **Validação:**
+    - Hub atualizado com sucesso (`community-blocklist: added 2400 entries`).
+    - Bouncer do OPNsense (`10.10.30.1`) reconectado imediatamente: logs mostram `GET /v1/decisions/stream ... HTTP 200`.
+
 ## 2026-02-13
 **Status:** ✅ Sucesso (Fragmentação do Manage_Stacks.yml)
 

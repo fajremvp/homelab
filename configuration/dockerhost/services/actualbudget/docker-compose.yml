@@ -1,0 +1,22 @@
+services:
+  actualbudget:
+    image: ghcr.io/actualbudget/actual-server:latest
+    container_name: actualbudget
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      
+      # Router HTTPS (Sem Authentik para compatibilidade Mobile)
+      - "traefik.http.routers.actualbudget.rule=Host(`actualbudget.home`)"
+      - "traefik.http.routers.actualbudget.entrypoints=websecure"
+      - "traefik.http.routers.actualbudget.tls=true"
+      - "traefik.http.services.actualbudget.loadbalancer.server.port=5006"
+
+networks:
+  proxy:
+    external: true
