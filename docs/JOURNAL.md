@@ -18,7 +18,12 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 - **Validação:**
     - Hub atualizado com sucesso (`community-blocklist: added 2400 entries`).
     - Bouncer do OPNsense (`10.10.30.1`) reconectado imediatamente: logs mostram `GET /v1/decisions/stream ... HTTP 200`.
-
+- **Serviço Novo: Actual Budget**
+    - **Objetivo:** Controle financeiro soberano (Substituição de planilhas/PicPay mental).
+    - **Decisão de Arquitetura:** Optei pela imagem oficial `ghcr.io/actualbudget/actual-server`. Diferente dos outros serviços, este **não usa o Authentik** como barreira de entrada.
+    - **Motivo:** O App mobile do Actual Budget não suporta fluxos de autenticação complexos (OIDC/ForwardAuth).
+    - **Mitigação:** A segurança depende da senha forte do servidor e, crucialmente, da **End-to-End Encryption** ativada nas configurações do Actual.
+    
 ## 2026-02-13
 **Status:** ✅ Sucesso (Fragmentação do Manage_Stacks.yml)
 

@@ -119,6 +119,14 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
       * `ntfy` (Servidor de Notificações): Alternativa soberana ao Discord/Slack. Recebe webhooks do Alertmanager/Grafana e envia push notifications para o celular.
       * `Portfólio pessoal` (Servidor web, via Traefik (também disponível em .onion e IPFS))
       * `Pequeno site` (Servidor web, via Traefik)
+      * `Actual Budget` (Organização financeira pessoal): [Implementado em 2026-02-15]
+            * **Função:** Gestão de orçamento pessoal (Envelope Budgeting).
+            * **Ingress:** `actualbudget.home`.
+            * **Segurança:**
+                * **Autenticação:** Interna do App (Senha do Servidor).
+                * **Criptografia:** E2E (Chave gerada no client-side).
+                * **Nota:** Exceção à regra Zero Trust do Authentik para permitir sincronização mobile.
+            * **Persistência:** SQLite em `/data`.
 
 * **Resiliência de Boot**: Todos os containers críticos (Vaultwarden, Stalwart) devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
 

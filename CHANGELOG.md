@@ -23,6 +23,12 @@ e este projeto adere ao versionamento semântico (onde aplicável).
     - **Ação:** Implementado procedimento de `force-recreate` para garantir que o container receba novas interfaces de rede em caso de falha de comunicação DNS.
     - **Resultado:** Comunicação restabelecida entre LAPI (DockerHost) e Bouncer (OPNsense).
 
+### Adicionado (Added)
+- **Finanças (Actual Budget):** Implementado serviço de gestão financeira pessoal.
+    - **Stack:** Container `actual-server` (Imagem Oficial GHCR) rodando na porta 5006.
+    - **Segurança:** Criptografia End-to-End (E2E) ativada na aplicação. Middleware Authentik **não** aplicado para garantir compatibilidade com App Mobile e Sync nativo.
+    - **Armazenamento:** Volume persistente em `/opt/services/actualbudget/data` (SQLite), coberto pelo backup diário do Restic.
+
 ## [2026-02-13] - Fragmentação do Playbook Manage_Stacks
 ### Alterado (Changed)
 - **Ansible Playbook (`manage_stacks.yml`):** Fragmentado em múltiplos arquivos menores.

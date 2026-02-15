@@ -1,0 +1,38 @@
+services:
+  syncthing:
+    image: syncthing/syncthing:latest
+    container_name: syncthing
+    hostname: dockerhost-syncthing # Nome completo na rede mesh
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      # CONFIGURAÇÃO (Fica no disco OS -> Vai pro Backup Restic)
+      - ./config:/var/syncthing/config
+      # DADOS BRUTOS (Fica no disco 100GB -> NÃO vai pro Backup Restic)
+      - /mnt/syncthing:/var/syncthing/data
+    networks:
+      - proxy
+    ports:
+      # Sincronização (Obrigatório expor para funcionar)
+      - "22000:22000/tcp" # Transferência TCP
+      - "22000:22000/udp" # Transferência QUIC
+      - "21027:21027/udp" # Local Discovery (Broadcast)
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      
+      # Acesso Web (GUI)
+      - "traefik.http.routers.syncthing.rule=Host(`syncthing.home`)"
+      - "traefik.http.routers.syncthing.entrypoints=websecure"
+      - "traefik.http.routers.syncthing.tls=true"
+      - "traefik.http.services.syncthing.loadbalancer.server.port=8384"
+      
+      # Proteção Extra: Authentik na frente da GUI
+      # O App do celular NÃO usa essa rota (usa a porta 22000), então não quebra o sync.
+      - "traefik.http.routers.syncthing.middlewares=authentik@docker"
+
+networks:
+  proxy:
+    external: true
