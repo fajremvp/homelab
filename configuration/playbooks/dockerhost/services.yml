@@ -130,6 +130,15 @@
           - "--chown={{ ansible_user }}:{{ ansible_user }}"
           - "--exclude=config/" # Preserva configs geradas pelo app
 
+    - name: Garantir permissões na pasta de Config
+      file:
+        path: "{{ base_dir }}/syncthing/config"
+        state: directory
+        owner: "1000" # usuário fajre
+        group: "1000"
+        mode: '0755'
+        recurse: yes
+
     - name: Garantir permissões no Mountpoint de Dados
       file:
         path: "/mnt/syncthing"
