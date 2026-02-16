@@ -5,9 +5,9 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
 ## 2026-02-15
-**Status:** ✅ Sucesso (CrowdSec Resurrection)
+**Status:** ✅ Sucesso (CrowdSec Resurrection, Actual Budget Implementation and Syncthing Implementation)
 
-**Foco:** Resolução definitiva do erro "Network Unreachable" no CrowdSec.
+**Foco:** Resolução definitiva do erro "Network Unreachable" no CrowdSec, além da implemtação do Actual Budget e do Syncthing
 
 - **O Incidente (Zombie Container):**
     - **Sintoma:** O container `crowdsec` entrava em *Crash Loop* logo após iniciar, falhando ao tentar resolver DNS (`dial udp 10.10.30.5:53: connect: network is unreachable`) ou conectar à API central.
@@ -23,6 +23,28 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
     - **Decisão de Arquitetura:** Optei pela imagem oficial `ghcr.io/actualbudget/actual-server`. Diferente dos outros serviços, este **não usa o Authentik** como barreira de entrada.
     - **Motivo:** O App mobile do Actual Budget não suporta fluxos de autenticação complexos (OIDC/ForwardAuth).
     - **Mitigação:** A segurança depende da senha forte do servidor e, crucialmente, da **End-to-End Encryption** ativada nas configurações do Actual.
+- **Serviço Novo: Syncthing (Central Data Hub)**
+    - **Objetivo:** Centralizar arquivos do Notebook (Arch) e Celular (M55) para backup e futura ingestão no Immich, sem depender de nuvem pública.
+    - **Expansão de Hardware (Storage):**
+        - Adicionado disco virtual de **100GB** ao DockerHost no Proxmox.
+        - **Prevenção de Desastre:** Para evitar o incidente de "Boot Loop" do dia 11/02, o disco foi montado via **UUID** (`/etc/fstab`) em vez do device path (`/dev/sdb`), garantindo estabilidade mesmo se a ordem dos cabos virtuais mudar.
+        - **Mount Point:** `/mnt/syncthing`. Formatado em `ext4`.
+        - **Flag de Segurança:** Adicionado `nofail` no fstab. Se este disco corromper, o servidor ainda bootará os serviços críticos (DNS/Auth). 
+    - **Incidente de Deploy (Permission Crash Loop):**
+        - **Sintoma:** O container entrava em *Crash Loop* imediato. Logs mostravam `chmod /var/syncthing/config: operation not permitted`.
+        - **Causa Raiz:** O Docker Engine (rodando como root) criou a pasta de bind mount `config/` automaticamente com permissão `root:root`. O processo interno do Syncthing (UID 1000) não conseguia escrever seus certificados.
+        - **Solução:** Atualizado o playbook `services.yml` no Ansible. Inserida uma task `file` explícita para garantir `owner: 1000` e `group: 1000` na pasta de configuração *antes* de subir o container.
+    - **Arquitetura de Pastas (Split-Storage):**
+        - **Configuração:** Mantida no disco de boot (`/opt/services/syncthing/config`) para ser incluída no Backup do Restic.
+        - **Dados Brutos:** Direcionados para o disco de 100GB (`/mnt/syncthing`), mapeado internamente como `/var/syncthing/data`. **Excluído** do backup do Restic para economizar custos de B2.
+        - **Estrutura Lógica:**
+            - `/mnt/syncthing/M55/`
+            - `/mnt/syncthing/Arch/`
+    - **Otimização de Performance & Segurança:**
+        - **No Servidor (Docker):**
+            - Desativado `NAT/UPnP` (Inútil atrás de CGNAT/Docker Network).
+            - Ativado `Ignore Permissions` (Crucial para evitar conflitos entre Android/Linux/Docker permissions).
+            - Interface Web protegida em profundidade: Middleware Authentik + Senha forte interna.
     
 ## 2026-02-13
 **Status:** ✅ Sucesso (Fragmentação do Manage_Stacks.yml)

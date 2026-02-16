@@ -127,6 +127,17 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
                 * **Criptografia:** E2E (Chave gerada no client-side).
                 * **Nota:** Exceção à regra Zero Trust do Authentik para permitir sincronização mobile.
             * **Persistência:** SQLite em `/data`.
+    * `Syncthing` (Hub de Sincronização): [Implementado em 2026-02-15]
+          - **Função:** Centralização de arquivos (Hub-and-Spoke) e preparação para ingestão de mídia (Immich).
+          - **Armazenamento Híbrido:**
+              - *Config:* SSD de Boot (`/opt/services/syncthing/config`) -> Backup Restic Diário.
+              - *Dados:* Disco Virtual 100GB (`/mnt/syncthing`) -> Sem Backup Offsite (Dados Brutos).
+          - **Ingress:** `syncthing.home` (Porta 8384).
+          - **Portas de Dados:** 22000/TCP+UDP expostas para a LAN/WAN.
+          - **Política de Sync:**
+              - **Servidor:** Receive Only + Staggered File Versioning (Lixeira protegida).
+              - **Clientes:** Send Only (Proteção contra deleção acidental no servidor).
+          - **Segurança:** Autenticação Dupla (Authentik Middleware + Senha da App).
 
 * **Resiliência de Boot**: Todos os containers críticos (Vaultwarden, Stalwart) devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
 

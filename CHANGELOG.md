@@ -17,17 +17,24 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
-## [2026-02-15] - CrowdSec Stability Fix
+## [2026-02-15] - CrowdSec Stability Fix, Actual Budget Implementation and Syncthing Implementation
 ### Corrigido (Fixed)
 - **CrowdSec:** Resolvido problema crítico de conectividade ("Network Unreachable") causado por corrupção de estado de rede do Docker.
     - **Ação:** Implementado procedimento de `force-recreate` para garantir que o container receba novas interfaces de rede em caso de falha de comunicação DNS.
     - **Resultado:** Comunicação restabelecida entre LAPI (DockerHost) e Bouncer (OPNsense).
+- **Syncthing Permission Loop:** Resolvido *Crash Loop* do container Syncthing causado por permissões incorretas no volume de configuração (`/opt/services/syncthing/config`).
+    - **Fix:** Adicionada tarefa no Ansible para forçar `owner: 1000:1000` antes da inicialização do container.
 
 ### Adicionado (Added)
 - **Finanças (Actual Budget):** Implementado serviço de gestão financeira pessoal.
     - **Stack:** Container `actual-server` (Imagem Oficial GHCR) rodando na porta 5006.
     - **Segurança:** Criptografia End-to-End (E2E) ativada na aplicação. Middleware Authentik **não** aplicado para garantir compatibilidade com App Mobile e Sync nativo.
     - **Armazenamento:** Volume persistente em `/opt/services/actualbudget/data` (SQLite), coberto pelo backup diário do Restic.
+- **Data Synchronization (Syncthing):** Implementado Hub Central de sincronização de arquivos.
+    - **Hardware:** Adicionado disco virtual de 100GB (SCSI 1) dedicado a dados brutos ("Cold Storage").
+    - **Storage Strategy:** Implementada montagem via **UUID** com flag `nofail` para prevenir falhas de boot.
+    - **Arquitetura:** Configuração "Hub-and-Spoke". Server atua como repositório central (`Receive Only` com Versionamento), enquanto clientes (Arch, M55) enviam dados (`Send Only`).
+    - **Segurança:** GUI protegida por Authentik (Middleware) + Senha Interna. Tráfego de dados isolado na porta 22000.
 
 ## [2026-02-13] - Fragmentação do Playbook Manage_Stacks
 ### Alterado (Changed)
