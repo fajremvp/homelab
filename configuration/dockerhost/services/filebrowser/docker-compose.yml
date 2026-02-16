@@ -3,12 +3,10 @@ services:
     image: filebrowser/filebrowser:latest
     container_name: filebrowser
     restart: unless-stopped
-    # Roda como 'fajre' (1000) para poder escrever no disco do Syncthing
     user: "1000:1000"
     volumes:
       - ./filebrowser.db:/database.db
       - ./settings.json:/.filebrowser.json
-      # Mapeia a raiz do disco de 100GB para o File Browser
       - /mnt/syncthing:/srv
     networks:
       - proxy
@@ -19,7 +17,6 @@ services:
       - "traefik.http.routers.filebrowser.entrypoints=websecure"
       - "traefik.http.routers.filebrowser.tls=true"
       - "traefik.http.services.filebrowser.loadbalancer.server.port=80"
-      # Proteção Authentik
       - "traefik.http.routers.filebrowser.middlewares=authentik@docker"
 
 networks:
