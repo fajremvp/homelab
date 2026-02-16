@@ -17,6 +17,14 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-02-16] - File Browser Rollback & Syncthing Hardening
+### Removido (Removed)
+- **File Browser:** Descontinuada a implementação devido a falhas persistentes na integração de SSO (Proxy Auth) com o Authentik. Containers e configurações removidos via Ansible.
+
+### Alterado (Changed)
+- **Syncthing Topology:** Revertida a configuração de pastas para **Send Only** (Clientes) e **Receive Only** (Servidor), garantindo isolamento estrito de dados e prevenindo propagação de exclusões acidentais.
+- **Documentation:** Atualizado `vm-dockerhost.md` com a especificação do disco secundário de 100GB.
+
 ## [2026-02-15] - CrowdSec Stability Fix, Actual Budget Implementation and Syncthing Implementation
 ### Corrigido (Fixed)
 - **CrowdSec:** Resolvido problema crítico de conectividade ("Network Unreachable") causado por corrupção de estado de rede do Docker.

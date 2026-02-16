@@ -13,6 +13,7 @@ Implementação realizada em: 2025-12-27.
 | **vCPU** | 2 Cores | Type: `host` (Repassa instruções AES-NI da CPU real). |
 | **RAM** | 8 GB | Ballooning: **Não** (Desativado para estabilidade de serviços Java/ZFS). |
 | **Disco 1 (Boot)** | 32 GB (SCSI 0) | Storage: `local-zfs`. Sistema Operacional. |
+| **Disco 2 (Data)** | 100 GB (SCSI 1) | Storage: `local-zfs`. Dados brutos (`/mnt/syncthing`). |
 | **Rede** | `vmbr0` (VirtIO) | **VLAN Tag: 30** (Rede SERVER). Firewall do Proxmox: Desligado. |
 
 ## Estratégia de Ingress e Proxy Reverso (Traefik)

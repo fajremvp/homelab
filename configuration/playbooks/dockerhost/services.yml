@@ -151,36 +151,7 @@
       community.docker.docker_compose_v2:
         project_src: "{{ base_dir }}/syncthing"
         state: present
-
-    # --- FILE BROWSER ---
-    - name: Sync File Browser Stack
-      synchronize:
-        src: "../../dockerhost/services/filebrowser/"
-        dest: "{{ base_dir }}/filebrowser/"
-        recursive: yes
-        rsync_opts:
-          - "--chmod=D0755,F0644"
-          - "--chown={{ ansible_user }}:{{ ansible_user }}"
-          - "--exclude=filebrowser.db" # Preserva o banco de dados
-
-    - name: Garantir arquivos de config do File Browser
-      file:
-        path: "{{ item }}"
-        state: touch
-        owner: "1000"
-        group: "1000"
-        mode: '0644'
-        modification_time: preserve
-        access_time: preserve
-      loop:
-        - "{{ base_dir }}/filebrowser/filebrowser.db"
-        - "{{ base_dir }}/filebrowser/settings.json"
-
-    - name: Start File Browser
-      community.docker.docker_compose_v2:
-        project_src: "{{ base_dir }}/filebrowser"
-        state: present
-
+ 
   handlers:
     - name: Reload Systemd
       systemd:

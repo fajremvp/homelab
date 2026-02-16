@@ -4,6 +4,27 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-02-16
+**Status:** ⚠️ Revertido (Rollback de Funcionalidade)
+
+**Foco:** Tentativa de implementação de Gerenciador de Arquivos Web e Endurecimento do Syncthing.
+
+- **Experimento Falho: File Browser (Web Drive):**
+    - **Objetivo:** Criar uma interface web estilo "Google Drive" (`files.home`) para gerenciar, deletar e mover arquivos dentro do volume do Syncthing, com SSO via Authentik.
+    - **Implementação:**
+        - Deploy via Docker Compose mapeando `/mnt/syncthing` como raiz.
+        - Configuração de Proxy Auth (SSO) para ler o header `X-Authentik-Username`.
+    - **O Problema:**
+        - Apesar do container de debug `whoami` confirmar que o Authentik e Traefik estavam injetando os headers corretamente (`X-Authentik-Username: akadmin`), a aplicação File Browser ignorava consistentemente a instrução, exibindo a tela de login ou retornando "Wrong credentials".
+        - Tentativas de forçar configuração via CLI (`config set`), variáveis de ambiente (`FB_AUTH_METHOD=proxy`) e recriação do banco de dados (`filebrowser.db`) não surtiram efeito.
+    - **Decisão:** O esforço de troubleshooting excedeu o valor da funcionalidade. Stack removida completamente para evitar "zumbis" no servidor.
+
+- **Reversão de Topologia Syncthing (Security First):**
+    - Durante os testes do File Browser, a topologia foi alterada para *Send & Receive* (Bidirecional) para permitir deleção remota.
+    - **Ação:** Com a remoção do gerenciador web, reverti a topologia para o modelo de **Segurança Máxima**:
+        - **Servidor:** *Receive Only* (Apenas recebe dados, nunca propaga deleções para os clientes).
+        - **Clientes (Arch/M55):** *Send Only* (São a fonte da verdade).
+    - **Versionamento:** Mantido *Staggered File Versioning* no servidor como rede de segurança final contra erros humanos ou ransoms nos clientes.
 ## 2026-02-15
 **Status:** ✅ Sucesso (CrowdSec Resurrection, Actual Budget Implementation and Syncthing Implementation)
 
