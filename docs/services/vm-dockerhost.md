@@ -127,7 +127,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
                 * **Criptografia:** E2E (Chave gerada no client-side).
                 * **Nota:** Exceção à regra Zero Trust do Authentik para permitir sincronização mobile.
             * **Persistência:** SQLite em `/data`.
-    * `Syncthing` (Hub de Sincronização): [Implementado em 2026-02-15]
+      * `Syncthing` (Hub de Sincronização): [Implementado em 2026-02-15]
           - **Função:** Centralização de arquivos (Hub-and-Spoke) e preparação para ingestão de mídia (Immich).
           - **Armazenamento Híbrido:**
               - *Config:* SSD de Boot (`/opt/services/syncthing/config`) -> Backup Restic Diário.
@@ -138,6 +138,18 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - **Servidor:** Receive Only + Staggered File Versioning (Lixeira protegida).
               - **Clientes:** Send Only (Proteção contra deleção acidental no servidor).
           - **Segurança:** Autenticação Dupla (Authentik Middleware + Senha da App).
+          - **Matriz de Configuração (Tuning):**
+              - **DockerHost (Hub Central):**
+                  - *Options:* `NAT Enabled=Off` (Isolado no Docker), `Global Announce=On`, `Relays=On`.
+                  - *Defaults:* `Ignore Perms=On` (Crucial para evitar erros de chmod), `Compression=Metadata Only` (Otimizado para LAN Gigabit).
+                  - *GUI:* `Insecure Skip Hostcheck=On` (Evita erros 403 atrás do Traefik).
+              - **Arch Linux:**
+                  - *Options:* `NAT Enabled=On` (UPnP para Roaming), `Global/Local/Relay=On`.
+                  - *Defaults:* `Ignore Perms=On`, `Compression=Metadata Only` (Economia de CPU/Bateria).
+              - **Android (M55):**
+                  - *Run Conditions:* Wi-Fi Only (Padrão), Battery or AC Power.
+                  - *Network:* `NAT Traversal=On` (Bypass CGNAT), `Global/Local/Relay=On`.
+                  - *System:* Bateria do Android definida como **"Sem Restrições" (Unrestricted)**. 
 
 * **Resiliência de Boot**: Todos os containers críticos (Vaultwarden, Stalwart) devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
 
