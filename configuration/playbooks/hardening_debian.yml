@@ -1,6 +1,6 @@
 ---
 - name: Hardening Completo do Debian (DockerHost & Vault)
-  hosts: dockerhost, vault
+  hosts: debian
   become: yes
 
   tasks:
