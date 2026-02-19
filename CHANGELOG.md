@@ -17,6 +17,17 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-02-18] - Nova VM (OrangeShadow) e Hardening
+### Adicionado (Added)
+- **VM OrangeShadow (ID 107):** Servidor dedicado para Full Nodes (Bitcoin/Monero). Configurado com Debian 13, Disk Passthrough (2TB SSD) e Rede Tor.
+- **Ansible Automation:**
+    - Atualizado `hosts.ini` e `hardening_debian.yml` para suportar o novo nó.
+    - Novo script de backup "cirúrgico" no `setup_backup.yml` que exclui dados da blockchain e preserva apenas carteiras.
+- **Observabilidade:** Adicionado target `bitcoin-node` ao Prometheus para ver no Dashboard Grafana.
+
+### Corrigido (Fixed)
+- **Monitoring Playbook:** Corrigida falha na execução do `monitoring.yml` que não solicitava a variável `ntfy_token` necessária para o template do Alertmanager.
+
 ## [2026-02-16] - File Browser Rollback & Syncthing Hardening
 ### Removido (Removed)
 - **File Browser:** Descontinuada a implementação devido a falhas persistentes na integração de SSO (Proxy Auth) com o Authentik. Containers e configurações removidos via Ansible.

@@ -4,6 +4,33 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-02-18
+**Status:** ✅ Sucesso
+
+**Foco:** Implementação da Infraestrutura de Soberania Financeira (VM OrangeShadow).
+
+- **Provisionamento da VM (OrangeShadow - ID 107):**
+    - Criada VM Debian 13 Minimal na VLAN 30 (`10.10.30.20`).
+    - **Disk Passthrough:** SSD Samsung 870 EVO (2TB) entregue fisicamente à VM para performance nativa de I/O.
+    - **Particionamento Manual:** Configurei manualmente o disco de boot (32GB) com tabela GPT/EFI, preservando o SSD de 2TB intacto durante a instalação do OS.
+    - **Formatação:** SSD de 2TB formatado em `ext4` com flag `-m 0` (recuperando ~100GB de espaço reservado) e montado em `/opt/blockchain`.
+
+- **Automação e Hardening (Ansible):**
+    - Atualizei `hosts.ini` incluindo o grupo `[orangeshadow]`.
+    - Adaptei `hardening_debian.yml` para incluir a nova VM (usuário `sudo`, fail2ban, SSH keys...).
+    - **Troubleshooting SSH:** Resolvi conflitos de *Host Key Verification* causados pela reciclagem de IPs e ausência de DNS inicial (fixado temporariamente com `echo nameserver...`).
+
+- **Privacidade e Backup:**
+    - **Tor:** Instalado e configurado como serviço de sistema para garantir anonimato futuro do Node.
+    - **Backup:** Implementei lógica customizada no `setup_backup.yml` para o Restic. O script ignora a blockchain (TB de dados) e foca apenas em `wallet.dat` e arquivos de configuração, salvando em um repositório B2 dedicado (`/orangeshadow`).
+
+- **Observabilidade:**
+    - Node Exporter instalado via Ansible.
+    - Atualizado `prometheus.yml` no DockerHost para raspar métricas da nova VM.
+    - Dashboard validado no Grafana.
+
+- **Wait Condition:** A VM está pronta, endurecida e operante, porém os serviços `bitcoind` e `monerod` **não foram instalados**. Aguardando chegada de novo Nobreak para evitar corrupção de banco de dados durante o IBD (Initial Block Download).
+
 ## 2026-02-16
 **Status:** ⚠️ Revertido (Rollback de Funcionalidade)
 

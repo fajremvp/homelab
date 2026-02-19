@@ -82,6 +82,7 @@ Esta implementação assume um modelo de ameaça específico para ambiente domé
 - [x] **Vault (VM):** Node Exporter (Binário standalone) com firewall restrito (Allow 9100 from DockerHost only).
 - [x] **Raspberry Pi (Management):** Monitoramento de recursos (CPU/RAM/Temp) via Node Exporter.
 - [x] **Alertas:** Pipeline de alertas críticos (Instance Down, Resource Exhaustion) via Alertmanager -> Ntfy.
+- [x] **OrangeShadow (VM):** Node Exporter.
 
 ### Fase 3 – Infraestrutura Física
 **Objetivo:** Visibilidade de rede e energia.

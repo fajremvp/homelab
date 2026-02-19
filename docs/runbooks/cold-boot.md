@@ -25,7 +25,7 @@ A configuração é definida em `Datacenter > Node > VM > Options > Start/Shutdo
 | **3** | **Vault (VM)** | `30s` | `60s` | **Gestão de Segredos.** Deve estar "UP" (mesmo que selado) e acessível na porta 8200 antes que o Traefik tente iniciar. O delay permite que o serviço Vault suba e abra a porta TCP. |
 | **4** | **Management (LXC)** | `30s` | `30s` | **Torre de Controle.** Necessário para rodar playbooks de correção ou automação logo após o boot. |
 | **5** | **DockerHost (VM)** | `60s` | `180s` | **Camada de Aplicação.** Onde rodam Traefik, Authentik e Apps. Depende de Rede, DNS e Vault estarem estáveis. Shutdown longo configurado para permitir `docker stop` gracioso dos containers (evita corrupção de DB). |
-| **6** | **Bitcoin Node (VM)** | `0s` | `300s` | **Carga Pesada.** Sobe por último. Não tem dependentes. Shutdown estendido (5 min) pois o `bitcoind` demora para descarregar o cache de memória para o disco (flush) ao desligar. |
+| **6** | **OrangeShadow (VM)** | `0s` | `600s` | **Carga Pesada.** Sobe por último. Não tem dependentes. Shutdown estendido (5 min) pois o `bitcoind`, por exemplo, demora para descarregar o cache de memória para o disco (flush) ao desligar. |
 
-* **Nota sobre Expansão:** Novos LXCs de serviço (ex: Unbound dedicado, Management) devem entrar na ordem **após** o AdGuard (Prioridade 2 ou 3) e **antes** do DockerHost, para garantir que serviços básicos estejam prontos antes das aplicações pesadas.
+* **Nota sobre Expansão:** Novos LXCs de serviço devem entrar na ordem **após** o AdGuard (Prioridade 2 ou 3) e **antes** do DockerHost, para garantir que serviços básicos estejam prontos antes das aplicações pesadas.
 * **Kubernetes/Lab:** `Start at boot: No`. Devem ser ligados manualmente apenas quando necessários para economizar recursos.

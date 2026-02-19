@@ -16,6 +16,9 @@
     - name: pve_password
       prompt: "Digite a SENHA do usuário monitoring@pve"
       private: yes
+    - name: ntfy_token
+      prompt: "Digite o Token do Ntfy (Para Alertas)"
+      private: yes
 
   tasks:
     - name: Criar diretórios de Monitoring
