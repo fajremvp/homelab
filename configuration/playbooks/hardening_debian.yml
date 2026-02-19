@@ -1,5 +1,5 @@
 ---
-- name: Hardening Completo do Debian (DockerHost & Vault)
+- name: Hardening Completo do Debian (DockerHost & Vault & OrangeShadow)
   hosts: debian
   become: yes
 

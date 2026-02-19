@@ -133,6 +133,37 @@
           
           restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
       when: "'management' in group_names"
+    
+    # ORANGESHADOW (Bitcoin/Monero)
+    - name: Script Backup OrangeShadow (Cirúrgico)
+      copy:
+        dest: "/usr/local/bin/backup-daily.sh"
+        mode: '0700'
+        content: |
+          #!/bin/bash
+          source /etc/restic-env.sh
+          
+          echo "--> [OrangeShadow] Iniciando Backup Cirurgico..."
+          
+          # 1. Bitcoin: Apenas Wallet e Config (NÃO FAÇA BACKUP DA CHAIN)
+          # Verifica se pasta existe para evitar erro antes da instalacao do node
+          if [ -d "/home/fajre/.bitcoin" ]; then
+              restic backup /home/fajre/.bitcoin/wallet.dat \
+                            /home/fajre/.bitcoin/bitcoin.conf \
+                            --tag "bitcoin-wallet"
+          fi
+          
+          # 2. Monero: Apenas Carteiras e Config
+          if [ -d "/home/fajre/.bitmonero" ]; then
+              restic backup /home/fajre/.bitmonero \
+                            --exclude="data.mdb" \
+                            --exclude="lock.mdb" \
+                            --tag "monero-wallet"
+          fi
+          
+          # Limpeza
+          restic forget --keep-daily 7 --prune
+      when: "'orangeshadow' in group_names"
 
     # --- 4. AGENDAMENTO ---
     # Correção: Lógica inline para evitar erro de indentação YAML
