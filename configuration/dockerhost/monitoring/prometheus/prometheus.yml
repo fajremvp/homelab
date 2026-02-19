@@ -71,3 +71,8 @@ scrape_configs:
     metrics_path: /debug/metrics
     static_configs:
       - targets: ['10.10.30.10:9002']
+
+  # --- OrangeShadow (VM) ---
+  - job_name: 'orangeshadow-node'
+    static_configs:
+      - targets: ['10.10.30.20:9100']
