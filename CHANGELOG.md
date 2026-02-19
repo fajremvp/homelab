@@ -17,6 +17,13 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-02-19] - Otimização de Memória e Firewall (OrangeShadow)
+### Adicionado (Added)
+- **System Tuning (VM 107):** Swap de 2GB e `vm.swappiness=10` configurados para proteção contra OOM e estabilidade do cache de banco de dados.
+- **Zero Trust Local:** UFW ativado com regras estritas (Apenas SSH e Porta 9100 de origem mapeada), fechando portas P2P de Clearnet para forçar uso do Tor.
+### Alterado (Changed)
+- **Documentação Operacional:** Adicionado roteiro de expansão de memória (16GB) para as fases de IBD (Initial Block Download) de ambos os nós (BTC e XMR), com provisionamento de limites no Systemd.
+
 ## [2026-02-18] - Nova VM (OrangeShadow) e Hardening
 ### Adicionado (Added)
 - **VM OrangeShadow (ID 107):** Servidor dedicado para Full Nodes (Bitcoin/Monero). Configurado com Debian 13, Disk Passthrough (2TB SSD) e Rede Tor.

@@ -4,6 +4,22 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-02-19
+**Status:** ✅ Sucesso
+
+**Foco:** Otimização de Memória e Fechamento do Perímetro da VM OrangeShadow.
+
+- **System Tuning e Mitigação de OOM:**
+    - Criado arquivo de Swap de 2GB no disco de boot (`local-zfs`) como contingência contra o OOM Killer do Linux durante picos de I/O de banco de dados.
+    - Aplicado `vm.swappiness=10` via `sysctl` para garantir que o kernel esgote a RAM física antes de recorrer à paginação.
+- **Micro-Segmentação (Zero Trust):**
+    - UFW ativado na VM com *Default Deny*.
+    - Liberadas portas estritas: 22 (SSH) e 9100 (Node Exporter, filtrado exclusivamente para o IP do DockerHost `10.10.30.10`). As portas P2P (8333, 18080) não foram abertas, isolando o roteamento externo para a rede Tor.
+- **Planejamento de Cgroups e RAM:**
+    - Documentada a estratégia de RAM para as fases de IBD. A VM operará com 16GB tanto para o IBD do BTC quanto do XMR (feitos sequencialmente), otimizando a indexação do LevelDB e LMDB.
+    - Limites teóricos para a Fase de Produção (8GB RAM) recalibrados para garantir 1GB de margem real de segurança para o Sistema e tráfego Onion.
+- **Wait Condition (Status Final):** A VM agora é um "bunker" selado. Nenhuma modificação estrutural será feita até a chegada do novo Nobreak para iniciar a operação de fato.
+
 ## 2026-02-18
 **Status:** ✅ Sucesso
 

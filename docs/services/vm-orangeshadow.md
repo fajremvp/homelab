@@ -51,3 +51,33 @@ Diferente das outras VMs, não fazemos backup de "tudo". A Blockchain (~1TB) é 
 ## Observabilidade
 * **Métricas:** Node Exporter instalado (Porta 9100).
 * **Integração:** Prometheus configurado para raspar `10.10.30.20:9100`.
+
+## System Tuning & Hardening Local
+* **Firewall (UFW):** Ativado com política *Default Deny*. Apenas SSH (Porta 22) e Node Exporter (Porta 9100, estritamente a partir de `10.10.30.10`) são permitidos. Portas P2P (8333, 18080) permanecem fechadas pois a comunicação externa ocorre exclusivamente via Tor.
+* **Gerenciamento de Memória:**
+    * **Swap:** Arquivo de contingência de 2GB configurado no disco de boot (protegido por LUKS no host físico).
+    * **Swappiness:** Reduzido de `60` (padrão) para `10` (`vm.swappiness=10`) para evitar paginação desnecessária e preservar a latência e vida útil do SSD.
+
+## Parâmetros Operacionais e Limites (Cgroups)
+Para evitar o colapso do sistema (OOM Killer) ou saturação da rede Onion, os serviços operarão com limites estritos via Systemd. As fases de IBD (Initial Block Download) devem ser feitas **sequencialmente**, nunca ao mesmo tempo.
+
+### Fase 1: Sincronização Inicial (IBD - Bitcoin)
+*Executado com a VM dimensionada temporariamente para 16GB de RAM. Monero desligado.*
+* **`bitcoin.conf`:** `dbcache=11000`, `blocksonly=1`, `maxconnections=40`.
+* **Systemd (`bitcoind.service`):** `MemoryMax=14G`.
+
+### Fase 2: Sincronização Inicial (IBD - Monero)
+*Executado com a VM mantida em 16GB de RAM. Bitcoin rodando em background (já sincronizado).*
+* **Bitcoin:** `dbcache=1024` / Systemd: `MemoryMax=4G`.
+* **Monero:** Sincronização nativa rápida. A alta disponibilidade de RAM acelera a validação das assinaturas no LMDB. Systemd: `MemoryMax=10G`.
+
+### Fase 3: Produção (Bitcoin + Monero Juntos)
+*Executado com a VM reduzida para 8GB de RAM. Operação 24/7.*
+* **Bitcoin:**
+    * `dbcache=1024`
+    * `maxconnections=40`
+    * Systemd: `MemoryMax=4G`
+* **Monero:**
+    * `--out-peers=16`, `--in-peers=16`
+    * Systemd: `MemoryMax=3G` *(Nota: Em caso de re-sincronização total futura, elevar limite).*
+* **Reserva de Sistema:** ~1GB garantido para o SO, Node Exporter, Buffers do Kernel e picos de processamento do Tor Daemon.
