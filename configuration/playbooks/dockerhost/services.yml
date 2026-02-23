@@ -13,6 +13,15 @@
     - name: vaultwarden_secret_id
       prompt: "VAULTWARDEN SecretID"
       private: yes
+    - name: tududi_email
+      prompt: "Tududi email do Admin (ex: fajre@home.local)"
+      private: no
+    - name: tududi_password
+      prompt: "Tudidi senha do Admin"
+      private: yes
+    - name: tududi_secret
+      prompt: "Tududi Session Secret (String longa aleatória)"
+      private: yes
 
   tasks:
     # --- WHOAMI ---
@@ -150,6 +159,44 @@
     - name: Start Syncthing
       community.docker.docker_compose_v2:
         project_src: "{{ base_dir }}/syncthing"
+        state: present
+
+    # --- Tududi ---
+    - name: Sync Tududi
+      synchronize:
+        src: "../../dockerhost/services/tududi/"
+        dest: "{{ base_dir }}/tududi/"
+        recursive: yes
+        rsync_opts:
+          - "--exclude=.env"
+          - "--exclude=data/"
+
+    - name: Garantir diretórios de dados do Tududi (Prevenção de Permissão)
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "1000"
+        group: "1000"
+        mode: '0755'
+      loop:
+        - "{{ base_dir }}/tududi/data/db"
+        - "{{ base_dir }}/tududi/data/uploads"
+
+    - name: Gerar .env do Tududi
+      copy:
+        dest: "{{ base_dir }}/tududi/.env"
+        content: |
+          TUDUDI_USER_EMAIL={{ tududi_email }}
+          TUDUDI_USER_PASSWORD={{ tududi_password }}
+          TUDUDI_SESSION_SECRET={{ tududi_secret }}
+        owner: "1000"
+        group: "1000"
+        mode: '0600'
+        force: yes
+
+    - name: Start Tududi
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/tududi"
         state: present
  
   handlers:

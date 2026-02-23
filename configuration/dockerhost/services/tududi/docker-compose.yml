@@ -1,0 +1,29 @@
+services:
+  tududi:
+    image: chrisvel/tududi:latest
+    container_name: tududi
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - NODE_ENV=production
+      - SWAGGER_ENABLED=false
+      - TUDUDI_ALLOWED_ORIGINS=https://tududi.home
+      - PUID=1000
+      - GUID=1000
+    volumes:
+      - ./data/db:/app/backend/db
+      - ./data/uploads:/app/backend/uploads
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.tududi.rule=Host(`tududi.home`)"
+      - "traefik.http.routers.tududi.entrypoints=websecure"
+      - "traefik.http.routers.tududi.tls=true"
+      - "traefik.http.services.tududi.loadbalancer.server.port=3002"
+      - "traefik.http.routers.tududi.middlewares=authentik@docker"
+
+networks:
+  proxy:
+    external: true
