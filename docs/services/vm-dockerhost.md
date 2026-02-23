@@ -111,7 +111,6 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Ingress:**
               - `/`: Acesso direto (necessário para Apps Mobile/Desktop).
               - `/admin`: Protegido via Authentik Middleware (Apenas `infra-admins`).
-      * `Syncthing` (Sincronização)
       * `Forgejo`(Pull Mirror): Servidor Git auto-hospedado. Será configurado como um "pull mirror" (somente leitura) que puxa automaticamente as mudanças do GitHub (usado como repositório primário/público).
       * `Forgejo Actions`(CI/CD): Utilizado para rodar pipelines de teste locais (no homelab) sobre o código espelhado, permitindo validar integrações com outros serviços internos.
       * `FreshRSS` (Fonte de informações descentralizadas e distribuídas)
@@ -150,7 +149,14 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - **Android (M55):**
                   - *Run Conditions:* Wi-Fi Only (Padrão), Battery or AC Power.
                   - *Network:* `NAT Traversal=On` (Bypass CGNAT), `Global/Local/Relay=On`.
-                  - *System:* Bateria do Android definida como **"Sem Restrições" (Unrestricted)**. 
+                  - *System:* Bateria do Android definida como **"Sem Restrições" (Unrestricted)**.
+      * `Tududi` (Gerenciador de Tarefas & Calendário): [Implementado em 2026-02-23]
+          - **Função:** "Life OS" minimalista para gestão de prazos da faculdade e anotações rápidas.
+          - **Ingress:** `tududi.home` (Porta interna 3002).
+          - **Segurança:**
+              - **Nível 1 (Rede):** Protegido por Middleware Authentik (Zero Trust).
+              - **Nível 2 (App):** Variáveis de ambiente (`TUDUDI_SESSION_SECRET`) injetadas via Ansible Prompt, sem persistência de senhas no Git.
+          - **Persistência:** SQLite e Uploads mapeados em `/opt/services/tududi/data`, cobertos pelo backup diário do Restic.
 
 * **Resiliência de Boot**: Todos os containers críticos (Vaultwarden, Stalwart) devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
 

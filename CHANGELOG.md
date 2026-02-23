@@ -10,13 +10,23 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 - Organizar cabos
 - Fazer uma bancadinha/rack pra deixar tudo
-- Encontrar outro Nobreak.
+- Esperar o novo Nobreak chegar.
 - Colocar consulta de DNS do modem para meus próprios.
 - Automatizar testes de alertas.
 - Saber se um container caiu, cAdvisor...
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-02-23] - Task Manager & Git Flow Profissional
+### Adicionado (Added)
+- **Productivity (Tududi):** Implementado gerenciador de tarefas *Single-Player* auto-hospedado.
+    - **Stack:** Node.js + SQLite.
+    - **Segurança:** Injeção de segredos (`TUDUDI_SESSION_SECRET`) via Ansible Prompt e proteção de borda via Authentik Middleware.
+    - **Ingress:** Acessível via `tududi.home`, com tráfego isolado na rede interna do Docker.
+
+### Alterado (Changed)
+- **Workflow (GitOps):** Adoção oficial de **Feature Branches**. O desenvolvimento agora ocorre em ramificações isoladas (ex: `feat/tududi`) e só é fundido na `main` após validação em *staging*, garantindo uma linha do tempo limpa e estável.
+
 ## [2026-02-19] - Otimização de Memória e Firewall (OrangeShadow)
 ### Adicionado (Added)
 - **System Tuning (VM 107):** Swap de 2GB e `vm.swappiness=10` configurados para proteção contra OOM e estabilidade do cache de banco de dados.

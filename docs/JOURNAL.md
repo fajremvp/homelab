@@ -4,6 +4,31 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-02-23
+**Status:** ✅ Sucesso (Deploy Seguro & Mudança de Cultura)
+
+**Foco:** Implementação do Tududi e Adoção de Fluxo de Trabalho Profissional (Git Flow).
+
+- **Evolução do GitOps (Feature Branches):**
+    - **A Decisão:** Abandonei a prática amadora de "commit direto na main" ou mensagens de "bugfix".
+    - **O Novo Padrão:**
+        1.  Criar branch isolada: `git checkout -b feat/nome-do-recurso`.
+        2.  Desenvolver e testar localmente.
+        3.  Validar com Ansible no ambiente real.
+        4.  Merge para `main` apenas quando estável ("Green Build").
+    - **Resultado:** O histórico da `main` agora reflete apenas entregas de valor consolidadas, sem o ruído de tentativas e erros.
+
+- **Serviço Novo: Tududi (Task Manager):**
+    - **Objetivo:** Substituir o uso do "WhatsApp" para anotações e também ter um calendário com prazos integrado.
+    - **Arquitetura:**
+        - Container leve (`chrisvel/tududi`) com backend SQLite persistido no DockerHost.
+        - **Segurança em Profundidade:** Dupla camada de autenticação.
+            1.  **Borda (Traefik):** Middleware `authentik@docker` bloqueia qualquer acesso não autorizado antes mesmo de chegar na aplicação.
+            2.  **Aplicação:** Login nativo do Tududi gerenciado por variáveis de ambiente injetadas.
+    - **Automação (Ansible):**
+        - Segredos (`Email`, `Password`, `Session Secret`) não existem em arquivos estáticos no Git. São solicitados via `vars_prompt` na hora do deploy e gravados em um `.env` com permissão `0600` no servidor.
+    - **Prevenção de Falhas:** Aplicada a mesma lógica de correção de permissões (`chown 1000:1000`) nas pastas de dados antes do start do container, vacinando contra o erro que ocorreu no Syncthing.
+
 ## 2026-02-19
 **Status:** ✅ Sucesso
 
