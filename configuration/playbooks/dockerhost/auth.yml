@@ -1,7 +1,7 @@
 ---
 - name: Setup Identity Stack (Authentik)
   hosts: dockerhost
-  become: yes
+  become: true
 
   vars_files:
     - _vars_common.yml
@@ -9,17 +9,17 @@
   vars_prompt:
     - name: authentik_role_id
       prompt: "AUTHENTIK RoleID"
-      private: no
+      private: false
     - name: authentik_secret_id
       prompt: "AUTHENTIK SecretID"
-      private: yes
+      private: true
 
   tasks:
     - name: Sync Authentik
       synchronize:
         src: "../../dockerhost/auth/authentik/"
         dest: "{{ auth_dir }}/authentik/"
-        recursive: yes
+        recursive: true
         rsync_opts:
           - "--exclude=.env"
           - "--exclude=media/"
@@ -66,9 +66,9 @@
       service:
         name: authentik-vault
         state: started
-        enabled: yes
+        enabled: true
 
   handlers:
     - name: Reload Systemd
       systemd:
-        daemon_reload: yes
+        daemon_reload: true

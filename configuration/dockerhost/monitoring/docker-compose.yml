@@ -139,15 +139,15 @@ services:
     restart: unless-stopped
     # Compose substitui a variável antes de rodar o comando
     command: >
-      /bin/sh -c "while true; do 
-        curl -fsS -m 10 --retry 3 ${HEALTHCHECKS_URL}; 
-        sleep 300; 
+      /bin/sh -c "while true; do
+        curl -fsS -m 10 --retry 3 ${HEALTHCHECKS_URL};
+        sleep 300;
       done"
     # Carrega explicitamente o arquivo gerado pelo Ansible
     env_file:
       - .env
     networks:
-      - monitoring 
+      - monitoring
 
   # --- PROXMOX EXPORTER ---
   pve-exporter:

@@ -118,7 +118,7 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
         - Adicionado disco virtual de **100GB** ao DockerHost no Proxmox.
         - **Prevenção de Desastre:** Para evitar o incidente de "Boot Loop" do dia 11/02, o disco foi montado via **UUID** (`/etc/fstab`) em vez do device path (`/dev/sdb`), garantindo estabilidade mesmo se a ordem dos cabos virtuais mudar.
         - **Mount Point:** `/mnt/syncthing`. Formatado em `ext4`.
-        - **Flag de Segurança:** Adicionado `nofail` no fstab. Se este disco corromper, o servidor ainda bootará os serviços críticos (DNS/Auth). 
+        - **Flag de Segurança:** Adicionado `nofail` no fstab. Se este disco corromper, o servidor ainda bootará os serviços críticos (DNS/Auth).
     - **Incidente de Deploy (Permission Crash Loop):**
         - **Sintoma:** O container entrava em *Crash Loop* imediato. Logs mostravam `chmod /var/syncthing/config: operation not permitted`.
         - **Causa Raiz:** O Docker Engine (rodando como root) criou a pasta de bind mount `config/` automaticamente com permissão `root:root`. O processo interno do Syncthing (UID 1000) não conseguia escrever seus certificados.
@@ -134,7 +134,7 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
             - Desativado `NAT/UPnP` (Inútil atrás de CGNAT/Docker Network).
             - Ativado `Ignore Permissions` (Crucial para evitar conflitos entre Android/Linux/Docker permissions).
             - Interface Web protegida em profundidade: Middleware Authentik + Senha forte interna.
-    
+
 ## 2026-02-13
 **Status:** ✅ Sucesso (Fragmentação do Manage_Stacks.yml)
 
@@ -169,7 +169,7 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
     - **Sintoma no Console:** O sistema caiu em *Emergency Mode* (Shell de root bloqueado).
     - **Logs de Erro:**
         - `[FAILED] Failed to mount mnt-media.mount /mnt/media.`
-        - `[DEPEND] Dependency failed for local-fs.target.` 
+        - `[DEPEND] Dependency failed for local-fs.target.`
     - **Causa Raiz:** Mudança na topologia de dispositivos SCSI.
         - Ontem, o disco de 500GB era `/dev/sda` e o Boot era `/dev/sdb`.
         - Hoje, o Proxmox inverteu: Boot virou `/dev/sda`.
@@ -524,7 +524,7 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
     - **YAML Hell (acquis.yaml):** - *Tentativa 1 (Falha):* Filtros dinâmicos via `evt.Parsed` falharam (aquisição ocorre antes do parsing).
         - *Tentativa 2 (Sucesso):* Implementado apontamento via **Hardcoded Container ID** no `acquis.yaml` para forçar o `type: authentik`.
         - **⚠️ Manutenção Crítica:** Caso o container do Authentik seja recriado (update), o ID em `acquis.yaml` deve ser atualizado para evitar cegueira do parser.
-    - **Resultado Técnico Real:** 
+    - **Resultado Técnico Real:**
         - O parser `firix/authentik-logs` está ativo e recebendo eventos (`Hits > 0`).
         - **Parsed = 0** mesmo após falhas reais de login.
         - **Impacto:** Nenhuma decisão automática de banimento é gerada a partir de falhas de autenticação no Authentik.
@@ -1175,7 +1175,7 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 **Foco:** Criptografia (FDE), Swap e Desbloqueio Remoto
 
-- **LUKS:** Realizei a conversão pós-instalação do Proxmox para **LUKS2** (Full Disk Encryption) seguindo o guia manual. 
+- **LUKS:** Realizei a conversão pós-instalação do Proxmox para **LUKS2** (Full Disk Encryption) seguindo o guia manual.
 - **Swap:** Configurei um **ZFS Swap de 16GB** para evitar travamentos por exaustão de memória (OOM), já que o ZFS sem swap pode entrar em deadlock.
 - **Dropbear:** Configurei o servidor SSH leve (Dropbear) no initramfs.
     - **Teste:** Reiniciei o servidor sem monitor. Conectei via SSH na porta temporária, digitei a senha do disco e o boot do Proxmox prosseguiu corretamente.

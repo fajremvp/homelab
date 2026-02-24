@@ -22,13 +22,13 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      
+
       # Acesso Web (GUI)
       - "traefik.http.routers.syncthing.rule=Host(`syncthing.home`)"
       - "traefik.http.routers.syncthing.entrypoints=websecure"
       - "traefik.http.routers.syncthing.tls=true"
       - "traefik.http.services.syncthing.loadbalancer.server.port=8384"
-      
+
       # Proteção Extra: Authentik na frente da GUI
       # O App do celular NÃO usa essa rota (usa a porta 22000), então não quebra o sync.
       - "traefik.http.routers.syncthing.middlewares=authentik@docker"

@@ -1,14 +1,14 @@
 ---
 - name: Hardening dos LXCs Alpine
   hosts: management, adguard
-  become: yes
+  become: true
 
   tasks:
     # --- PACOTES (APK) ---
     - name: Atualizar repositórios e pacotes do Alpine
       apk:
-        update_cache: yes
-        upgrade: yes
+        update_cache: true
+        upgrade: true
 
     - name: Instalar ferramentas essenciais
       apk:
@@ -34,13 +34,13 @@
           apk:
             name: tzdata
             state: present
-            update_cache: yes
+            update_cache: true
 
         - name: Copiar arquivo de zona para localtime
           copy:
             src: "/usr/share/zoneinfo/America/Sao_Paulo"
             dest: "/etc/localtime"
-            remote_src: yes
+            remote_src: true
 
         - name: Definir timezone em texto
           copy:
@@ -78,7 +78,7 @@
       service:
         name: sshd
         state: started
-        enabled: yes
+        enabled: true
 
   handlers:
     - name: Restart SSH

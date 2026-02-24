@@ -1,7 +1,7 @@
 ---
 - name: Provisionamento AdGuard Home (Amnésico)
   hosts: rpi
-  become: yes
+  become: true
 
   vars:
     adguard_version: "v0.107.56"
@@ -31,7 +31,7 @@
       service:
         name: systemd-resolved
         state: stopped
-        enabled: no
+        enabled: false
       when: resolved_service_file.stat.exists
 
     - name: Configurar NetworkManager (dns=none)
@@ -44,14 +44,14 @@
       copy:
         dest: /etc/resolv.conf
         content: "nameserver 1.1.1.1\nnameserver 9.9.9.9\n"
-        force: yes
+        force: true
 
     # --- INSTALAÇÃO ---
     - name: Baixar e Extrair AdGuard
       unarchive:
         src: "https://github.com/AdguardTeam/AdGuardHome/releases/download/{{ adguard_version }}/AdGuardHome_linux_arm64.tar.gz"
         dest: "/opt/"
-        remote_src: yes
+        remote_src: true
         creates: "{{ install_dir }}/AdGuardHome"
 
     - name: Permissões Estritas (0700)
@@ -71,10 +71,10 @@
         mode: '0600'
         content: |
           schema_version: 29
-          
+
           http:
             address: 0.0.0.0:3000
-            
+
           auth_attempts: 5
           block_auth_min: 15
           language: pt-br
@@ -86,20 +86,20 @@
 
           dns:
             bind_hosts: [ "0.0.0.0" ]
-            
+
             port: {{ dns_port }}
             protection_enabled: true
             filtering_enabled: true
             dnssec_enabled: true
             cache_size: 4096
-            cache_optimistic: true 
+            cache_optimistic: true
             ratelimit: 20
 
-            upstream_dns: 
+            upstream_dns:
               - "https://dns.cloudflare.com/dns-query"
               - "tls://dns.quad9.net"
-            
-            bootstrap_dns: 
+
+            bootstrap_dns:
               - "1.1.1.1"
               - "9.9.9.10"
 
@@ -123,7 +123,7 @@
       notify: Restart AdGuard
 
     # --- FORENSE (TMPFS) ---
-    
+
     - name: Forçar desmontagem do data (para aplicar permissões)
       mount:
         path: "{{ install_dir }}/data"
@@ -154,17 +154,17 @@
           Description=AdGuard Home
           After=network-online.target
           RequiresMountsFor={{ install_dir }}/data
-          
+
           [Service]
           Type=simple
           # Caminho validado: /opt/AdGuardHome/AdGuardHome
           ExecStart={{ install_dir }}/AdGuardHome --no-check-update -c {{ install_dir }}/AdGuardHome.yaml
-          
+
           StandardOutput=null
           StandardError=null
           Restart=always
           RestartSec=5
-          
+
           [Install]
           WantedBy=multi-user.target
       notify: Reload Systemd and Restart
@@ -182,7 +182,7 @@
 
     - name: Reload Systemd and Restart
       systemd:
-        daemon_reload: yes
+        daemon_reload: true
         name: AdGuardHome
         state: restarted
-        enabled: yes
+        enabled: true

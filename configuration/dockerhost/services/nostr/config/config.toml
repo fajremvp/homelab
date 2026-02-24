@@ -5,7 +5,7 @@
 relay_url = "wss://nostr.home"
 name = "Fajre Sovereign Relay"
 description = "Relay Pessoal Privado (Tor + Whitelist)"
-pubkey = "692db6f2450642ead458703b77b9864ac4c6bf30c246000cd2bf5cd3e0fb1750" 
+pubkey = "692db6f2450642ead458703b77b9864ac4c6bf30c246000cd2bf5cd3e0fb1750"
 contact = "meu-alias@email.com"
 
 [database]

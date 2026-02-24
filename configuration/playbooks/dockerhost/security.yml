@@ -1,7 +1,7 @@
 ---
 - name: Setup Security Stack (CrowdSec)
   hosts: dockerhost
-  become: yes
+  become: true
 
   vars_files:
     - _vars_common.yml
@@ -9,15 +9,15 @@
   vars_prompt:
     - name: ntfy_token
       prompt: "Digite o Token do CrowdSec (Ntfy)"
-      private: yes
+      private: true
 
   tasks:
     - name: Sync CrowdSec
       synchronize:
         src: "../../dockerhost/security/"
         dest: "{{ sec_dir }}/"
-        delete: yes
-        recursive: yes
+        delete: true
+        recursive: true
         rsync_opts:
           - "--exclude=*.j2"
           - "--exclude=crowdsec/notifications/http.yaml"
@@ -42,4 +42,4 @@
     - name: Restart CrowdSec
       community.docker.docker_container:
         name: crowdsec
-        restart: yes
+        restart: true

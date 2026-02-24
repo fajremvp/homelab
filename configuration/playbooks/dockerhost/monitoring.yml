@@ -1,7 +1,7 @@
 ---
 - name: Setup Monitoring Stack
   hosts: dockerhost
-  become: yes
+  become: true
 
   vars_files:
     - _vars_common.yml
@@ -9,16 +9,16 @@
   vars_prompt:
     - name: grafana_password
       prompt: "Digite a senha de Admin do Grafana"
-      private: yes
+      private: true
     - name: healthchecks_uuid
       prompt: "Digite o UUID do Healthchecks.io"
-      private: yes
+      private: true
     - name: pve_password
       prompt: "Digite a SENHA do usuário monitoring@pve"
-      private: yes
+      private: true
     - name: ntfy_token
       prompt: "Digite o Token do Ntfy (Para Alertas)"
-      private: yes
+      private: true
 
   tasks:
     - name: Criar diretórios de Monitoring
@@ -37,8 +37,8 @@
       synchronize:
         src: "../../dockerhost/monitoring/"
         dest: "{{ mon_dir }}/"
-        delete: no
-        recursive: yes
+        delete: false
+        recursive: true
         rsync_opts:
           - "--exclude=.env"
           - "--exclude=alertmanager/config.yml"
@@ -79,7 +79,7 @@
         owner: fajre
         group: docker
         mode: '0600'
-        force: yes
+        force: true
 
     - name: Garantir existência do auth.log para o Alloy
       file:
@@ -100,14 +100,14 @@
     - name: Restart Prometheus
       community.docker.docker_container:
         name: prometheus
-        restart: yes
+        restart: true
 
     - name: Restart Alertmanager
       community.docker.docker_container:
         name: alertmanager
-        restart: yes
-    
+        restart: true
+
     - name: Restart PveExporter
       community.docker.docker_container:
         name: pve-exporter
-        restart: yes
+        restart: true

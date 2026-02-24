@@ -1,7 +1,7 @@
 ---
 - name: Hardening do Proxmox VE (Host Físico)
   hosts: proxmox
-  become: yes
+  become: true
 
   tasks:
     # TIMEZONE
@@ -20,7 +20,7 @@
           - tree
           - fastfetch # Tem que ter :D
         state: present
-        update_cache: yes
+        update_cache: true
 
     # FILTRO FAIL2BAN
     - name: Filtro do Fail2Ban para Proxmox
@@ -28,7 +28,7 @@
         dest: /etc/fail2ban/filter.d/proxmox.conf
         content: |
           [Definition]
-          failregex = 
+          failregex =
               pvedaemon\[.*authentication failure; rhost=<HOST> user=.* msg=.*
               pveproxy\[.*authentication failure; rhost=<HOST> user=.* msg=.*
           ignoreregex =
@@ -66,7 +66,7 @@
       apt:
         name: prometheus-node-exporter
         state: present
-        update_cache: yes
+        update_cache: true
 
   handlers:
     - name: Restart Fail2Ban

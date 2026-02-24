@@ -1,7 +1,7 @@
 ---
 - name: Setup Application Services
   hosts: dockerhost
-  become: yes
+  become: true
 
   vars_files:
     - _vars_common.yml
@@ -9,19 +9,19 @@
   vars_prompt:
     - name: vaultwarden_role_id
       prompt: "VAULTWARDEN RoleID"
-      private: yes
+      private: true
     - name: vaultwarden_secret_id
       prompt: "VAULTWARDEN SecretID"
-      private: yes
+      private: true
     - name: tududi_email
       prompt: "Tududi email do Admin (ex: fajre@home.local)"
-      private: no
+      private: false
     - name: tududi_password
       prompt: "Tudidi senha do Admin"
-      private: yes
+      private: true
     - name: tududi_secret
       prompt: "Tududi Session Secret (String longa aleatória)"
-      private: yes
+      private: true
 
   tasks:
     # --- WHOAMI ---
@@ -29,7 +29,7 @@
       synchronize:
         src: "../../dockerhost/services/whoami/"
         dest: "{{ base_dir }}/whoami/"
-        recursive: yes
+        recursive: true
 
     - name: Start Whoami
       community.docker.docker_compose_v2:
@@ -41,8 +41,8 @@
       synchronize:
         src: "../../dockerhost/services/nostr/"
         dest: "{{ base_dir }}/nostr/"
-        delete: yes
-        recursive: yes
+        delete: true
+        recursive: true
         rsync_opts:
           - "--chmod=D0755,F0644"
           - "--chown={{ ansible_user }}:{{ ansible_user }}"
@@ -66,7 +66,7 @@
       synchronize:
         src: "../../dockerhost/services/vaultwarden/"
         dest: "{{ base_dir }}/vaultwarden/"
-        recursive: yes
+        recursive: true
         rsync_opts:
           - "--exclude=.env"
           - "--exclude=data/"
@@ -102,14 +102,14 @@
       service:
         name: vaultwarden-vault
         state: started
-        enabled: yes
+        enabled: true
 
     # --- ACTUAL BUDGET ---
     - name: Sync Actual Budget
       synchronize:
         src: "../../dockerhost/services/actualbudget/"
         dest: "{{ base_dir }}/actualbudget/"
-        recursive: yes
+        recursive: true
         rsync_opts:
           - "--chmod=D0755,F0644"
           - "--chown={{ ansible_user }}:{{ ansible_user }}"
@@ -120,7 +120,7 @@
         path: "{{ base_dir }}/actualbudget/data"
         state: directory
         mode: '0755'
-        owner: "root" 
+        owner: "root"
         group: "root"
 
     - name: Start Actual Budget
@@ -133,7 +133,7 @@
       synchronize:
         src: "../../dockerhost/services/syncthing/"
         dest: "{{ base_dir }}/syncthing/"
-        recursive: yes
+        recursive: true
         rsync_opts:
           - "--chmod=D0755,F0644"
           - "--chown={{ ansible_user }}:{{ ansible_user }}"
@@ -146,7 +146,7 @@
         owner: "1000" # usuário fajre
         group: "1000"
         mode: '0755'
-        recurse: yes
+        recurse: true
 
     - name: Garantir permissões no Mountpoint de Dados
       file:
@@ -166,7 +166,7 @@
       synchronize:
         src: "../../dockerhost/services/tududi/"
         dest: "{{ base_dir }}/tududi/"
-        recursive: yes
+        recursive: true
         rsync_opts:
           - "--exclude=.env"
           - "--exclude=data/"
@@ -192,14 +192,14 @@
         owner: "1000"
         group: "1000"
         mode: '0600'
-        force: yes
+        force: true
 
     - name: Start Tududi
       community.docker.docker_compose_v2:
         project_src: "{{ base_dir }}/tududi"
         state: present
- 
+
   handlers:
     - name: Reload Systemd
       systemd:
-        daemon_reload: yes
+        daemon_reload: true

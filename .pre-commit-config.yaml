@@ -1,0 +1,46 @@
+repos:
+  # Higiene Básica
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace      # Remove espaços inúteis
+      - id: end-of-file-fixer        # Garante linha vazia no final
+      - id: check-added-large-files  # Bloqueia binários gigantes
+      - id: check-merge-conflict     # Bloqueia marcas de conflito (<<<<)
+      - id: detect-private-key       # Bloqueia arquivos id_rsa/.pem
+
+  # Segurança de Segredos (Gitleaks)
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+        # --redact: Mostra que achou um segredo, mas não imprime o valor no terminal (segurança em logs)
+        args: ["--redact"]
+
+  # Qualidade de Shell Scripts (Versão Python Wrapper - Sem Docker)
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+
+  # Qualidade de YAML (Yamllint)
+  # Substitui o check-yaml pois valida sintaxe e estilo.
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.38.0
+    hooks:
+      - id: yamllint
+        files: \.(yaml|yml)$
+        # Ignora templates Jinja do Ansible (quebrariam o parser YAML)
+        exclude: \.j2$
+        # Relaxed: Permite linhas longas e formatação menos rígida
+        args: ['-d {extends: relaxed, rules: {line-length: disable}}']
+
+  # Ansible Lint (Básico)
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v26.1.1
+    hooks:
+      - id: ansible-lint
+        # --profile basic: Foca em erros fatais e depreciações, ignora "estilo" por enquanto.
+        args: ["--profile", "basic"]
+        additional_dependencies: ['ansible']
+        language_version: python3

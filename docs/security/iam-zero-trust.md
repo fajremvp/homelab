@@ -16,10 +16,10 @@
 * **Regras de Machine-to-Machine (M2M):**
     * **Proibido Hardcoded Credentials:** Nenhum código, script ou arquivo `.env` comitado pode conter senhas ou chaves de API reais. Deve-se usar injeção de variáveis de ambiente via Vault.
     * **Secret Leasing (Segredos Dinâmicos):** Para serviços compatíveis (ex: Banco de Dados, AWS/S3), o Vault deve gerar uma credencial temporária que expira automaticamente assim que a tarefa termina.
- 
+
 ### Monitoramento de Acesso (Auditoria Ativa)
 * **Ferramenta:** CrowdSec (LAPI) + Collection `firix/authentik`.
-* **Estado Atual:** 
+* **Estado Atual:**
     - Logs de autenticação são ingeridos corretamente.
     - Eventos de falha são detectados, porém **não resultam em decisão automática**.
 * **Limitação Conhecida:** Ausência de parsing válido para Authentik 2025 impede banimento automático por brute-force.

@@ -8,13 +8,13 @@ Este documento registra o setup completo de **criptografia LUKS**, **swap seguro
 
 ## LUKS (Full Disk Encryption)
 
-**Data:** 21/12/2025  
+**Data:** 21/12/2025
 
-**Objetivo:**  
+**Objetivo:**
 Converter o sistema para LUKS **pós-instalação**, mantendo ZFS Mirror como root.
 
-**Guia seguido:**  
-Encrypt complete Proxmox VE node with LUKS  
+**Guia seguido:**
+Encrypt complete Proxmox VE node with LUKS
 https://github.com/mr-manuel/proxmox/blob/main/luks-encryption-manual-tpm-ssh-unlock/README.md
 
 **Fluxo executado:**
@@ -31,13 +31,13 @@ https://github.com/mr-manuel/proxmox/blob/main/luks-encryption-manual-tpm-ssh-un
 
 ## Swap Seguro (ZFS)
 
-**Data:** 21/12/2025  
+**Data:** 21/12/2025
 
-**Objetivo:**  
+**Objetivo:**
 Evitar travamentos totais (deadlocks) em cenários de exaustão de RAM, garantindo que páginas de memória não sejam escritas em disco sem criptografia.
 
-**Guia seguido:**  
-Enable swap with ZFS for memory exhaustion  
+**Guia seguido:**
+Enable swap with ZFS for memory exhaustion
 https://github.com/mr-manuel/proxmox/blob/main/zfs-swap/README.md
 
 **Implementação:**
@@ -58,9 +58,9 @@ https://github.com/mr-manuel/proxmox/blob/main/zfs-swap/README.md
 
 ## Desbloqueio Remoto (Dropbear SSH)
 
-**Data:** 21/12/2025  
+**Data:** 21/12/2025
 
-**Objetivo:**  
+**Objetivo:**
 Permitir o desbloqueio da criptografia LUKS em ambiente **headless**, sem teclado ou monitor conectados.
 
 **Funcionamento:**
@@ -69,5 +69,5 @@ Permitir o desbloqueio da criptografia LUKS em ambiente **headless**, sem teclad
 - O administrador conecta remotamente e digita a senha do LUKS.
 - Após o desbloqueio, o boot continua normalmente e o Dropbear é encerrado.
 
-**Resultado:**  
+**Resultado:**
 Servidor totalmente operacional sem necessidade de acesso físico.

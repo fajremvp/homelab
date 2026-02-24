@@ -53,4 +53,3 @@ homelab/
     ├── tailscale/          # ACLs de Rede Mesh (HuJSON).
     └── terraform/          # Provisionamento de VMs/LXCs.
 ```
-

@@ -11,7 +11,7 @@ services:
       - RUST_LOG=info
     networks:
       - tor-net
-      - proxy 
+      - proxy
     # Labels do Traefik (Acesso Local Seguro via wss://nostr.home)
     labels:
       - "traefik.enable=true"
@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
     # Tor precisa ser root inicialmente para definir permissões na pasta hidden_service
     # Depois ele faz drop privilege automaticamente.
-    user: root 
+    user: root
     volumes:
       - ./config/torrc:/etc/tor/torrc:ro
       - ./tor-keys:/var/lib/tor/hidden_service/

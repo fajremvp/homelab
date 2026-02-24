@@ -96,7 +96,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
         - **Privacidade:** Configurado com *whitelist* de escrita (apenas minha chave privada pode postar).
         - **Acesso:**
             - **Local:** `wss://nostr.home` (Alta performance).
-            - **Tor:** Hidden Service `.onion` (Soberania e acesso externo sem abrir portas na WAN).	
+            - **Tor:** Hidden Service `.onion` (Soberania e acesso externo sem abrir portas na WAN).
       * **Authentik (Identity Provider):** `[DockerHost]`
           - **Local:** `/opt/auth/authentik`
           - **Versão:** `2025.10.3` (Stable).
@@ -179,7 +179,7 @@ O CrowdSec atua como o sistema de detecção de intrusão (IDS) baseado em logs.
     - **Isolamento de Porta:** A API (LAPI) escuta exclusivamente no IP `10.10.30.10:8080`.
     - **Integração Docker:** Consome metadados via `socket-proxy` (TCP 2375).
 * **Monitoramento de Aplicação (Authentik):**
-    - **Mapeamento:** O log do Authentik é mapeado via ID estático do container em `/opt/security/crowdsec/acquis.yaml`. 
+    - **Mapeamento:** O log do Authentik é mapeado via ID estático do container em `/opt/security/crowdsec/acquis.yaml`.
     - **Atenção:** Em caso de `docker compose up` que gere novo ID, o `acquis.yaml` deve ser revisado.
 * **Coleções:** `crowdsecurity/traefik`, `crowdsecurity/http-cve`, `firix/authentik`.
 

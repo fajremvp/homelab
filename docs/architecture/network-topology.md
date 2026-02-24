@@ -41,7 +41,7 @@
 ## Matriz de Conectividade (Firewall)
    - Quem pode falar com quem?
    - Obs: detalhar ainda mais!
-   
+
 | Origem | Destino | Porta/Serviço | Justificativa |
 |:-------|:--------|:--------------|:---------------|
 | MGMT (10) | ANY | SSH (22) | Ansible precisa configurar os servidores. |

@@ -56,7 +56,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      
+
       # 1. Roteador Principal (Painel do Authentik)
       - "traefik.http.routers.authentik.rule=Host(`auth.home`)"
       - "traefik.http.routers.authentik.entrypoints=websecure"

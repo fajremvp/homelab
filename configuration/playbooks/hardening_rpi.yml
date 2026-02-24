@@ -1,13 +1,13 @@
 ---
 - name: Hardening do Raspberry Pi (Edge Node)
   hosts: rpi
-  become: yes
+  become: true
 
   tasks:
     # --- ATUALIZAÇÕES E PACOTES ---
     - name: Atualizar cache e sistema (Safe Upgrade)
       apt:
-        update_cache: yes
+        update_cache: true
         upgrade: safe
         cache_valid_time: 3600
 
@@ -97,7 +97,7 @@
       service:
         name: fail2ban
         state: started
-        enabled: yes
+        enabled: true
 
     - name: Configurar Unattended Upgrades (Security Patches)
       copy:
@@ -113,14 +113,14 @@
       apt:
         name: prometheus-node-exporter
         state: present
-    
+
     # Tailscale (VPN)
     - name: Habilitar IP Forwarding (Necessário para Roteamento)
       sysctl:
         name: net.ipv4.ip_forward
         value: '1'
         state: present
-        reload: yes
+        reload: true
 
     - name: Adicionar chave GPG do Tailscale (Trixie)
       get_url:
@@ -138,18 +138,18 @@
       apt:
         name: tailscale
         state: latest
-        update_cache: yes
+        update_cache: true
 
     - name: Levantar Tailscale (Apenas Roteamento)
       command: >
-        tailscale up 
-        --authkey={{ tailscale_auth_key }} 
-        --advertise-routes=192.168.0.0/24 
+        tailscale up
+        --authkey={{ tailscale_auth_key }}
+        --advertise-routes=192.168.0.0/24
         --advertise-tags=tag:rpi
-        --accept-dns=false 
+        --accept-dns=false
       register: tailscale_start
       changed_when: "'Success' in tailscale_start.stdout"
-      failed_when: 
+      failed_when:
         - tailscale_start.rc != 0
         - "'already' not in tailscale_start.stderr"
 

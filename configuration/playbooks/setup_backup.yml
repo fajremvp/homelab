@@ -1,7 +1,7 @@
 ---
 - name: Configurar Backup Automático com Restic (Auditado)
   hosts: all
-  become: yes
+  become: true
   vars:
     vault_snap_dir: "/opt/vault/snapshots"
 
@@ -38,9 +38,9 @@
         content: |
           #!/bin/bash
           source /etc/restic-env.sh
-          
+
           echo "--> [DockerHost] 1. Dump do Banco Authentik..."
-          
+
           # Tenta fazer o dump. O nome do container DEVE ser exato.
           # Se o comando falhar, o script avisa mas continua o backup dos arquivos (melhor algo que nada).
           if docker exec authentik-postgres pg_dump -U authentik authentik > /opt/auth/authentik/authentik_dump.sql; then
@@ -50,15 +50,15 @@
           fi
 
           echo "--> [DockerHost] 2. Backup Restic iniciado..."
-          
+
           # O Restic agora vai copiar o arquivo .sql gerado acima, garantindo um restore fácil.
           restic backup /opt/services /opt/auth /opt/monitoring /opt/security /opt/utils /etc/vault \
             --exclude="*.log" \
             --exclude="*.sqlite3-wal" \
             --tag "dockerhost"
-          
+
           restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
-      when: "'dockerhost' in group_names" 
+      when: "'dockerhost' in group_names"
 
     # VAULT (Snapshot Versionado + Auto-Renovação)
     - name: Script Backup Vault
@@ -70,9 +70,9 @@
           source /etc/restic-env.sh
           TIMESTAMP=$(date +%Y%m%d-%H%M%S)
           SNAP_FILE="{{ vault_snap_dir }}/raft-${TIMESTAMP}.snap"
-          
+
           export VAULT_ADDR='http://127.0.0.1:8200'
-          
+
           echo "--> [Vault] Renovando Token..."
           # Renova o token por mais 30 dias
           if ! vault token renew > /dev/null 2>&1; then
@@ -82,15 +82,15 @@
 
           echo "--> [Vault] Gerando Snapshot Raft..."
           vault operator raft snapshot save "$SNAP_FILE"
-          
+
           if [ $? -eq 0 ]; then
             echo "--> [Vault] Enviando para B2..."
             # Backup do Snapshot + Configs (TLS, HCL)
             restic backup "$SNAP_FILE" /opt/vault/tls /etc/vault.d \
               --tag "vault"
-            
+
             restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
-            
+
             # Limpeza local de snapshots antigos (>7 dias)
             find {{ vault_snap_dir }} -type f -name "*.snap" -mtime +7 -delete
           else
@@ -108,11 +108,11 @@
           #!/bin/sh
           . /etc/restic-env.sh
           echo "--> [AdGuard] Backup iniciado..."
-          
+
           restic backup /opt/AdGuardHome \
             --exclude="*.log" \
             --tag "adguard"
-          
+
           restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
       when: "'adguard' in group_names"
 
@@ -125,15 +125,15 @@
           #!/bin/sh
           . /etc/restic-env.sh
           echo "--> [Management] Backup iniciado..."
-          
+
           # Backup do repositório Git central e chaves SSH
           restic backup /opt/homelab /root/.ssh \
             --exclude=".git" \
             --tag "management"
-          
+
           restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
       when: "'management' in group_names"
-    
+
     # ORANGESHADOW (Bitcoin/Monero)
     - name: Script Backup OrangeShadow
       copy:
@@ -142,9 +142,9 @@
         content: |
           #!/bin/bash
           source /etc/restic-env.sh
-          
+
           echo "--> [OrangeShadow] Iniciando Backup..."
-          
+
           # Bitcoin: Apenas Wallet e Config
           # Verifica se a pasta existe para evitar erro antes da instalacao do node
           if [ -d "/home/fajre/.bitcoin" ]; then
@@ -152,7 +152,7 @@
                             /home/fajre/.bitcoin/bitcoin.conf \
                             --tag "bitcoin-wallet"
           fi
-          
+
           # Monero: Apenas Carteiras e Config
           if [ -d "/home/fajre/.bitmonero" ]; then
               restic backup /home/fajre/.bitmonero \
@@ -160,7 +160,7 @@
                             --exclude="lock.mdb" \
                             --tag "monero-wallet"
           fi
-          
+
           # Limpeza
           restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
       when: "'orangeshadow' in group_names"

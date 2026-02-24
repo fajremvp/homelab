@@ -227,7 +227,7 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - **Authentik Monitoring:** Identificado e corrigido o namespace da coleção para `firix/authentik`.
 ### Dívida Técnica (Known Issues)
 - **CrowdSec / Authentik:** Parser da coleção `firix/authentik` incompatível com Authentik 2025 (Parsed = 0).
-- **Mitigação Planejada:** 
+- **Mitigação Planejada:**
   - Ajustar Regex local ou
   - Migrar para parser customizado quando necessário.
 ## [2026-01-22] - Observability Repair & Dashboard as Code

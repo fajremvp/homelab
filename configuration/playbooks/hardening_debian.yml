@@ -1,13 +1,13 @@
 ---
 - name: Hardening Completo do Debian (DockerHost & Vault & OrangeShadow)
   hosts: debian
-  become: yes
+  become: true
 
   tasks:
     # --- ATUALIZAÇÕES E PACOTES ---
     - name: Atualizar cache e sistema (Safe Upgrade)
       apt:
-        update_cache: yes
+        update_cache: true
         upgrade: safe # Alterado de 'dist' para 'safe' para evitar quebra de dependências críticas
         cache_valid_time: 3600
 
@@ -106,7 +106,7 @@
       service:
         name: fail2ban
         state: started
-        enabled: yes
+        enabled: true
 
     - name: Configurar Unattended Upgrades (Ativar atualizações de segurança)
       copy:
@@ -115,7 +115,7 @@
           APT::Periodic::Update-Package-Lists "1";
           APT::Periodic::Unattended-Upgrade "1";
 
-    # --- DOCKER CONFIG (CRÍTICO PARA O ALLOY) ---     
+    # --- DOCKER CONFIG (CRÍTICO PARA O ALLOY) ---
     - name: Garantir Log Driver json-file no Docker
       copy:
         dest: /etc/docker/daemon.json
@@ -148,7 +148,7 @@
       apt:
         name: prometheus-node-exporter
         state: present
-        update_cache: yes
+        update_cache: true
 
   handlers:
     - name: Restart SSH

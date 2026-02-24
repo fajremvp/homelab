@@ -40,7 +40,7 @@ groups:
         annotations:
           summary: "Host {{ $labels.instance }} CPU Alta"
           description: "CPU acima de 90% por 10 minutos."
-  
+
   - name: pve_alerts
     rules:
       # Alerta de Vida ou Morte do Monitoramento
@@ -75,4 +75,3 @@ groups:
         annotations:
           summary: "VM {{ $labels.name }} ({{ $labels.vmid }}) sem RAM"
           description: "Uso de memória atingiu {{ $value | printf \"%.1f\" }}% do limite."
-

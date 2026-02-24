@@ -1,7 +1,7 @@
 ---
 - name: Setup Core Infrastructure (Traefik & Network)
   hosts: dockerhost
-  become: yes
+  become: true
 
   vars_files:
     - _vars_common.yml
@@ -9,7 +9,7 @@
   vars_prompt:
     - name: tailscale_authkey
       prompt: "Cole a Tailscale Auth Key (tskey-auth-...)"
-      private: yes
+      private: true
 
   tasks:
     - name: Garantir dependências python do Docker
@@ -35,7 +35,7 @@
       synchronize:
         src: "../../dockerhost/services/traefik/"
         dest: "{{ base_dir }}/traefik/"
-        recursive: yes
+        recursive: true
         rsync_opts:
           - "--chmod=D0755,F0644"
           - "--exclude=.env"
@@ -50,8 +50,8 @@
       synchronize:
         src: "../../dockerhost/services/tailscale/"
         dest: "{{ base_dir }}/tailscale/"
-        delete: yes
-        recursive: yes
+        delete: true
+        recursive: true
         rsync_opts:
           - "--chmod=D0755,F0644"
           - "--chown={{ ansible_user }}:{{ ansible_user }}"
@@ -78,7 +78,7 @@
       service:
         name: tailscale-nat
         state: started
-        enabled: yes
+        enabled: true
 
     - name: Start Tailscale Stack
       community.docker.docker_compose_v2:
@@ -88,4 +88,4 @@
   handlers:
     - name: Reload Systemd
       systemd:
-        daemon_reload: yes
+        daemon_reload: true

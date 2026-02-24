@@ -3,7 +3,7 @@
 * **OPNsense (Firewall):** `[VM Dedicada - VirtIO Bridge]`
     * **Justificativa:** Roteador principal da rede. Utiliza placas de rede virtuais (VirtIO) ligadas às Bridges físicas do Proxmox. Isso permite que o Host e a VM compartilhem a conexão física sem hardware extra.
     * **Ingress:** Configurado com **NAT Port Forwarding** puro (Portas 80/443 WAN -> IP do Traefik). O SSL é terminado no Traefik.
- 
+
 * **Configurações de Virtualização (Obrigatório):**
         - **System > Settings > Tunables:**
             - `net.link.bridge.pfil_member`: 0
@@ -64,7 +64,6 @@
     * **Agente ("Cérebro"):** `[DockerHost]` - Centraliza a inteligência. Recebe logs do Traefik e Authentik.
     * **Bouncer ("Músculo"):** `[VM - OPNsense]` - Utiliza o plugin `os-crowdsec` configurado para consultar a LAPI remota. Aplica bloqueios em nível de kernel (pf) via Regras Flutuantes.
     * **Fluxo de Bloqueio:** Tentativa de ataque -> DockerHost detecta -> LAPI gera decisão -> Bouncer lê decisão -> IP bloqueado no Firewall.
-    * **Limitação Atual:** 
+    * **Limitação Atual:**
         - CrowdSec não executa remediação baseada em falhas de login do Authentik.
         - Defesa de identidade depende exclusivamente de MFA, políticas internas e rate-limit do próprio Authentik.
-

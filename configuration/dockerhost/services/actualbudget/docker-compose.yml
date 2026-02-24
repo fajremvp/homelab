@@ -10,7 +10,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=proxy"
-      
+
       # Router HTTPS (Sem Authentik para compatibilidade Mobile)
       - "traefik.http.routers.actualbudget.rule=Host(`actualbudget.home`)"
       - "traefik.http.routers.actualbudget.entrypoints=websecure"

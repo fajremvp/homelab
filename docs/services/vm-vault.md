@@ -21,7 +21,7 @@ Implementação realizada em: 2026-01-04.
 * **Ingress (Entrada):**
     * Todo tráfego é **bloqueado** exceto portas explicitamente liberadas.
     * **Porta 8200 (API):** Aceita conexões **apenas** do DockerHost (`10.10.30.10`).
-    * **Porta 22 (SSH):** Aceita conexões apenas das VLANs de gestão (`10.10.10.x` e `10.10.20.x`) e do DockerHost (`10.10.30.10`) para função de *Jump Server*. 
+    * **Porta 22 (SSH):** Aceita conexões apenas das VLANs de gestão (`10.10.10.x` e `10.10.20.x`) e do DockerHost (`10.10.30.10`) para função de *Jump Server*.
 
 ### 2. Firewall de Host (UFW)
 Além do OPNsense, a VM roda seu próprio firewall para impedir movimento lateral caso a rede seja comprometida.
