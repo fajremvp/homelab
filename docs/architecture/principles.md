@@ -15,3 +15,11 @@
     * **O Problema:** Copiar o arquivo `wallet.dat` enquanto o Bitcoin roda corrompe o banco de dados (Berkeley DB).
     * **A Solução:** Um script customizado (`backup-bitcoin.sh`) rodará diariamente via Cronjob. Ele executa o comando RPC **`bitcoin-cli backupwallet`**, que força o software a "congelar" o estado e exportar um snapshot seguro e íntegro para o **pool ZFS (NVMe)**.
     * **Fluxo de Dados:** SSD SATA (Live) -> API Bitcoin Core -> Arquivo Dump no NVMe (Snapshot) -> Restic (Nuvem).
+
+* **Shift-Left Security & Qualidade Contínua:**
+    * **Filosofia:** A segurança e a qualidade do código devem ser verificadas **antes** do commit, não depois do deploy. Erros detectados na máquina do desenvolvedor custam zero; erros em produção custam downtime ou vazamento de dados.
+    * **Mecanismo:** Uso obrigatório de **Pre-Commit Hooks** (Git Hooks). O commit é bloqueado localmente se:
+        - Houver segredos/chaves expostas (Gitleaks).
+        - A sintaxe YAML estiver inválida ou fora do padrão (Yamllint).
+        - Os playbooks do Ansible ferirem boas práticas ou idempotência (Ansible-Lint).
+        - Scripts Shell tiverem bugs lógicos (ShellCheck).

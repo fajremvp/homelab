@@ -17,6 +17,16 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-02-24] - CI/CD & Code Quality
+### Adicionado (Added)
+- **CI/CD Pipeline Local:** Implementado framework `pre-commit` para auditoria automática e bloqueante antes de cada commit.
+    - **Configuração:** Arquivo `.pre-commit-config.yaml` na raiz definindo as regras de aceite.
+    - **Tools:** `ansible-lint` (Playbooks), `yamllint` (Sintaxe/Estilo), `shellcheck` (Scripts) e `gitleaks` (Detecção de Senhas).
+- **Documentação:** Novo documento de arquitetura `development-standards.md`.
+### Alterado (Changed)
+- **Refatoração em Massa:** Padronização de 72 arquivos YAML para compliance estrito com Ansible Lint (substituição de `yes/no` por `true/false` em booleanos).
+- **Dependências de Desenvolvimento:** Atualização da documentação para incluir `pre-commit` como pré-requisito para contribuição.
+
 ## [2026-02-23] - Task Manager & Git Flow Profissional
 ### Adicionado (Added)
 - **Productivity (Tududi):** Implementado gerenciador de tarefas *Single-Player* auto-hospedado.

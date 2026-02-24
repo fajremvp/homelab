@@ -4,6 +4,31 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-02-24
+**Status:** ✅ Sucesso (Engenharia de Software & Qualidade)
+
+**Foco:** Implementação de Pipeline de CI/CD Local (Pre-commit Hooks) e Sanitização do Código.
+
+- **Adoção de Padrões de Mercado:**
+    - Para evitar novos vazamentos de credenciais (como o incidente do Ntfy no passado) e garantir consistência no Ansible, implementei o framework **Pre-Commit**.
+    - **O "Porteiro":** Agora, o `git commit` é interceptado por uma bateria de testes definida em `.pre-commit-config.yaml`. Se o código estiver "sujo", inseguro ou fora do padrão, o commit é rejeitado automaticamente.
+
+- **Desafio Técnico (Python 3.13 & Arch Linux):**
+    - **O Erro:** O hook do `ansible-lint` falhava ao criar o ambiente virtual. O erro `RuntimeError: failed to find interpreter` ocorria devido à versão *bleeding edge* do Python 3.13 no Arch Linux e à incapacidade do `pip` isolado de encontrar dependências de coleções (como `community.docker`).
+    - **Solução:** Ajuste fino no arquivo de configuração para:
+        1. Usar o metapacote `ansible` (Bateria inclusa) em vez de `ansible-core` nas `additional_dependencies`, garantindo que módulos comunitários sejam reconhecidos.
+        2. Forçar `language_version: python3` para usar o interpretador estável do sistema.
+    - **Erro Docker:** O hook padrão do `shellcheck` tentava rodar via Docker (ausente no notebook). Substituído pelo repo `shellcheck-py` que roda binário nativo.
+
+- **Faxina (YAML Truthy):**
+    - O linter detectou **72 violações** da regra `yaml[truthy]`.
+    - **Contexto:** O Ansible historicamente aceitava `yes/no` para booleanos, mas o padrão YAML 1.2 estrito exige `true/false`.
+    - **Ação:** Executada refatoração em massa via `sed` para converter `yes` -> `true` e `no` -> `false` em todos os playbooks e configurações, eliminando dívida técnica.
+
+- **Segurança Ativa (Gitleaks):**
+    - Integrado o Gitleaks no pipeline. Agora é matematicamente impossível commitar uma chave privada RSA ou um Token de API padrão sem usar uma flag de força bruta (`--no-verify`).
+
+- **Documentação:** Criado documento técnico `docs/architecture/development-standards.md` detalhando a configuração do pipeline.
 ## 2026-02-23
 **Status:** ✅ Sucesso (Deploy Seguro & Mudança de Cultura)
 

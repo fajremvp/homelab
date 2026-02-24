@@ -16,6 +16,7 @@ Focado em aprendizado, soberania de dados e segurança.
 ```text
 homelab/
 ├── .gitignore              # Regras de exclusão (Segurança/Dados sensíveis).
+├── .pre-commit-config.yaml # Regras de CI/CD (Linting & Security).
 ├── ansible.cfg             # Configuração central do Ansible.
 ├── CHANGELOG.md            # Histórico formal de mudanças e versões.
 ├── LICENSE                 # MIT License
