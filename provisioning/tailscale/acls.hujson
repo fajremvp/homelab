@@ -15,7 +15,7 @@
       "action": "accept",
       "src": ["seu.email@exemplo.com"], // <--- MUDAR NO PAINEL
       "dst": [
-        "192.168.0.200:2222",
+        "192.168.1.200:2222",
       ],
     },
     // Permite acesso completo à rede interna quando conectado via DockerHost VPN.

@@ -77,7 +77,7 @@ Utilizar em caso o servidor estar travado na tela de senha (LUKS) e eu estiver f
 3.  **Acessar Shell:** Abrir o Termux ou cliente SSH.
 4.  **Conectar:**
     ```bash
-    ssh root@192.168.0.200 -p 2222
+    ssh root@192.168.1.200 -p 2222
     ```
 5.  **Desbloquear:** Digitar `cryptroot-unlock` e inserir a passphrase do disco.
 6.  **Encerrar:** Assim que o comando retornar sucesso, desconecte o Tailscale e reative sua VPN de privacidade.

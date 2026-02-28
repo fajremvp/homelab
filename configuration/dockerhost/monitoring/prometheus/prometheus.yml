@@ -22,7 +22,7 @@ scrape_configs:
   # --- Proxmox (Host Físico) ---
   - job_name: 'proxmox-host'
     static_configs:
-      - targets: ['192.168.0.200:9100']
+      - targets: ['192.168.1.200:9100']
 
   # --- Vault (VM Vault) ---
   - job_name: 'vault-node'
@@ -37,7 +37,7 @@ scrape_configs:
   # Raspberry Pi (Edge Node)
   - job_name: 'rpi-edge'
     static_configs:
-      - targets: ['192.168.0.5:9100']
+      - targets: ['192.168.1.5:9100']
 
   # Traefik Metrics
   - job_name: 'traefik'
@@ -58,7 +58,7 @@ scrape_configs:
       module: [default]
     static_configs:
       - targets:
-          - 192.168.0.200  # IP do Proxmox
+          - 192.168.1.200  # IP do Proxmox
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

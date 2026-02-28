@@ -11,7 +11,7 @@ A configuração de boot foi simplificada para evitar "Boot Loops" causados por 
     * **IOMMU:** Habilitado preferencialmente via BIOS. Parâmetros como `intel_iommu=on` são opcionais se a BIOS já expõe os grupos IOMMU corretamente para Passthrough.
 
 * **Desbloqueio Remoto (Dropbear no Initramfs):**
-    * **Estratégia Determinística:** O `initramfs.conf` está configurado com IP estático `IP=192.168.0.200::192.168.0.1:255.255.255.0:homelab:enp4s0:off`.
+    * **Estratégia Determinística:** O `initramfs.conf` está configurado com IP estático `IP=192.168.1.200::192.168.1.1:255.255.255.0:homelab:enp4s0:off`.
     * **Justificativa:** Garante acesso previsível via VPN de Emergência (Raspberry Pi) em cenários de desastre onde o roteador/DHCP está inoperante.
     * **Interface:** Definida como `DEVICE=enp4s0` (nome nativo do hardware) para garantir que o Dropbear suba a placa correta antes mesmo do sistema operacional renomeá-la para `nic0`.
 
@@ -24,7 +24,7 @@ Para evitar que uma atualização do Debian/Proxmox troque os nomes das placas (
     * **Interface Wireless:** `wlp5s0` (Mantida desligada/manual por segurança).
 
 * **Topologia de Gerenciamento (Estado Atual):**
-    * **IP de Acesso:** `192.168.0.200` (Rede Flat / WAN Nativa).
+    * **IP de Acesso:** `192.168.1.200` (Rede Flat / WAN Nativa).
     * **Justificativa Temporária:** Para recuperação de desastres e estabilidade inicial, o Proxmox está acessível na mesma faixa de IP do modem da operadora. Isso elimina a dependência do OPNsense (VM) para acessar o Host físico.
     * **Bridge `vmbr0`:** Configurada como **VLAN Aware**. Isso permite que ela atue como um "Switch Virtual Inteligente", passando tráfego taggeado (VLAN 20, 30, 50) para as VMs, enquanto mantém o Host acessível na rede nativa.
 
@@ -66,8 +66,8 @@ iface wlp5s0 inet manual
 # Bridge Principal (Gerenciamento + VM Traffic)
 auto vmbr0
 iface vmbr0 inet static
-    address 192.168.0.200/24
-    gateway 192.168.0.1
+    address 192.168.1.200/24
+    gateway 192.168.1.1
     bridge-ports nic0
     bridge-stp off
     bridge-fd 0

@@ -12,7 +12,7 @@
 |:------|:------------|:----------|
 | 1     | Servidor (Proxmox)| Interface `nic0`. Funciona como "Trunk Hybrid". Passa tráfego nativo (Proxmox IP) + todas as VLANs (VMs). |
 | 2     | Access Point (AP) | Wi-Fi. Transmite SSID Pessoal (VLAN 20) e Guest/IoT (VLAN 50). |
-| 8     | Modem (ISP)       | Uplink de Internet. Entrega DHCP na rede nativa `192.168.0.x`. |
+| 8     | Modem (ISP)       | Uplink de Internet. Entrega DHCP na rede nativa `192.168.1.x`. |
 
 ## Mapeamento Lógico (Proxmox)
    - Como o Linux enxerga os cabos.
@@ -21,7 +21,7 @@
 |:----------|:-----|:------------|
 | nic0        | Física  | O cabo vermelho na Porta 1. Carrega tudo. Nota: Durante o boot (Initramfs), o Dropbear SSH escuta aqui (Porta 2222) com IP via DHCP para desbloqueio do disco. |
 | vmbr0       | Bridge  | Switch virtual. Distribui tráfego para as VMs. |
-| vmbr0 (IP)  | L3      | `192.168.0.200`. Endereço de emergência. O Proxmox reside na rede nativa (junto com o modem) para garantir acesso mesmo se o OPNsense falhar. |
+| vmbr0 (IP)  | L3      | `192.168.1.200`. Endereço de emergência. O Proxmox reside na rede nativa (junto com o modem) para garantir acesso mesmo se o OPNsense falhar. |
 | tap100i0    | Virtual | Cabo da LAN do OPNsense (VLAN 40 pendurada aqui). |
 | tap100i1    | Virtual | Cabo da WAN/TRUNK do OPNsense (VLANs 10, 20, 30, 50 penduradas aqui). |
 
@@ -29,7 +29,7 @@
 
 | ID | Nome | CIDR | Descrição / Quem habita |
 |:---|:-----|:-----|:------------------------|
-| N/A | ISP/MODEM/LAN | 192.168.0.x | Tráfego Externo/Nativo. Rede do modem da operadora. Habitantes: Modem, Raspiberry Pi, WAN do OPNsense e Proxmox Host (.200) e Dropbear SSH (Boot/Unlock). |
+| N/A | ISP/MODEM/LAN | 192.168.1.x | Tráfego Externo/Nativo. Rede do modem da operadora. Habitantes: Modem, Raspiberry Pi, WAN do OPNsense e Proxmox Host (.200) e Dropbear SSH (Boot/Unlock). |
 | 10 | MGMT (Management) | 10.10.10.0/24 | "A Torre de Controle". Acesso restrito. Regra de Ouro: IPs Estáticos obrigatórios. Não dependem de DHCP. Porta de Emergência: Uma porta física do switch será configurada como "Untagged VLAN 10". Etiqueta Física (Protocolo de Crise): Colar uma etiqueta no switch contendo: "IP Emergência: 10.10.10.99 / GW: 10.10.10.1". Garante acesso rápido via notebook. Nota: O Proxmox migrará para cá apenas quando houver acesso Out-of-Band (Pi). Habitantes: LXC Management. |
 | 20 | TRUSTED (Home) | 10.10.20.0/24 | "Dispositivos Pessoais". Rede de confiança média-alta. Habitantes: Notebook Arch, Celular (via AP Porta 2). Acesso permitido à Internet e a serviços na VLAN SERVER. |
 | 30 | SERVER (Services) | 10.10.30.0/24 | "Produção". Onde rodam os serviços estáveis. Habitantes: VM DockerHost (Stalwart, Nostr, Vaultwarden, Forgejo), LXC AdGuard-Primary e futura VM do Bitcoin Node. Isolados, acessíveis apenas via portas específicas (ex: 443 via Traefik). |
@@ -55,7 +55,7 @@
 | IOT (50) | LOCAL | - | BLOQUEADO (Acesso somente à Internet). Dispositivos IoT usam AdGuard (10.10.30.5). |
 | Raspberry Pi | Proxmox (Dropbear) | TCP/SSH 2222 | Acesso de emergência para desbloqueio de disco (Via VPN). |
 | Proxmox | Raspberry Pi | TCP 3493 (NUT) | Leitura de status de bateria. |
-| TRUSTED (20) | ISP LAN | UDP 53 (DNS) | Failover: Clientes acessam AdGuard Secundário (192.168.0.5) se o Primário cair. |
+| TRUSTED (20) | ISP LAN | UDP 53 (DNS) | Failover: Clientes acessam AdGuard Secundário (192.168.1.5) se o Primário cair. |
 | VPN (Tailscale) | SERVER (30) | HTTPS/SSH | Acesso remoto via Gateway DockerHost (com NAT). |
 | VPN (Tailscale) | SECURE (40) | SSH (22) | Acesso ao Vault via DockerHost como **Jump Server** (`ssh -J dockerhost vault`). |
 

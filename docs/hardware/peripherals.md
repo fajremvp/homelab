@@ -20,14 +20,20 @@
 
 ## UPS (Nobreak)
 
-    - DEVE SER COMPATÍVEL COM NUT!
-
-### Especificações Elétricas
-- **Forma de Onda:** **Senoidal Pura** (Obrigatório para fontes com PFC Ativo como a MSI MAG A750GL).
-
-### Gerenciamento e Integração (Linux/NUT)
-- **Interface:** USB tipo B.
-- **Topologia:** USB → Raspberry Pi (NUT Master) → Rede → Proxmox (NUT Slave).
+### Intelbras Gamer Ultimate 1000 VA / 700 W
+- **Status:** Homologado e Ativo em Produção (Validado em 26/02/2026).
+- **Carga Operacional:** ~165W Constante (Servidor + Switch + AP + Modem + RPi).
+- **Especificações Elétricas:**
+  - Topologia: Interativo.
+  - Forma de Onda no modo bateria: **Senoidal Pura** (Obrigatório para a fonte MSI com PFC Ativo).
+  - Bateria Interna: 2 × 12 V 7 Ah (Barramento de 24 V, Chumbo-ácido).
+  - Fator de Potência: 0,7.
+  - Tempo de Transferência: <10 ms.
+- **Gerenciamento e Integração (Linux/NUT):**
+  - **Interface:** Porta Serial USB.
+  - **Identificação (lsusb):** `ID 0764:0601 Cyber Power System, Inc. PR1500LCDRT2U UPS`
+  - **Driver:** `usbhid-ups`
+  - **Topologia:** USB → Raspberry Pi (NUT Master) → Rede → Proxmox (NUT Slave).
 
 ---
 

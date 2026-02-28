@@ -4,6 +4,49 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-02-28
+**Status:** ✅ Disaster Recovery & Networking
+**Foco:** Resolução do isolamento L3 após migração física para Ibirama.
+
+- **Incidente:** O modem da Unifique (ISP local) opera forçadamente na rede `192.168.1.0/24`. O homelab possuía a fundação de gerenciamento "hardcoded" em `192.168.0.0/24`.
+  - *Resultado:* Servidor inacessível, RPi sem internet e bloqueio total por dependência cíclica ("Deadlock Ovo e Galinha": Sem internet -> sem VPN -> sem Dropbear -> sem Proxmox -> sem OPNsense para rotear -> sem internet).
+- **Resolução (Bypass):**
+  - Conexão física (cabo direto) entre o notebook (Arch) e a placa do gabinete do server, forçando um IP fantasma `192.168.0.10` na placa de rede para simular o ambiente antigo.
+  - Acesso via SSH ao Dropbear no initramfs (`192.168.0.200`) e desbloqueio manual do FDE (LUKS).
+- **Cirurgia de IP:**
+  - **Proxmox:** Atualização do `/etc/network/interfaces` e `/etc/initramfs-tools/initramfs.conf` para o IP `192.168.1.200`. Reconstrução do bootloader executada com sucesso (`update-initramfs -u -k all`).
+  - **RPi:** Acesso físico via NMTUI para alterar o IP estático e Gateway.
+  - **Tailscale:** Atualização forçada da rota de sub-rede (`--advertise-routes=192.168.1.0/24`) e aprovação mandatória no painel admin para a VPN voltar a rotear pacotes, além de alterar o IP `.0.200` para `.1.200` no `acls.hujson` nas regras de controle de acesso da Tailscale.
+  - **OPNsense (DNS Failover):** O escopo DHCP das VLANs (20 e 50) ainda apontava para o RPi antigo (`.0.5`). O IP do DNS Secundário foi atualizado para `192.168.1.5` para evitar quebra de resolução se o AdGuard (Primário) cair ou falhar.
+- **Erros de Camada 2 (ARP & Conflito Lógico):**
+  - O RPi (IP fixo `.5`) conflitou com o Access Point TP-Link, que recebeu o mesmo IP `.5` via DHCP do modem da operadora.
+  - *Solução:* Desconectar o AP fisicamente, limpar o cache ARP no cliente Arch (`ip -s -s neigh flush all`), validar a comunicação com o RPi, e reconectar o AP (que foi forçado a solicitar um novo IP, pegando o `.10`).
+- **Falso Positivo de Exposição (OPNsense):**
+  - **Sintoma:** A GUI do OPNsense estava respondendo no IP da WAN (`192.168.1.9`) quando acessada de dentro da rede `Homelab_Trusted`.
+  - **Diagnóstico:** Não era vazamento de Firewall (as regras WAN estavam corretas e bloqueando tráfego externo). Era um problema de *Binding*. A configuração "Listen Interfaces" estava como `All`, permitindo que o servidor web interno (Lighttpd) respondesse na WAN para pacotes originados internamente.
+  - **Solução:** Restrição explícita em **Settings > Administration** para escutar apenas em `VLAN_10_MGMT` e `VLAN_20_TRUSTED`. Acesso bloqueado com sucesso nas demais interfaces. O IP real do firewall é o gateway da respectiva VLAN (ex: `10.10.20.1`).
+- **Automação (Ansible & IaC):**
+  - Busca recursiva (`grep -RIn "192\.168\.0\." .`) para alterar toda a documentação e configuração para `.1`.
+  - **Falha de Playbook:** O playbook `hardening_rpi.yml` falhou na linha 143 (`'tailscale_auth_key' is undefined`) porque a variável não havia sido declarada para input. Adicionado o bloco `vars_prompt` para correção. Playbooks de monitoramento e RPi rodados com sucesso.
+- **Erros Operacionais e Lições Aprendidas:**
+  - **Falso Positivo de Roteamento:** O Arch Linux perdeu a rota (`No route to host`) para o Proxmox (`.1.200`) mesmo com o Wi-Fi conectado na VLAN correta. Motivo: A interface ethernet `enp1s0f1` estava desconectada do cabo, porém ainda mantinha o IP `.1.10` amarrado estaticamente. O kernel tentava rotear pela placa morta. (Resolvido apagando o IP: `sudo ip addr del 192.168.1.10/24 dev enp1s0f1`).
+- **Gestão de Versão:** Todo o conserto e adaptação da infraestrutura foi realizado na branch `fix/migracao-rede-ibirama` para um *Squash Merge* auditável na main.
+
+## 2026-02-27
+**Status:** ❌ Falha (Planejamento)
+**Foco:** Mudança física de hardware.
+
+- **A Ilusão do Plug & Play:** O hardware foi trazido e ligado. A premissa de que a infraestrutura seria agnóstica de localização caiu por terra devido à dependência de sub-rede estrita (`/24`) do Gateway ISP.
+- *Lição:* Endereçamento IP manual na fundação garante segurança absoluta, mas pode destruir a portabilidade. Mudanças físicas as vezes exigirão refatoração manual de acesso de borda.
+
+## 2026-02-26
+**Status:** ✅ Sucesso (Validação de Hardware)
+**Foco:** Teste de compatibilidade do Nobreak Intelbras Gamer Ultimate com o Linux (NUT).
+
+- **Teste de Carga e Reconhecimento:** Após 24h de carga inicial, o equipamento foi conectado ao RPi isolado. O comando `lsusb` retornou `ID 0764:0601 Cyber Power System, Inc.`. Diferente da Ragtech e do NHS, a Intelbras usou um chipset padrão de mercado (OEM CyberPower), livrando-me de engenharia reversa ou possível nova devolução.
+- **Troubleshooting de Driver:** O NUT falhou com `insufficient permissions on everything`. Motivo: O Linux atrelou o controlador USB ao usuário `root` (porque o nobreak foi conectado antes de instalar o pacote). Em vez de reiniciar, as regras foram recarregadas dinamicamente via `udevadm control --reload-rules && udevadm trigger`.
+- **Telemetria:** O driver `usbhid-ups` comunicou-se com sucesso, retornando status `OL CHRG` e voltagens reais. O hardware é apto para produção.
+
 ## 2026-02-24
 **Status:** ✅ Sucesso (Engenharia de Software & Qualidade)
 

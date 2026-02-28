@@ -20,11 +20,11 @@ O Raspberry Pi atua como um nó de borda (Edge Node), fisicamente separado da in
 ### 2. Emergency VPN (Tailscale)
 * **Objetivo:** Permitir acesso remoto (Out-of-Band) para desbloqueio de disco (LUKS) via Dropbear.
 * **Implementação:**
-    * O RPi atua como um *Subnet Router*, anunciando a rota `192.168.0.0/24` (Rede do Modem).
+    * O RPi atua como um *Subnet Router*, anunciando a rota `192.168.1.0/24` (Rede do Modem).
     * O serviço roda diretamente no OS (sem Docker) para máxima resiliência.
 * **ACLs (Restrição via Painel):**
     * **Tag:** `tag:rpi`.
-    * **Política:** Acesso de saída permitido **estritamente** para `192.168.0.200:2222`.
+    * **Política:** Acesso de saída permitido **estritamente** para `192.168.1.200:2222`.
     * **Bloqueio:** Qualquer tentativa de acesso lateral (SSH no próprio RPi ou acesso à LAN doméstica) é bloqueada pela ACL da VPN.
 * **Estado:** A chave de autenticação é configurada via Ansible (`hardening_rpi.yml`). Em caso de roubo, a revogação da máquina no painel Tailscale corta o acesso imediatamente.
 

@@ -3,6 +3,11 @@
   hosts: rpi
   become: true
 
+  vars_prompt:
+    - name: tailscale_auth_key
+      prompt: "Cole a Tailscale Auth Key (tskey-auth-...)"
+      private: true
+
   tasks:
     # --- ATUALIZAÇÕES E PACOTES ---
     - name: Atualizar cache e sistema (Safe Upgrade)
@@ -83,7 +88,7 @@
           backend = systemd
           # Whitelist: Localhost + Ansible Controller + Rede Interna Confiável
           # Não bloquear a VPN (100.x.x.x) aqui para não te trancar para fora
-          ignoreip = 127.0.0.1/8 10.10.10.10 192.168.0.0/24
+          ignoreip = 127.0.0.1/8 10.10.10.10 192.168.1.0/24
 
           [sshd]
           enabled = true
@@ -144,7 +149,7 @@
       command: >
         tailscale up
         --authkey={{ tailscale_auth_key }}
-        --advertise-routes=192.168.0.0/24
+        --advertise-routes=192.168.1.0/24
         --advertise-tags=tag:rpi
         --accept-dns=false
       register: tailscale_start

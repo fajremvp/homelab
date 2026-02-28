@@ -18,7 +18,7 @@
 * **VPN 1: Acesso Remoto (Inbound - Tailscale):** `[DockerHost]`
 	* **Função:** Porta de entrada fora de casa.
 	* **Modo:** Subnet Router (`10.10.0.0/16`) com NAT Masquerading e IP Forwarding.
-	* **Acesso:** Permite conexão a todos os serviços web (`*.home`), Dashboards e SSH dos servidores (exceto serviços rodando na LAN (192.168.0.x)).
+	* **Acesso:** Permite conexão a todos os serviços web (`*.home`), Dashboards e SSH dos servidores (exceto serviços rodando na LAN (192.168.1.x)).
 	* **DNS:** Configurado via Split DNS para resolver domínios `.home` usando o AdGuard local (`10.10.30.5`).
 	* **Segurança:** Acesso restrito via ACL ao e-mail do proprietário.
 
@@ -30,7 +30,7 @@
 * **VPN 3: Acesso de Emergência (Out-of-Band):** `[Raspberry Pi]`
     * **Justificativa:** Instância secundária do Tailscale rodando diretamente no Pi.
     * **Cenário de Uso:** Acesso exclusivo para **Desbloqueio de Disco (Dropbear)** fora de casa.
-    * **Segurança:** Protegido por ACLs estritas (`tag:rpi`) que permitem tráfego APENAS para `192.168.0.200:2222`. Movimento lateral bloqueado.
+    * **Segurança:** Protegido por ACLs estritas (`tag:rpi`) que permitem tráfego APENAS para `192.168.1.200:2222`. Movimento lateral bloqueado.
 
 * **Tor (Gateway/Proxy):** `[VM - OPNsense (Policy)]`
     * **Justificativa:** A forma mais fácil de "alterar" é criar uma regra de roteamento no OPNsense. Assim, pode-se definir que certos IPs (ex: uma VM de "privacidade") tenham todo o tráfego roteado pela rede Tor, enquanto outros usam a VPN ou a WAN normal.
@@ -38,7 +38,7 @@
     * **Estratégia de DHCP (Failover Automático):**
       - **VLAN TRUSTED/IOT (Clientes):** O OPNsense entrega via DHCP **dois endereços IP** de DNS simultâneos para garantir alta disponibilidade:
         1. **Primário:** `10.10.30.5` (LXC AdGuard).
-        2. **Secundário:** `192.168.0.5` (Raspberry Pi Edge).
+        2. **Secundário:** `192.168.1.5` (Raspberry Pi Edge).
         - *Comportamento:* Os clientes alternam automaticamente para o Pi caso o servidor principal não responda (timeout), garantindo navegação ininterrupta durante manutenções sem intervenção do usuário.
       - **VLAN SERVER (Infraestrutura):** Recebem apenas o IP do **Gateway (OPNsense) ou 1.1.1.1**.
         - *Justificativa:* Garante que servidores nunca percam conectividade DNS (updates/NTP) mesmo se o container do AdGuard falhar ou estiver em loop de boot, evitando dependência cíclica.

@@ -3,11 +3,11 @@
 * **Switch**: Configurado para salvar VLANs na memória Flash, garantindo que a rede esteja pronta quando o SO do Proxmox terminar de carregar.
 * **Sequência de Desbloqueio (Cold Boot):**
      1. **Energia Volta:** Servidor liga (Restore on AC Loss).
-     2. **Initramfs:** Carrega o Dropbear SSH na porta `2222` no IP `192.168.0.200`.
+     2. **Initramfs:** Carrega o Dropbear SSH na porta `2222` no IP `192.168.1.200`.
      3. **Acesso Remoto (Via Pi - Out-of-Band):**
          - O Pi (conectado direto ao Modem) sobe a VPN Tailscale automaticamente.
          - **Ação:** Conectar na VPN via Celular ou Notebook Arch.
-         - **Conexão:** `ssh -p 2222 root@192.168.0.200` (A rota é provida pelo Pi).
+         - **Conexão:** `ssh -p 2222 root@192.168.1.200` (A rota é provida pelo Pi).
          - **Desbloqueio:** No prompt BusyBox, rodar `cryptroot-unlock` e inserir a senha.
      4. **Boot:** O ZFS (Proxmox) monta e os serviços iniciam conforme a ordem de prioridade.
 

@@ -8,15 +8,24 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 ## [Unreleased]
 ### Planejado
 
-- Organizar cabos
-- Fazer uma bancadinha/rack pra deixar tudo
-- Esperar o novo Nobreak chegar.
-- Colocar consulta de DNS do modem para meus próprios.
-- Automatizar testes de alertas.
+- Organizar cabos.
 - Saber se um container caiu, cAdvisor...
+- Automatizar testes de alertas.
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-02-28] - Migração Física e Correção de Roteamento Base
+### Alterado (Changed)
+- **Rede Base:** Sub-rede de infraestrutura migrada de `192.168.0.0/24` para `192.168.1.0/24` para adequação ao ISP (Unifique) em Ibirama.
+- **Proxmox:** Atualização do `/etc/network/interfaces` e parâmetros do `initramfs` (Dropbear) para a nova sub-rede.
+- **Raspberry Pi (Edge Node):** Atualização de IP estático e alteração das rotas anunciadas no Tailscale (Subnet Router).
+- **OPNsense (Firewall):** Restrição de *Listen Interfaces* (Lighttpd) exclusivamente para VLANs de gerência/confiança para mitigar exposição interna indevida da GUI na interface WAN. Atualização do IP do DNS Secundário (`.5`) nos escopos DHCP.
+- **IaC & Monitoramento:** Atualização global de IPs base nos inventários (`hosts.ini`), targets do Prometheus (`prometheus.yml`) e regras *Zero Trust* (`acls.hujson`), além de toda a documentação do repositório. Adicionado `vars_prompt` para `tailscale_auth_key` no playbook do RPi (eu havia esquecido de declarar).
+
+## [2026-02-26] - Homologação de Energia (UPS)
+### Adicionado (Added)
+- **Hardware Integrado:** Nobreak Intelbras Gamer Ultimate 1000VA / 700W (Senoidal Puro) homologado e validado com sucesso via NUT (Network UPS Tools). Chipset original identificado como CyberPower, livre de protocolos proprietários e devoluções.
+
 ## [2026-02-24] - CI/CD & Code Quality
 ### Adicionado (Added)
 - **CI/CD Pipeline Local:** Implementado framework `pre-commit` para auditoria automática e bloqueante antes de cada commit.

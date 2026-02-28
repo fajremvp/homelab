@@ -19,7 +19,7 @@ graph TD
 
     %% Fluxo DNS com Alta Disponibilidade
     Client -->|1. Primary Query| PrimaryDNS[AdGuard LXC (10.10.30.5)]
-    Client -.->|1.1 Failover Timeout| SecondaryDNS[AdGuard RPi (192.168.0.5)]
+    Client -.->|1.1 Failover Timeout| SecondaryDNS[AdGuard RPi (192.168.1.5)]
 
     %% Fluxo de Resposta
     PrimaryDNS -->|IP: 10.10.30.10| Client
