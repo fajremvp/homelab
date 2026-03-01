@@ -170,6 +170,11 @@
 - **Diagnóstico:** O chipset Microchip (`04d8:000a`) utiliza um protocolo binário proprietário (resposta `0xca` para comandos padrão), impedindo o monitoramento aberto sem engenharia reversa instável.
 
 ### UPS (Nobreak) — NHS Gamer Play Senoidal 1000VA
-- **Status:** Devolvido em 28/01/2026.
+- **Status:** Devolvido em 28-01-2026.
 - **Motivo:** Incompatibilidade de Protocolo.
 - **Diagnóstico:** O modelo utiliza um protocolo proprietário ou implementação USB não-standard que não foi reconhecida pelos drivers `blazer_usb` ou `nutdrv_qx` do NUT, impedindo o monitoramento automatizado.
+
+### Micro Ventoinha DC (Cooler do RPi Case)
+- **Status:** Removida permanentemente em 2026-03-01.
+- **Motivo:** Falha mecânica precoce no rolamento causando ruído irregular e vibração.
+- **Resolução:** Testes térmicos sob estresse provaram que a refrigeração passiva (dissipadores) é suficiente para a carga da infraestrutura, eliminando a necessidade de reposição da peça.

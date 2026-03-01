@@ -14,6 +14,10 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-03-01]
+### Alterado (Changed)
+- **Hardware RPi:** Remoção física da refrigeração ativa (ventoinha) do Edge Node por falha mecânica. Transição para refrigeração 100% passiva validada através de testes de stress documentados. Adicionado benchmark log em `docs/assets/benchmarks/`.
+
 ## [2026-02-28] - Migração Física e Correção de Roteamento Base
 ### Alterado (Changed)
 - **Rede Base:** Sub-rede de infraestrutura migrada de `192.168.0.0/24` para `192.168.1.0/24` para adequação ao ISP (Unifique) em Ibirama.

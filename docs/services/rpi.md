@@ -61,5 +61,14 @@ Diferente de versões antigas, o Debian 13 exige configuração via Device Tree.
 - **Config:** `/boot/firmware/config.txt` deve conter `dtoverlay=i2c-rtc,ds3231`.
 - **Limpeza:** O pacote `fake-hwclock` deve ser removido para evitar conflitos de tempo no boot.
 
+## Gerenciamento Térmico (Cooling)
+**Status:** Refrigeração 100% Passiva (Sem partes móveis).
+
+Apesar do case físico possuir suporte a ventoinha, a refrigeração ativa foi explicitamente removida do projeto em 01/03/2026.
+* **Justificativa de Hardware:** Ventoinhas genéricas de baixo custo (Sleeve Bearing) degradam rapidamente em operação 24/7, gerando ruído excessivo e risco de travamento do motor (curto-circuito leve na trilha de 5V).
+* **Validação Empírica (Stress Test):** Um teste de 3 minutos de carga a 100% nos 4 núcleos (`stress --cpu 4`) com apenas os dissipadores passivos resultou em um pico de **78.8°C**. A verificação de hardware (`vcgencmd get_throttled`) retornou `0x0`, confirmando ausência total de *Thermal Throttling* (que iniciaria aos 80°C).
+* **Cenário Real:** A carga de produção (NUT, Tailscale, DNS) mantém a CPU predominantemente em *Idle* (~45°C).
+* **Evidência:** O log do benchmark está arquivado em `docs/assets/benchmarks/rpi4_thermal_stress.txt`.
+
 ### Rede
 O gerenciamento de rede é feito exclusivamente via **NetworkManager** (`nmcli`). O arquivo `/etc/dhcpcd.conf` é obsoleto e ignorado.

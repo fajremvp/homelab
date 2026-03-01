@@ -4,6 +4,20 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-01
+**Status:** ✅ Sucesso (Manutenção e Benchmarking)
+**Foco:** Mitigação de falha mecânica no Edge Node (RPi).
+
+- **O Incidente:** A ventoinha do case do Raspberry Pi começou a apresentar falhas de rotação e ruídos anômalos.
+- **Decisão Arquitetural:** Em vez de substituir a peça e manter o risco mecânico/sonoro na sala, decidi validar a viabilidade técnica de operar o nó de borda de forma 100% passiva.
+- **Validação (Stress Test):**
+  - Desconectei a ventoinha fisicamente.
+  - Submeti a CPU ARM a 100% de carga por 3 minutos usando o pacote `stress`.
+  - Monitorei via `vcgencmd measure_temp`.
+  - **Resultado:** A temperatura saltou do baseline (44°C) para o pico máximo de **78.8°C**. Logo após o fim do stress, a temperatura entrou em queda livre.
+  - **Prova:** O comando `vcgencmd get_throttled` retornou `0x0`. Nenhuma degradação de clock ocorreu.
+- **Conclusão:** A ventoinha foi retirada. A refrigeração passiva com os adesivos térmicos atende com folga as métricas de operação real. Log arquivado na pasta de assets.
+
 ## 2026-02-28
 **Status:** ✅ Disaster Recovery & Networking
 **Foco:** Resolução do isolamento L3 após migração física para Ibirama.

@@ -1,0 +1,18 @@
+# Hardware: Raspberry Pi 4 Model B (4GB)
+# Cooling: Apenas dissipadores passivos de alumínio/cobre (Ventoinha removida)
+# Data: 01/03/2026
+# Comando: stress --cpu 4 --timeout 180 &; while true; do vcgencmd measure_temp; sleep 1; done
+
+temp=44.3'C (Idle / Baseline)
+[...]
+temp=78.4'C
+temp=77.9'C
+temp=78.8'C (Peak)
+stress: info: [1257] successful run completed in 180s
+temp=74.0'C
+temp=72.5'C
+temp=67.6'C (Cooldown instantâneo)
+
+# Status de Throttling Pós-Teste
+vcgencmd get_throttled
+throttled=0x0 (PASS: Nenhum corte de frequência ocorreu)
