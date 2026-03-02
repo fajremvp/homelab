@@ -1,0 +1,7 @@
+[upsmon_local]
+    password = rpi_senha_interna
+    upsmon primary
+
+[proxmox]
+    password = proxmox_slave_senha
+    upsmon secondary

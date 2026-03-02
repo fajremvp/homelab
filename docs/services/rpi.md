@@ -12,10 +12,26 @@ O Raspberry Pi atua como um nó de borda (Edge Node), fisicamente separado da in
 ## Serviços em Execução
 
 ### 1. NUT Server (Network UPS Tools)
-* **Hardware:** Conectado via USB ao Nobreak Ragtech.
-* **Função:** Monitora tensão, carga e estado da bateria.
-* **Comunicação:** Expõe o status via rede (Porta 3493) ou VPN (Tailscale) para que o Proxmox (Slave) saiba quando iniciar o desligamento gracioso.
-* **Por que no Pi?** Evita *bootloops* no servidor principal (onde o servidor liga, detecta bateria baixa via USB e desliga imediatamente). O Pi atua como árbitro externo.
+* **Função:** Atua como o **Primary Node (Master)**. O RPi é o único equipamento com conexão física (USB) ao Nobreak Intelbras.
+* **Por que no Pi?** O servidor Proxmox fica bloqueado na inicialização pelo LUKS. Se o servidor principal comandasse o Nobreak, um "Startup Storm" (energia vai e volta repetidamente) prenderia o sistema. O RPi garante que a ordem de corte de energia seja ditada por uma máquina leve e autônoma.
+
+#### Arquitetura de Comunicação
+1. **O Driver (`usbhid-ups`):** Lê os dados USB em *raw*, injeta correções (`override.battery.charge.low = 50`) e expõe as métricas.
+2. **O Daemon (`upsd`):** Ouve em `0.0.0.0:3493` e atua como servidor de telemetria.
+3. **O Monitor (`upsmon`):** Executa localmente como `primary`. Quando a carga atinge 50% (`OB LB`), ele dispara o evento de *Forced Shutdown (FSD)*.
+
+#### A Engenharia do Shutdown (O Interceptador)
+O firmware da Intelbras tem duas limitações graves mapeadas empiricamente:
+1. **Delay fixo:** O `ups.delay.shutdown` é travado na placa em 20 segundos (não aceita `offdelay` via software).
+2. **Fail-Safe:** O UPS ignora qualquer comando de desligar as tomadas se estiver recebendo energia AC da parede (`OL`). O corte só acontece em `OB`.
+
+Além disso, o `systemd` do Debian 13 encerra módulos USB antes da rotina padrão do NUT (`nutshutdown`), impedindo que a ordem chegue ao cabo.
+
+**A Mitigação (`ups-kill.sh`):**
+O `SHUTDOWNCMD` no `upsmon.conf` do RPi foi alterado para executar um script customizado `/usr/local/bin/ups-kill.sh` que faz o seguinte:
+1. Usa `pkill -9 usbhid-ups` para assassinar o driver (bypasseando o cgroup do systemd que mataria o script junto).
+2. Executa `/usr/sbin/upsdrvctl shutdown`, ativando a guilhotina de 20 segundos do hardware.
+3. Executa `/sbin/shutdown -h now` para o RPi morrer graciosamente nos 15 segundos restantes antes de a energia ser fisicamente cortada pelas tomadas traseiras.
 
 ### 2. Emergency VPN (Tailscale)
 * **Objetivo:** Permitir acesso remoto (Out-of-Band) para desbloqueio de disco (LUKS) via Dropbear.

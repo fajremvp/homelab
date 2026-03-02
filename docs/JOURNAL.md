@@ -4,6 +4,27 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-02
+**Status:** ✅ Sucesso (Validação Empírica e Engenharia de Resiliência)
+**Foco:** Implementação do NUT Primary (Master) no Edge Node (RPi) e Testes Destrutivos de Disaster Recovery.
+
+### Validação de Autonomia e Firmware (Intelbras Gamer Ultimate)
+- **Teste:** Simulação de blecaute físico com carga (~165W).
+- **Resultados Empíricos:** - O Nobreak levou exatos **49 minutos** para drenar a bateria de 100% até 48%.
+  - O parâmetro `override.battery.charge.low = 50` forçou com sucesso o firmware a emitir o alerta `OB DISCHRG LB` (Low Battery).
+  - O firmware do UPS **ignora** comandos de atraso via software (`offdelay`). O tempo de corte `ups.delay.shutdown` é fixado rigidamente em 20 segundos pela fabricante (CyberPower/Intelbras).
+  - **Fail-Safe do Firmware:** O Nobreak ignora comandos de `shutdown/killpower` se estiver recebendo energia da rua (`OL` - On Line). O desligamento só é acatado em modo bateria (`OB`).
+
+### Bug do Systemd (Debian 13) e a Solução
+- **Incidente:** Durante o teste de *Forced Shutdown* (`upsmon -c fsd`), o RPi desligou, mas o Nobreak e o restante continuaram ligados indefinidamente.
+- **Diagnóstico 1 (Ordem de Desligamento):** O `systemd` do Debian 13 desliga o subsistema USB antes que o script final do NUT consiga enviar o pulso hexadecimal para o Nobreak.
+- **Diagnóstico 2 (Suicídio por Cgroup):** Ao tentar criar um script interceptador usando `/bin/systemctl stop nut-client`, o systemd enviou um `SIGTERM` matando o próprio script de intervenção antes dele atirar no Nobreak.
+- **Solução:** Desenvolvido o script `/usr/local/bin/ups-kill.sh` que utiliza força bruta (`pkill -9 usbhid-ups`) para soltar a porta USB fora da árvore do systemd, envia o comando de morte ao Nobreak (`upsdrvctl shutdown`), e só então invoca o `shutdown -h now` do RPi.
+
+### Teste Destrutivo Final
+- Executado novo FSD no RPi com o Nobreak desconectado da tomada (com energia da bateria) (via bypass L2 no Switch). (O Proxmox foi desligado para evitar corrupção durante os testes)
+- O RPi aguardou os tempos de sync (20s), iniciou o script customizado, apagou o sistema operacional e, 10 segundos depois, o Nobreak estalou o relé e cortou a energia das tomadas, blindando a infraestrutura. O sistema voltou à vida automaticamente ao retornar a energia da rua.
+
 ## 2026-03-01
 **Status:** ✅ Sucesso (Otimização RF, Manutenção e Ergonomia)
 **Foco:** Sintonia Fina de Wi-Fi 6 (Camada L1/L2), Ergonomia do UPS e Mitigação Térmica (RPi).
