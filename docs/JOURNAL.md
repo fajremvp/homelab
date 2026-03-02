@@ -5,9 +5,25 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
 ## 2026-03-01
-**Status:** ✅ Sucesso (Manutenção e Benchmarking)
-**Foco:** Mitigação de falha mecânica no Edge Node (RPi).
+**Status:** ✅ Sucesso (Otimização RF, Manutenção e Ergonomia)
+**Foco:** Sintonia Fina de Wi-Fi 6 (Camada L1/L2), Ergonomia do UPS e Mitigação Térmica (RPi).
 
+### Otimização de Rádio Frequência (Access Point TP-Link Omada)
+- **O Problema (Física de Redes):** A rede `Homelab_Trusted` (5 GHz) apresentava degradação severa de sinal no quarto (-71 dBm, 130 Mbps), enquanto o roteador da ISP (2.4 GHz) entregava sinal forte. O AP estava operando com configurações de fábrica ("Auto"), limitando o uso do rádio 2.4 GHz e desperdiçando os recursos de multiplexação do Wi-Fi 6.
+- **A Solução (RF Tuning "Enterprise"):**
+  - **Band Steering (Smart Connect):** Habilitada a função `Prefer 5GHz`. O AP agora emite o mesmo SSID em ambas as bandas (2.4 GHz e 5 GHz). Dispositivos próximos usam 5 GHz (alta velocidade); quando afastados, sofrem *Roaming* forçado e transparente para 2.4 GHz (alta penetração).
+  - **Largura de Canal (Channel Width):**
+    - **2.4 GHz:** Forçado para `20MHz` (Canal 6 fixo). Reduz drasticamente a captação de interferência de vizinhos (Bluetooth, micro-ondas), atuando como um "laser" para atravessar paredes com estabilidade.
+    - **5 GHz:** Forçado para `80MHz` (Canal Auto). Garante o *throughput* máximo (Gigabit) para conexões na sala.
+  - **OFDMA (O Superpoder do Wi-Fi 6):** Habilitado explicitamente nas abas *More Settings*. Permite a transmissão simultânea de pacotes para múltiplos clientes (Notebook + Mobile + IoT), reduzindo drasticamente a latência de rede.
+  - **Gerenciamento L2:** Fixado o IP administrativo do AP para `192.168.1.10`, apontado o NTP para `a.ntp.br` e realizado backup a frio da configuração (`.bin`), que foi salvo com segurança.
+  - **Resultado Empírico:** O *rx bitrate* no Arch Linux (quarto) subiu para `260.0 MBit/s` (Sinal -68 dBm no 5Ghz) com quedas controladas e a rede 2.4 GHz passou a entregar um sinal massivo de qualidade 77.
+- **Sanitização de Espectro (Isolamento):** Solicitado ao suporte da ISP (Unifique) o desligamento total da emissão Wi-Fi do modem deles. O Homelab agora é a única infraestrutura com autoridade sobre o espaço aéreo do apartamento.
+
+### Ergonomia e Ambiente (UPS Intelbras)
+- **Identidade Visual:** Alterado o LED frontal RGB nativo para a cor **Ciano** (segurando o botão por 2s), alinhando intencionalmente a estética do UPS com as ventoinhas padrão do gabinete do servidor (DeepCool CC560).
+
+### Mitigação de Falha Mecânica (Edge Node)
 - **O Incidente:** A ventoinha do case do Raspberry Pi começou a apresentar falhas de rotação e ruídos anômalos.
 - **Decisão Arquitetural:** Em vez de substituir a peça e manter o risco mecânico/sonoro na sala, decidi validar a viabilidade técnica de operar o nó de borda de forma 100% passiva.
 - **Validação (Stress Test):**

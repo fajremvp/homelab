@@ -8,14 +8,20 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 ## [Unreleased]
 ### Planejado
 
-- Organizar cabos.
 - Saber se um container caiu, cAdvisor...
 - Automatizar testes de alertas.
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
-## [2026-03-01]
+## [2026-03-01] - Otimização de Rádio Frequência, Ergonomia e Hardening Físico
+### Adicionado (Added)
+- **AP Omada:** Habilitado protocolo OFDMA (Wi-Fi 6) e *Band Steering* (Prefer 5GHz) para gerenciar ativamente o *Roaming* de clientes entre zonas de alta capacidade e alta penetração de sinal.
+- **AP Omada:** IP Administrativo fixado nativamente na Flash em `192.168.1.10` e sincronização de tempo via `a.ntp.br`.
+
 ### Alterado (Changed)
+- **Espectro RF:** Desligamento definitivo do rádio Wi-Fi do modem da ISP (Unifique) via acionamento de suporte, garantindo exclusividade de espectro aéreo para a infraestrutura do Homelab.
+- **RF Tuning:** Sintonia fina de canal forçada para `20MHz` no rádio 2.4 GHz (para mitigação agressiva de interferência de vizinhos) e `80MHz` no rádio 5 GHz (para vazão máxima de rede L2).
+- **Ergonomia UPS:** LED RGB fixado em Ciano (unificação estética com o Node Principal).
 - **Hardware RPi:** Remoção física da refrigeração ativa (ventoinha) do Edge Node por falha mecânica. Transição para refrigeração 100% passiva validada através de testes de stress documentados. Adicionado benchmark log em `docs/assets/benchmarks/`.
 
 ## [2026-02-28] - Migração Física e Correção de Roteamento Base

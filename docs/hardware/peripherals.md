@@ -35,6 +35,9 @@
   - **Driver:** `usbhid-ups`
   - **Topologia:** USB → Raspberry Pi (NUT Master) → Rede → Proxmox (NUT Slave).
 
+  - **Ergonomia e Ambiente (Sala):**
+    - LED Frontal: Fixado em **Ciano** para uniformidade estética com o servidor DeepCool.
+
 ---
 
 ## Switch Gerenciável — TP-Link Omada TL-SG2008 (8× Gigabit)
@@ -63,20 +66,25 @@
 ## Access Point (Wi-Fi) — TP-Link Omada EAP610 (Wi-Fi 6 / AX1800)
 
 ### Função
-- Fornece conectividade sem fio segmentada por VLAN.
+- Fornece conectividade sem fio segmentada por VLANs (802.1Q).
+- Unico emissor de rádio da infraestrutura (Wi-Fi da ISP desabilitado).
 - Mapeamento Multi-SSID:
   - SSID "Homelab_Trusted" → VLAN 20
   - SSID "Homelab_IoT" → VLAN 50
 
+### Configuração de Rádio (RF Tuning Enterprise)
+A configuração foi otimizada para ambientes de apartamento (alta interferência):
+- **Band Steering:** `Prefer 5GHz` (Força roaming inteligente para 2.4 GHz em áreas de sombra).
+- **Rádio 2.4 GHz (Penetração & IoT):** Canal Fixo (6), Largura Estreita de **20MHz** (mitiga interferência).
+- **Rádio 5 GHz (Velocidade Bruta):** Canal Auto, Largura de **80MHz**.
+- **Multiplexação:** Protocolo **OFDMA** habilitado nativamente para baixar latência de dispositivos concorrentes.
+- **Gerenciamento:** IP Fixo `192.168.1.10`, VLAN 1 (Untagged). Time Sync via `a.ntp.br`.
+
 ### Especificações
 - **Padrão:** Wi-Fi 6 (802.11ax), retrocompatível com ac/n/g/b/a.
-- **Frequência:** Dual-Band (2.4 GHz e 5 GHz).
+- **Frequência:** Dual-Band simultâneo (2.4 GHz e 5 GHz).
 - **Antenas:** 4 internas.
 - **Porta:** 1× Gigabit Ethernet (Suporte a PoE).
-
-### Justificativa Técnica
-- Wi-Fi 6 para maior eficiência com múltiplos clientes IoT.
-- AP dedicado elimina riscos de segurança de modems de operadora.
 
 ---
 
