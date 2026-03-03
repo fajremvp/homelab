@@ -16,11 +16,11 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 ## [2026-03-02] - Implementação de Disaster Recovery (NUT Primary)
 ### Adicionado (Added)
 - **NUT (Network UPS Tools):** RPi configurado como *Primary* (`netserver`), expondo a porta `3493` em `0.0.0.0` para monitoramento distribuído.
-- **Script Interceptador:** Criado `/usr/local/bin/ups-kill.sh` no RPi para contornar bug do *systemd* (Debian 13) no desligamento da porta USB.
+- **Script Interceptador:** Criado `/usr/local/bin/ups-kill.sh` no RPi para contornar a limitação do fluxo padrão de shutdown do NUT sob systemd (Debian 13) no desligamento da porta USB.
 
 ### Alterado (Changed)
 - **Driver USB:** Injetados overrides (`override.battery.charge.low = 50` e `override.input.voltage.nominal = 220`) no `ups.conf` para corrigir limitações do firmware da CyberPower/Intelbras.
-- **Shutdown Flow:** Fluxo de `SHUTDOWNCMD` do `upsmon` redirecionado para o script interceptador customizado, garantindo o corte físico da energia (load off) após o fim da bateria.
+- **Disaster Recovery (FSD Flow):** Proxmox integrado como NUT Secondary (`netclient`). Implementada janela de evacuação incondicional de 130 segundos no script interceptador do RPi, homologada via teste de risco zero. O tempo garante o shutdown gracioso das VMs e do `zpool` no Proxmox (73s reais) antes do corte físico do relé (155s). Esta abordagem mitiga a falha de sincronização TCP prematura (bug do `HOSTSYNC` no Systemd).
 
 ## [2026-03-01] - Otimização de Rádio Frequência, Ergonomia e Hardening Físico
 ### Adicionado (Added)

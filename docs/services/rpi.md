@@ -25,13 +25,15 @@ O firmware da Intelbras tem duas limitações graves mapeadas empiricamente:
 1. **Delay fixo:** O `ups.delay.shutdown` é travado na placa em 20 segundos (não aceita `offdelay` via software).
 2. **Fail-Safe:** O UPS ignora qualquer comando de desligar as tomadas se estiver recebendo energia AC da parede (`OL`). O corte só acontece em `OB`.
 
-Além disso, o `systemd` do Debian 13 encerra módulos USB antes da rotina padrão do NUT (`nutshutdown`), impedindo que a ordem chegue ao cabo.
+Além disso, o fluxo padrão de shutdown do NUT sob `systemd` pode encerrar o driver USB antes da execução do comando final de `load.off`, impedindo o corte físico das tomadas.
 
 **A Mitigação (`ups-kill.sh`):**
 O `SHUTDOWNCMD` no `upsmon.conf` do RPi foi alterado para executar um script customizado `/usr/local/bin/ups-kill.sh` que faz o seguinte:
-1. Usa `pkill -9 usbhid-ups` para assassinar o driver (bypasseando o cgroup do systemd que mataria o script junto).
-2. Executa `/usr/sbin/upsdrvctl shutdown`, ativando a guilhotina de 20 segundos do hardware.
-3. Executa `/sbin/shutdown -h now` para o RPi morrer graciosamente nos 15 segundos restantes antes de a energia ser fisicamente cortada pelas tomadas traseiras.
+
+1. **Atraso Incondicional (`sleep 130`):** Cria uma janela de evacuação imutável baseada no tempo real cronometrado de desligamento do Proxmox (83s) + margem de segurança (47s). Isso impede que a desconexão precoce de rede do Proxmox faça o RPi cortar a energia com o ZFS ainda montado.
+2. Usa `pkill -9 usbhid-ups` para assassinar o driver (bypasseando o cgroup do systemd que mataria o script junto).
+3. Executa `/usr/sbin/upsdrvctl shutdown`, ativando a guilhotina de 20 segundos do hardware.
+4. Executa `/sbin/shutdown -h now` para o RPi morrer graciosamente.
 
 ### 2. Emergency VPN (Tailscale)
 * **Objetivo:** Permitir acesso remoto (Out-of-Band) para desbloqueio de disco (LUKS) via Dropbear.

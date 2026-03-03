@@ -15,15 +15,29 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
   - O firmware do UPS **ignora** comandos de atraso via software (`offdelay`). O tempo de corte `ups.delay.shutdown` é fixado rigidamente em 20 segundos pela fabricante (CyberPower/Intelbras).
   - **Fail-Safe do Firmware:** O Nobreak ignora comandos de `shutdown/killpower` se estiver recebendo energia da rua (`OL` - On Line). O desligamento só é acatado em modo bateria (`OB`).
 
-### Bug do Systemd (Debian 13) e a Solução
+### Limitação do fluxo padrão de shutdown do NUT sob systemd (Debian 13)
 - **Incidente:** Durante o teste de *Forced Shutdown* (`upsmon -c fsd`), o RPi desligou, mas o Nobreak e o restante continuaram ligados indefinidamente.
-- **Diagnóstico 1 (Ordem de Desligamento):** O `systemd` do Debian 13 desliga o subsistema USB antes que o script final do NUT consiga enviar o pulso hexadecimal para o Nobreak.
-- **Diagnóstico 2 (Suicídio por Cgroup):** Ao tentar criar um script interceptador usando `/bin/systemctl stop nut-client`, o systemd enviou um `SIGTERM` matando o próprio script de intervenção antes dele atirar no Nobreak.
+- **Diagnóstico (Fluxo de Shutdown):** Durante o FSD (`upsmon -c fsd`), o Raspberry Pi encerrava o sistema operacional corretamente, mas o comando final `load.off` não era entregue ao UPS.
+- **Análise:** O fluxo padrão do NUT sob `systemd` executa o `SHUTDOWNCMD` em uma fase tardia do processo de desligamento. Nessa etapa, o driver USB (`usbhid-ups`) já pode ter sido encerrado pelo gerenciador de serviços, impedindo a transmissão confiável do comando de corte físico ao Nobreak.
+- **Conclusão:** O comportamento observado não indica falha de firmware, mas sim limitação operacional do encadeamento NUT + systemd durante o shutdown.
 - **Solução:** Desenvolvido o script `/usr/local/bin/ups-kill.sh` que utiliza força bruta (`pkill -9 usbhid-ups`) para soltar a porta USB fora da árvore do systemd, envia o comando de morte ao Nobreak (`upsdrvctl shutdown`), e só então invoca o `shutdown -h now` do RPi.
 
 ### Teste Destrutivo Final
 - Executado novo FSD no RPi com o Nobreak desconectado da tomada (com energia da bateria) (via bypass L2 no Switch). (O Proxmox foi desligado para evitar corrupção durante os testes)
 - O RPi aguardou os tempos de sync (20s), iniciou o script customizado, apagou o sistema operacional e, 10 segundos depois, o Nobreak estalou o relé e cortou a energia das tomadas, blindando a infraestrutura. O sistema voltou à vida automaticamente ao retornar a energia da rua.
+
+### Cálculo Empírico da Janela de Evacuação do ZFS
+- **O Problema:** A arquitetura padrão do NUT via `HOSTSYNC` é falha no Proxmox (Debian), pois o `systemd` mata a rede e o `nut-client` precocemente durante o shutdown. Isso faz o RPi achar que o servidor já desligou, enviando o comando de corte físico (load.off) enquanto o Proxmox ainda está gravando no ZFS.
+- **Medição Real:** Executado desligamento cronometrado do Proxmox via GUI com todas as VMs atuais (OPNsense, AdGuard, Vault, DockerHost). Tempo total até o poweroff físico: cerca de **1 minuto e 23 segundos (83s)**.
+- **Engenharia de Atraso:** Implementado um `sleep 130` incondicional no script `/usr/local/bin/ups-kill.sh` do RPi, adicionando 47s de margem sobre o tempo medido.
+
+### Validação Definitiva de Disaster Recovery (Teste de FSD Risco Zero)
+- **Metodologia:** Executado teste prático do gatilho *Forced Shutdown* (`upsmon -c fsd`). Para proteger o ZFS caso a matemática falhasse, o cabo de energia do Proxmox foi temporariamente movido do Nobreak para a parede, mantendo o RPi, Switch, AP e Modem no Nobreak em modo bateria.
+- **Cronologia Empírica Registrada:**
+  - `0s`: Disparo do gatilho FSD no RPi (Modo Bateria).
+  - `73s`: Proxmox concluiu o ACPI shutdown graciosamente e apagou totalmente o hardware.
+  - `155s`: Nobreak executou o estalo do relé e o corte físico de carga.
+- **Veredito:** A janela incondicional funcionou com precisão milimétrica. O servidor desligou totalmente e o sistema obteve **82 segundos de sobra** antes do corte elétrico. Arquitetura de Disaster Recovery homologada. Hardware retornado para as tomadas corretas.
 
 ## 2026-03-01
 **Status:** ✅ Sucesso (Otimização RF, Manutenção e Ergonomia)
