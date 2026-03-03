@@ -75,3 +75,55 @@ groups:
         annotations:
           summary: "VM {{ $labels.name }} ({{ $labels.vmid }}) sem RAM"
           description: "Uso de memória atingiu {{ $value | printf \"%.1f\" }}% do limite."
+
+  - name: ups_power_alerts
+    rules:
+      # Alerta de Falta de Energia (On Battery)
+      - alert: UpsOnBattery
+        expr: network_ups_tools_ups_status{flag="OB"} == 1
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "⚠️ Blecaute: Servidor operando na Bateria"
+          description: "O fornecimento de energia da rua foi interrompido. O Nobreak assumiu a carga com sucesso."
+
+      # Alerta de Pré-Desligamento (Gordura antes do FSD)
+      - alert: UpsBatteryCriticalWarning
+        expr: network_ups_tools_battery_charge < 55
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "🔴 Bateria Atingindo Limite Crítico"
+          description: "Bateria em {{ $value | printf \"%.1f\" }}%. O procedimento de Disaster Recovery (FSD) será iniciado automaticamente ao atingir 50%."
+
+      # Alerta de Sobrecarga de Hardware
+      - alert: UpsOverload
+        expr: network_ups_tools_ups_load > 85
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "🔥 Perigo: UPS em Sobrecarga"
+          description: "A carga conectada ao Nobreak excedeu 85% (Atual: {{ $value | printf \"%.1f\" }}%). O equipamento pode desarmar para proteção."
+
+      # Alerta de Manutenção Física (Replace Battery)
+      - alert: UpsReplaceBattery
+        expr: network_ups_tools_ups_status{flag="RB"} == 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "🛠️ Manutenção do Nobreak Necessária"
+          description: "O auto-teste do UPS falhou. As baterias internas estão degradadas e precisam ser substituídas."
+
+      # Cegueira de Telemetria
+      - alert: UpsTelemetryDown
+        expr: up{job="ups-intelbras"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "🔌 Perda de Telemetria L3 do UPS"
+          description: "O Prometheus não consegue ler o nut-exporter, ou o RPi perdeu conexão com o Nobreak."

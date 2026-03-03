@@ -6,7 +6,7 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 ---
 ## 2026-03-02
 **Status:** ✅ Sucesso (Validação Empírica e Engenharia de Resiliência)
-**Foco:** Implementação do NUT Primary (Master) no Edge Node (RPi) e Testes Destrutivos de Disaster Recovery.
+**Foco:** Implementação do NUT Primary (Master) no Edge Node (RPi), Disaster Recovery e Radar de Energia L3 (Prometheus/Grafana).
 
 ### Validação de Autonomia e Firmware (Intelbras Gamer Ultimate)
 - **Teste:** Simulação de blecaute físico com carga (~165W).
@@ -38,6 +38,14 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
   - `73s`: Proxmox concluiu o ACPI shutdown graciosamente e apagou totalmente o hardware.
   - `155s`: Nobreak executou o estalo do relé e o corte físico de carga.
 - **Veredito:** A janela incondicional funcionou com precisão milimétrica. O servidor desligou totalmente e o sistema obteve **82 segundos de sobra** antes do corte elétrico. Arquitetura de Disaster Recovery homologada. Hardware retornado para as tomadas corretas.
+
+### Radar de Energia e Telemetria (A "Matrix" do Prometheus)
+- **O Desafio do Exporter:** O `nut-exporter` (v3.x) desvia do padrão da comunidade. Em vez de exportar métricas na raiz `/metrics`, ele exige um caminho customizado `/ups_metrics` e a passagem do parâmetro da máquina via query string `?ups=intelbras`. Sem isso, as métricas perdem suas *labels*, quebrando o Grafana e as regras de alerta.
+- **A Armadilha do Relógio (Evaluation Interval):** - *Sintoma:* Durante o teste de queda, o status no Grafana atualizava rápido, mas o Ntfy demorava mais de 2 minutos para apitar.
+  - *Causa:* O Prometheus possui dois relógios. O `scrape_interval` (ir buscar o dado) estava em 15s, mas o `evaluation_interval` (rodar a regra para ver se é caso de alerta) estava no padrão de 1m. O alerta ficava travado em `PENDING` aguardando o próximo ciclo.
+  - *Solução:* Sincronizado o `evaluation_interval` para `15s` no `prometheus.yml`. Alertas crtíticos agora mudam para `FIRING` no tempo exato, somados ao `group_wait` de 30s do Alertmanager.
+- **Exposição da Interface de Diagnóstico:** O Prometheus foi conectado à rede `proxy` e exposto via `prometheus.home` (com o Authentik) para permitir a visualização em tempo real das transições de estado de alertas (`Inactive -> Pending -> Firing`), o que foi vital para o troubleshooting.
+- **Dashboard Vacinado:** O arquivo JSON nativo do Grafana para o NUT depende de uma variável de ambiente na interface gráfica. Como utilizo *Dashboard as Code* (provisionamento mudo), foi necessário rodar um `sed` para injetar no código-fonte do painel o UID estático do Prometheus (`dfa44v3b15a80b`), curando o erro crônico de "No Data / Datasource not found".
 
 ## 2026-03-01
 **Status:** ✅ Sucesso (Otimização RF, Manutenção e Ergonomia)

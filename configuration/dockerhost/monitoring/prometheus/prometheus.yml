@@ -1,5 +1,6 @@
 global:
   scrape_interval: 15s
+  evaluation_interval: 15s
 
 rule_files:
   - "alert.rules.yml"
@@ -76,3 +77,11 @@ scrape_configs:
   - job_name: 'orangeshadow-node'
     static_configs:
       - targets: ['10.10.30.20:9100']
+
+  # --- Nobreak Intelbras (via NUT Exporter) ---
+  - job_name: 'ups-intelbras'
+    metrics_path: /ups_metrics
+    params:
+      ups: ['intelbras']
+    static_configs:
+      - targets: ['nut-exporter:9199']

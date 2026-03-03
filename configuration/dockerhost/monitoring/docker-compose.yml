@@ -14,6 +14,14 @@ services:
       - ./prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml:ro
     networks:
       - monitoring
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.home`)"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls=true"
+      - "traefik.http.routers.prometheus.middlewares=authentik@docker"
+      - "traefik.docker.network=proxy"
 
   # --- CÉREBRO DE LOGS ---
   loki:
@@ -157,6 +165,18 @@ services:
     # NÃO se mapeia ports. O acesso é interno via rede "monitoring".
     volumes:
       - ./pve/pve.yml:/etc/prometheus/pve.yml:ro
+    networks:
+      - monitoring
+
+  # --- UPS EXPORTER (Nobreak) ---
+  nut-exporter:
+    image: ghcr.io/druggeri/nut_exporter:3.1.3
+    container_name: nut-exporter
+    restart: unless-stopped
+    environment:
+      # Aponta para o IP do Raspberry Pi na LAN
+      - NUT_EXPORTER_SERVER=192.168.1.5
+      - NUT_EXPORTER_PORT=3493
     networks:
       - monitoring
 

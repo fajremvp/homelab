@@ -13,10 +13,15 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
-## [2026-03-02] - Implementação de Disaster Recovery (NUT)
+## [2026-03-02] - DR de Energia (NUT) e Observabilidade L3
 ### Adicionado (Added)
 - **NUT (Network UPS Tools):** RPi configurado como *Primary* (`netserver`), expondo a porta `3493` em `0.0.0.0` para monitoramento distribuído.
 - **Script Interceptador:** Criado `/usr/local/bin/ups-kill.sh` no RPi para contornar a limitação do fluxo padrão de shutdown do NUT sob systemd (Debian 13) no desligamento da porta USB.
+- **Observabilidade de Energia:** Implementado container `nut-exporter` no DockerHost, raspando a porta L3 (3493) do RPi (Edge Node) via endpoint customizado (`/ups_metrics?ups=intelbras`).
+- **Alerta em Tempo Real (Ntfy):** Criado o pipeline de monitoramento ativo (`alert.rules.yml`) no Prometheus para eventos físicos do UPS: Blecaute (`OB`), Bateria Crítica (<55%), Sobrecarga (>85%), Manutenção de Bateria (`RB`) e Perda de Telemetria L3.
+- **Sincronia de Engine:** Ajustado o `evaluation_interval` do Prometheus para `15s`, garantindo o disparo e recebimento da notificação push (Ntfy) em menos de 1 minuto após o corte físico de energia.
+- **Grafana as Code:** Provisionado dashboard dinâmico "UPS statistics" via IaC (JSON) com injeção automatizada de UID do Prometheus via `sed`.
+- **Ingress:** Exposta a interface web do Prometheus (`prometheus.home`) atrás do Traefik/Authentik para auditoria visual de estado de alertas (Pending/Firing).
 
 ### Alterado (Changed)
 - **Driver USB:** Injetados overrides (`override.battery.charge.low = 50` e `override.input.voltage.nominal = 220`) no `ups.conf` para corrigir limitações do firmware da CyberPower/Intelbras.

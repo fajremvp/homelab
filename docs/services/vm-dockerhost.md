@@ -114,8 +114,9 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
       * `Forgejo`(Pull Mirror): Servidor Git auto-hospedado. Será configurado como um "pull mirror" (somente leitura) que puxa automaticamente as mudanças do GitHub (usado como repositório primário/público).
       * `Forgejo Actions`(CI/CD): Utilizado para rodar pipelines de teste locais (no homelab) sobre o código espelhado, permitindo validar integrações com outros serviços internos.
       * `FreshRSS` (Fonte de informações descentralizadas e distribuídas)
-      * `Grafana + Prometheus + Loki` (Observabilidade: Métricas e Logs)
+      * `Grafana + Prometheus + Loki` (Observabilidade: Métricas, Logs e Alertas)
         	- **Política:** Retenção de logs configurada para **7 dias** para evitar que o armazenamento de logs lote o SSD NVMe principal.
+            - **Módulos Ativos:** `cAdvisor` (Métricas de Container), `pve-exporter` (API do Proxmox) e `nut-exporter` (Telemetria do Nobreak via RPi).
       * `ntfy` (Servidor de Notificações): Alternativa soberana ao Discord/Slack. Recebe webhooks do Alertmanager/Grafana e envia push notifications para o celular.
       * `Portfólio pessoal` (Servidor web, via Traefik (também disponível em .onion e IPFS))
       * `Pequeno site` (Servidor web, via Traefik)

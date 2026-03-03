@@ -25,6 +25,7 @@ Adoção de padrões de arquitetura corporativa (Enterprise Patterns), porém ad
 | **Host Metrics** | Node Exporter | Serviço Systemd (Nativo) | Isolamento de falhas: se o Docker cair, ainda temos métricas do OS. |
 | **Container Metrics** | cAdvisor | Container Privilegiado | Granularidade por cgroup que o Node Exporter não oferece. |
 | **Ingress** | Traefik | TLS Termination | Centraliza SSL e protege dashboards (Grafana) atrás do Authentik. |
+| **Energia (L3)** | NUT Exporter | Container HTTP `/ups_metrics` | Traduz o protocolo tcp/3493 do Raspberry Pi para métricas Prometheus. |
 | **Uptime (Externo)** | Heartbeat (Curl) | Push para Healthchecks.io | Garante notificação mesmo em caso de falha total de energia/internet (Dead Man's Switch). |
 
 ---
@@ -89,12 +90,12 @@ Esta implementação assume um modelo de ameaça específico para ambiente domé
 
 - [x] **Disponibilidade Global:** Dead Man's Switch (Healthchecks.io) monitorando o DockerHost.
 - [ ] **Switch/AP:** Coleta via SNMP Exporter.
-- [ ] **Energia:** Monitoramento de UPS (NUT Exporter).
+- [x] **Energia:** Monitoramento ativo de UPS (NUT Exporter, Dashboards e Alertas Ntfy).
 - [X] **Segurança de Rede:** CrowdSec (Logs de firewall e banimentos).
 
 ### Fase 4 – Refinamento e Inteligência
 **Objetivo:** Transformar dados em alertas acionáveis.
 
-- [ ] **Alerting Rules:** Definição de limiares (Disco > 90%, Alta Temperatura, Vault Sealed).
+- [x] **Alerting Rules:** Definição de limiares críticos (Disco > 10%, Alta RAM/CPU, Instance Down, UPS Battery Low/Overload).
 - [X] **Dashboards:** Criação de visão unificada ("Single Pane of Glass").
 - [ ] **Watchdog:** Monitoramento de disponibilidade da própria stack de monitoramento (Dead Man's Switch).
