@@ -106,3 +106,22 @@ sudo tailscale up --accept-routes
    ```
 ### Janela de Acesso
 - A porta 2222 (Dropbear) só existe durante a fase de initramfs. Após o início do boot do Proxmox, a conexão será recusada (Connection Refused). Isso é o comportamento esperado.
+
+## Arquitetura de FSD (Forced Shutdown) - Apagão Elétrico
+
+O sistema é protegido contra corrupção do ZFS por um Nobreak Intelbras (1000VA) gerenciado por uma arquitetura Master/Slave via NUT.
+
+* **Primary (RPi - 192.168.1.5):** Comunica-se fisicamente com o UPS via USB. Ao atingir 50% de bateria, ele dispara o sinal FSD na rede.
+* **Secondary (Proxmox - 192.168.1.200):** Ouve o RPi. Ao receber FSD, inicia o shutdown de todas as VMs na ordem correta e exporta o ZFS pool (Tempo real medido: ~83s).
+* **Delay Incondicional:** Para contornar a desconexão prematura do TCP causada pelo `systemd` no Proxmox, o RPi possui um interceptador (`/usr/local/bin/ups-kill.sh`) que impõe um **sleep de 130 segundos**. O RPi aguarda esse tempo no escuro antes de comandar o corte mecânico (relé) do Nobreak.
+
+### Teste Seguro de Apagão (Risco Zero para ZFS)
+
+A cada 6 meses, o tempo de shutdown do Proxmox deve ser revalidado (ou após adicionar VMs pesadas como Bitcoin Core).
+
+1. Mova o cabo de força do Proxmox para uma tomada normal da parede (isolando-o do Nobreak).
+2. Puxe o cabo do Nobreak da tomada (ativando a bateria apenas para o RPi/Switch/AP/Modem).
+3. No terminal do RPi, execute: `sudo upsmon -c fsd`.
+4. **Cronometre:** Verifique o tempo exato (Tempo A) que o Proxmox leva para desligar e o momento (Tempo B) em que o Nobreak dá o estalo do relé e apaga o RPi/Switch.
+5. Se `Tempo B` for MAIOR que `Tempo A`, a matemática está segura. Recoloque o cabo do Proxmox no UPS.
+6. Se `Tempo A` (Proxmox) ultrapassar o `Tempo B`, **cancele operações, ligue o Proxmox na energia** e recalcule o `sleep` no script do RPi.

@@ -80,6 +80,8 @@ Após qualquer manutenção crítica (kernel, rede, storage):
   - `swapon --show`
 - Confirmar tempo sincronizado:
   - `chronyc tracking`
+- Confirmar status da bateria e comunicação NUT L3 (Proxmox -> RPi):
+  - `upsc intelbras@192.168.1.5 | grep ups.status` (Espera-se `OL` ou `OL CHRG`)
 
 ## Recuperação e Substituição de Disco (ZFS Root)
 

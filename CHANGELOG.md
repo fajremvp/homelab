@@ -13,7 +13,7 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
-## [2026-03-02] - Implementação de Disaster Recovery (NUT Primary)
+## [2026-03-02] - Implementação de Disaster Recovery (NUT)
 ### Adicionado (Added)
 - **NUT (Network UPS Tools):** RPi configurado como *Primary* (`netserver`), expondo a porta `3493` em `0.0.0.0` para monitoramento distribuído.
 - **Script Interceptador:** Criado `/usr/local/bin/ups-kill.sh` no RPi para contornar a limitação do fluxo padrão de shutdown do NUT sob systemd (Debian 13) no desligamento da porta USB.
