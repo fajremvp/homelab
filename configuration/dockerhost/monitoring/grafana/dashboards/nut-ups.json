@@ -1,47 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_PROMETHEUS",
-      "label": "Prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__elements": {},
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "11.2.0"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "gauge",
-      "name": "Gauge",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -62,7 +19,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 26,
+  "id": 17,
   "links": [],
   "panels": [
     {
@@ -96,7 +53,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -131,7 +88,7 @@
         "textMode": "name",
         "wideLayout": true
       },
-      "pluginVersion": "11.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
@@ -155,68 +112,70 @@
         "type": "prometheus",
         "uid": "dfa44v3b15a80b"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "fixed"
+            "mode": "thresholds"
           },
           "mappings": [],
+          "max": 700,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
+              },
+              {
+                "color": "#EAB839",
+                "value": 400
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 550
               }
             ]
-          }
+          },
+          "unit": "watt"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 8,
         "w": 10,
         "x": 3,
         "y": 1
       },
-      "id": 19,
+      "id": 27,
       "options": {
         "colorMode": "value",
-        "graphMode": "none",
+        "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "mean"
+            "lastNotNull"
           ],
           "fields": "",
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "name",
+        "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
-          },
-          "expr": "network_ups_tools_device_info{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
-          "interval": "",
-          "legendFormat": "{{mfr}}",
+          "editorMode": "code",
+          "expr": "(network_ups_tools_ups_load{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"} / 100) * 700",
+          "legendFormat": "__auto",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Manufacturer",
-      "transparent": true,
+      "title": "Active Load (Watts)",
       "type": "stat"
     },
     {
@@ -224,69 +183,102 @@
         "type": "prometheus",
         "uid": "dfa44v3b15a80b"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "fixed"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "percent"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 8,
         "w": 11,
         "x": 13,
         "y": 1
       },
-      "id": 20,
+      "id": 15,
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
+        "alertThreshold": true,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
         },
-        "showPercentChange": false,
-        "textMode": "name",
-        "wideLayout": true
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "11.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
             "uid": "dfa44v3b15a80b"
           },
-          "expr": "network_ups_tools_device_info{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
+          "expr": "network_ups_tools_ups_load{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
           "interval": "",
-          "legendFormat": "{{model}}",
+          "legendFormat": "{{ups}}",
           "refId": "A"
         }
       ],
-      "title": "Model",
+      "title": "Load History (%)",
       "transparent": true,
-      "type": "stat"
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -306,18 +298,18 @@
             "steps": [
               {
                 "color": "dark-red",
-                "value": null
+                "value": 0
               },
               {
-                "color": "dark-orange",
+                "color": "orange",
                 "value": 30
               },
               {
-                "color": "dark-yellow",
+                "color": "yellow",
                 "value": 60
               },
               {
-                "color": "dark-green",
+                "color": "green",
                 "value": 80
               }
             ]
@@ -327,7 +319,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "h": 5,
         "w": 3,
         "x": 0,
         "y": 4
@@ -348,7 +340,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "11.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
@@ -371,311 +363,45 @@
         "type": "prometheus",
         "uid": "dfa44v3b15a80b"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
           "mappings": [],
-          "min": 0,
+          "max": 250,
+          "min": 180,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
-                "value": null
+                "color": "dark-red",
+                "value": 0
               },
               {
-                "color": "orange",
-                "value": 300
+                "color": "yellow",
+                "value": 198
               },
-              {
-                "color": "transparent",
-                "value": 900
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 10,
-        "x": 3,
-        "y": 4
-      },
-      "id": 11,
-      "options": {
-        "alertThreshold": true,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.3.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
-          },
-          "expr": "network_ups_tools_battery_runtime{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
-          "interval": "",
-          "legendFormat": "{{ups}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Battery Run Time Left",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 210
+              },
+              {
+                "color": "yellow",
+                "value": 235
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 242
               }
             ]
           },
-          "unit": "percent"
+          "unit": "volt"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 11,
-        "x": 13,
-        "y": 4
-      },
-      "id": 15,
-      "options": {
-        "alertThreshold": true,
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.3.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
-          },
-          "expr": "network_ups_tools_ups_load{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
-          "interval": "",
-          "legendFormat": "{{ups}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Load",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "dark-red",
-                "value": null
-              },
-              {
-                "color": "dark-green",
-                "value": 120
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 2,
+        "h": 5,
         "w": 3,
         "x": 0,
-        "y": 8
-      },
-      "id": 24,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "value",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.3.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
-          },
-          "expr": "network_ups_tools_battery_runtime{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "title": "Battery Runtime",
-      "transparent": true,
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "max": 140,
-          "min": 90,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "dark-red",
-                "value": null
-              },
-              {
-                "color": "dark-green",
-                "value": 95
-              },
-              {
-                "color": "dark-yellow",
-                "value": 125
-              },
-              {
-                "color": "dark-red",
-                "value": 135
-              }
-            ]
-          }
-        },
-        "unit": "volt",
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 3,
-        "x": 0,
-        "y": 10
+        "y": 9
       },
       "id": 5,
       "options": {
@@ -693,7 +419,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "11.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
@@ -744,6 +470,7 @@
               "type": "linear"
             },
             "showPoints": "never",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -754,14 +481,14 @@
             }
           },
           "mappings": [],
-          "max": 140,
-          "min": 90,
+          "max": 250,
+          "min": 180,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -774,10 +501,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 5,
         "w": 21,
         "x": 3,
-        "y": 10
+        "y": 9
       },
       "id": 12,
       "options": {
@@ -789,11 +516,12 @@
           "showLegend": false
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "none"
         }
       },
-      "pluginVersion": "11.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
@@ -807,7 +535,7 @@
           "refId": "A"
         }
       ],
-      "title": "",
+      "title": "Line Volts History",
       "transparent": true,
       "type": "timeseries"
     },
@@ -830,20 +558,24 @@
             }
           ],
           "max": 30,
-          "min": 0,
+          "min": 20,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "dark-red",
-                "value": null
+                "value": 0
               },
               {
-                "color": "dark-green",
+                "color": "yellow",
                 "value": 22
               },
               {
-                "color": "dark-red",
+                "color": "green",
+                "value": 25
+              },
+              {
+                "color": "red",
                 "value": 28
               }
             ]
@@ -853,10 +585,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 5,
         "w": 3,
         "x": 0,
-        "y": 16
+        "y": 14
       },
       "id": 4,
       "options": {
@@ -874,7 +606,7 @@
         "showThresholdMarkers": true,
         "sizing": "auto"
       },
-      "pluginVersion": "11.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
@@ -917,6 +649,7 @@
           "refId": "D"
         }
       ],
+      "title": "Battery Volts",
       "transformations": [
         {
           "id": "configFromData",
@@ -967,7 +700,6 @@
           }
         }
       ],
-      "title": "Battery Volts",
       "transparent": true,
       "type": "gauge"
     },
@@ -1005,6 +737,7 @@
               "type": "linear"
             },
             "showPoints": "never",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -1021,7 +754,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -1034,10 +767,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 5,
         "w": 21,
         "x": 3,
-        "y": 16
+        "y": 14
       },
       "id": 13,
       "options": {
@@ -1049,11 +782,12 @@
           "showLegend": false
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "none"
         }
       },
-      "pluginVersion": "11.3.0",
+      "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": {
@@ -1100,6 +834,7 @@
           "refId": "D"
         }
       ],
+      "title": "Battery Volts History",
       "transformations": [
         {
           "id": "configFromData",
@@ -1138,14 +873,13 @@
           }
         }
       ],
-      "title": "",
       "transparent": true,
       "type": "timeseries"
     }
   ],
   "preload": false,
   "refresh": false,
-  "schemaVersion": 40,
+  "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": [
@@ -1216,6 +950,5 @@
   "timezone": "",
   "title": "UPS statistics",
   "uid": "j4a-DMWRk",
-  "version": 1,
-  "weekStart": ""
+  "version": 3
 }
