@@ -13,6 +13,14 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-03-07] - Web Drive e Modulação do Syncthing
+### Adicionado (Added)
+- **File Browser:** Implementado container File Browser (v2.61.2) atuando como interface Web ("Web Drive") para os arquivos do Syncthing.
+- **Autenticação Dupla (Isolada):** Implementado roteamento seguro com Traefik + Authentik na borda (ForwardAuth), mantendo a autenticação nativa e isolada da aplicação (File Browser) no backend. Fail-safe arquitetural.
+
+### Alterado (Changed)
+- **Syncthing (Permissões de Sync):** Revertida a política de "Receive Only" (Cofre Burro) para "Send & Receive" nas pastas. Necessário para permitir a propagação de alterações feitas via interface Web (File Browser) para os clientes (Arch/M55).
+
 ## [2026-03-02] - DR de Energia (NUT) e Observabilidade L3
 ### Adicionado (Added)
 - **NUT (Network UPS Tools):** RPi configurado como *Primary* (`netserver`), expondo a porta `3493` em `0.0.0.0` para monitoramento distribuído.

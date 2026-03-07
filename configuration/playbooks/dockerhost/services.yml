@@ -199,6 +199,34 @@
         project_src: "{{ base_dir }}/tududi"
         state: present
 
+    # --- FILE BROWSER ---
+    - name: Sync File Browser
+      synchronize:
+        src: "../../dockerhost/services/filebrowser/"
+        dest: "{{ base_dir }}/filebrowser/"
+        recursive: true
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--chown={{ ansible_user }}:{{ ansible_user }}"
+          - "--exclude=data/"
+          - "--exclude=config/"
+
+    - name: Garantir diretórios e permissões do File Browser
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "1000" # Crucial para o container conseguir criar o filebrowser.db
+        group: "1000"
+        mode: '0755'
+      loop:
+        - "{{ base_dir }}/filebrowser/data"
+        - "{{ base_dir }}/filebrowser/config"
+
+    - name: Start File Browser
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/filebrowser"
+        state: present
+
   handlers:
     - name: Reload Systemd
       systemd:

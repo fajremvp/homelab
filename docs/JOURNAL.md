@@ -4,6 +4,14 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-07
+**Status:** ✅ Sucesso
+**Foco:** Implementação de Web Drive (File Browser) sobre o Syncthing.
+
+- **O Problema da Autenticação via Proxy:** Abandonei a tentativa de usar a autenticação via injeção de Headers (`X-Authentik-Username`) no File Browser. Essa integração é historicamente frágil e sujeita a bugs que quebram o acesso à menor alteração de roteamento.
+- **Solução:** Adoção de autenticação dupla isolada. O Authentik atua como porteiro rígido no Traefik, enquanto o File Browser usa seu próprio banco (`filebrowser.db`) com credenciais geradas randomicamente no primeiro boot (capturadas via `docker logs`) e substituídas por senhas fortes no cofre.
+- **Trade-off do Syncthing:** Para que a edição via interface web funcione de forma bidirecional, fui forçado a abrir mão do modo "Receive Only" do servidor, voltando as pastas para "Send & Receive". O servidor deixa de ser apenas um cofre de leitura e volta a ser um nó ativo na alteração de dados.
+
 ## 2026-03-02
 **Status:** ✅ Sucesso (Validação Empírica e Engenharia de Resiliência)
 **Foco:** Implementação do NUT Primary (Master) no Edge Node (RPi), Disaster Recovery e Radar de Energia L3 (Prometheus/Grafana).

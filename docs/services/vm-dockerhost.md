@@ -135,9 +135,9 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - *Dados:* Disco Virtual 100GB (`/mnt/syncthing`) -> Sem Backup Offsite (Dados Brutos).
           - **Ingress:** `syncthing.home` (Porta 8384).
           - **Portas de Dados:** 22000/TCP+UDP expostas para a LAN/WAN.
-          - **Política de Sync:**
-              - **Servidor:** Receive Only + Staggered File Versioning (Lixeira protegida).
-              - **Clientes:** Send Only (Proteção contra deleção acidental no servidor).
+          - **Política de Sync (Atualizada em 2026-03-07):**
+              - **Servidor e Clientes:** Send & Receive + Staggered File Versioning.
+              - **Motivo:** Permitir que alterações realizadas via interface Web (File Browser) sejam propagadas bidirecionalmente para todos os dispositivos (Arch Linux e Android M55).
           - **Segurança:** Autenticação Dupla (Authentik Middleware + Senha da App).
           - **Matriz de Configuração (Tuning):**
               - **DockerHost (Hub Central):**
@@ -151,6 +151,25 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
                   - *Run Conditions:* Wi-Fi Only (Padrão), Battery or AC Power.
                   - *Network:* `NAT Traversal=On` (Bypass CGNAT), `Global/Local/Relay=On`.
                   - *System:* Bateria do Android definida como **"Sem Restrições" (Unrestricted)**.
+      * `File Browser` (Web Drive para Syncthing): [Implementado em 2026-03-07]
+          - **Função:** Interface Web minimalista para navegação, upload e gerenciamento dos arquivos sincronizados pelo Syncthing.
+          - **Versão:** `v2.61.2` (Tag travada para evitar quebra por atualizações automáticas).
+          - **Integração de Armazenamento:**
+              - **Mount Interno:** `/srv`
+              - **Origem no Host:** `/mnt/syncthing`
+          - **Banco de Dados:** SQLite (`filebrowser.db`) persistido em `/opt/services/filebrowser/data`.
+          - **Configuração:** `/opt/services/filebrowser/config`.
+          - **Ingress:** `https://filebrowser.home`
+          - **Segurança:**
+              - **Nível 1 (Rede):** Protegido por middleware `authentik@docker` no Traefik.
+              - **Nível 2 (Aplicação):** Autenticação nativa do File Browser (credenciais armazenadas no `filebrowser.db`).
+              - **Modelo:** Autenticação dupla isolada (fail-safe).
+          - **Proteção de Infraestrutura:**
+              - **Dotfiles ocultos:** Evita deleção acidental de `.stfolder` e `.stversions` utilizados pelo Syncthing.
+          - **Uploads:**
+              - **Chunked Upload:** Ativado (10MB chunks / 5 retries) para maior resiliência em conexões instáveis.
+          - **Observação Arquitetural:**
+              - A tentativa de autenticação via injeção de headers (`X-Authentik-*`) foi abandonada por fragilidade histórica dessa integração.
       * `Tududi` (Gerenciador de Tarefas & Calendário): [Implementado em 2026-02-23]
           - **Função:** "Life OS" minimalista para gestão de prazos da faculdade e anotações rápidas.
           - **Ingress:** `tududi.home` (Porta interna 3002).
@@ -204,8 +223,7 @@ O DockerHost realiza backups diários, criptografados e incrementais para o Back
 * **Ferramenta:** Restic (via script `/usr/local/bin/backup-daily.sh`).
 * **Agendamento:** Todo dia às 04:00 (Cron).
 * **Escopo de Backup:**
-    * `/opt/services` (Traefik, Whoami, etc).
-    * `/opt/auth` (Authentik, Vaultwarden).
+    * `/opt/services, /opt/auth, /opt/monitoring, /opt/security, /opt/utils, /etc/vault`.
 * **Exclusões:** Logs (`*.log`), arquivos temporários de banco (`*.sqlite3-wal`) e caches.
 * **Retenção:** 7 dias, 4 semanas, 6 meses.
 

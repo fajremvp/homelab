@@ -1,0 +1,32 @@
+services:
+  filebrowser:
+    image: filebrowser/filebrowser:v2.61.2
+    container_name: filebrowser
+    restart: unless-stopped
+    user: "1000:1000"
+    volumes:
+      # Monta o Syncthing como a raiz do Drive
+      - /mnt/syncthing:/srv
+      # Mapeia as pastas locais para o File Browser criar o DB e as Configs nativamente
+      - ./data:/database
+      - ./config:/config
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+
+      # Roteamento e TLS
+      - "traefik.http.routers.filebrowser.rule=Host(`filebrowser.home`)"
+      - "traefik.http.routers.filebrowser.entrypoints=websecure"
+      - "traefik.http.routers.filebrowser.tls=true"
+
+      # Ninguém acessa a URL sem passar pelo Authentik
+      - "traefik.http.routers.filebrowser.middlewares=authentik@docker"
+
+      # Porta interna do container Alpine
+      - "traefik.http.services.filebrowser.loadbalancer.server.port=80"
+
+networks:
+  proxy:
+    external: true
