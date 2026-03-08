@@ -111,23 +111,18 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Ingress:**
               - `/`: Acesso direto (necessário para Apps Mobile/Desktop).
               - `/admin`: Protegido via Authentik Middleware (Apenas `infra-admins`).
-      * `Forgejo`(Pull Mirror): Servidor Git auto-hospedado. Será configurado como um "pull mirror" (somente leitura) que puxa automaticamente as mudanças do GitHub (usado como repositório primário/público).
-      * `Forgejo Actions`(CI/CD): Utilizado para rodar pipelines de teste locais (no homelab) sobre o código espelhado, permitindo validar integrações com outros serviços internos.
-      * `FreshRSS` (Fonte de informações descentralizadas e distribuídas)
       * `Grafana + Prometheus + Loki` (Observabilidade: Métricas, Logs e Alertas)
         	- **Política:** Retenção de logs configurada para **7 dias** para evitar que o armazenamento de logs lote o SSD NVMe principal.
             - **Módulos Ativos:** `cAdvisor` (Métricas de Container), `pve-exporter` (API do Proxmox) e `nut-exporter` (Telemetria do Nobreak via RPi).
-      * `ntfy` (Servidor de Notificações): Alternativa soberana ao Discord/Slack. Recebe webhooks do Alertmanager/Grafana e envia push notifications para o celular.
-      * `Portfólio pessoal` (Servidor web, via Traefik (também disponível em .onion e IPFS))
-      * `Pequeno site` (Servidor web, via Traefik)
+      * `Ntfy` (Servidor de Notificações): Alternativa soberana ao Discord/Slack. Recebe webhooks do Alertmanager/Grafana e envia push notifications para o celular.
       * `Actual Budget` (Organização financeira pessoal): [Implementado em 2026-02-15]
-            * **Função:** Gestão de orçamento pessoal (Envelope Budgeting).
-            * **Ingress:** `actualbudget.home`.
-            * **Segurança:**
-                * **Autenticação:** Interna do App (Senha do Servidor).
-                * **Criptografia:** E2E (Chave gerada no client-side).
-                * **Nota:** Exceção à regra Zero Trust do Authentik para permitir sincronização mobile.
-            * **Persistência:** SQLite em `/data`.
+          - **Função:** Gestão de orçamento pessoal (Envelope Budgeting).
+          - **Ingress:** `actualbudget.home`.
+          - **Segurança:**
+              - **Autenticação:** Interna do App (Senha do Servidor).
+              - **Criptografia:** E2E (Chave gerada no client-side).
+              - **Nota:** Exceção à regra Zero Trust do Authentik para permitir sincronização mobile.
+          - **Persistência:** SQLite em `/data`.
       * `Syncthing` (Hub de Sincronização): [Implementado em 2026-02-15]
           - **Função:** Centralização de arquivos (Hub-and-Spoke) e preparação para ingestão de mídia (Immich).
           - **Armazenamento Híbrido:**
@@ -184,10 +179,6 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
 
 * **Aplicações Sob Demanda (Docker):** `[DockerHost]`
     * **Justificativa:** Podem rodar no mesmo DockerHost dos serviços "Sempre Ativos", basta ligar e desligar os contêineres conforme necessário (`docker-compose up -d` e `docker-compose down`).
-        * `Mattermost`(Alternativa ao Slack)
-        * `OnlyOffice`(Alternativa ao Docs)
-        * `HedgeDoc`(Anotações e brainstorming em grupo)
-        * `Jitsi Meet`(Alternativa ao Meet (para no máximo umas 8 pessoas, somente chamada de áudio, sem video, talvez no máximo so alguém compartilhando a tela))
         * `Servidor de Minecraft`(Survival Vanilla para jogar com até 3 amigos)
 
 ## CrowdSec Agent (LAPI)

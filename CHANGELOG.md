@@ -8,11 +8,21 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 ## [Unreleased]
 ### Planejado
 
-- Saber se um container caiu, cAdvisor...
 - Automatizar testes de alertas.
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-03-08] - Ignição do Nó (BTC na OrangeShadow) e Revisão de Backups
+### Adicionado (Added)
+- **Bitcoin Core (v28.1):** Instalado manualmente via binários pré-compilados (`sha256sum` validado).
+- **Colete de Força (Hypervisor):** Aplicado limite restrito via Cgroups v2 no Proxmox (`cpuunits: 512`, `cores: 4`) para submeter a VM 107 aos nós vitais (DockerHost/OPNsense) durante carga máxima .
+- **Throttling de I/O:** Configurado limite de gravação de 250 MB/s no disco SATA de Passthrough (`mbps_wr=250`, `aio=threads`) para proteger a controladora ZFS principal.
+- **Colete de Força (Systemd):** Aplicado `MemoryMax=14G` e `TimeoutStopSec=600` no serviço do Bitcoin.
+
+### Alterado (Changed)
+- **Política de Backup (Restic):** Corrigida falha crítica conceitual. O Restic foi reconfigurado para fazer backup **apenas** dos arquivos de configuração (`.conf`, `.service`). O backup do diretório principal e de `wallet.dat` foi removido para garantir o "Zero Knowledge" da nuvem.
+- Documentação revisada e atualizada (vm-orangeshadow.md).
+
 ## [2026-03-07] - Web Drive e Modulação do Syncthing
 ### Adicionado (Added)
 - **File Browser:** Implementado container File Browser (v2.61.2) atuando como interface Web ("Web Drive") para os arquivos do Syncthing.

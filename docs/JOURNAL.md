@@ -4,6 +4,31 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-08
+**Status:** ✅ Sucesso (IBD Iniciado).
+**Foco:** Ignição do Nó Bitcoin (OrangeShadow - VM 107), Engenharia de Throttling e Correção de Backup.
+
+### Desilusões Arquiteturais e Realismo Físico
+- **O Mito do "All-in-One":** Descartei a ideia de rodar Mempool.space e Lightning Network no servidor. A memória RAM (8GB alvo para produção) não comporta Redis e MariaDB operando simultaneamente com o motor do Monero e Bitcoin sem causar *starvation*. A LN exige *inbound liquidity* e *clearnet* de baixa latência, incompatíveis com roteamento Tor. O servidor será estritamente uma caixa-forte *On-Chain*.
+- **A Armadilha da Hot Wallet (`wallet.dat`):** O plano original previa backupear a carteira no Backblaze B2. Inaceitável. O Bitcoin Core foi reconfigurado com `disablewallet=1`. O nó é agora um validador cego. A seed será gerada offline (Tails OS) e o client (Sparrow no Arch Linux) terá apenas a chave pública (xpub).
+
+### Blindagem de Hypervisor (Proxmox Cgroups)
+Para impedir que a validação matemática intensa (ECDSA/Schnorr) cause um ataque DoS contra os nós críticos (DockerHost, OPNsense), apliquei limites diretamente no metal via CLI:
+- **CPU:** `qm set 107 --cpuunits 512` (reduz o peso no scheduler do Proxmox à metade do padrão) e `--cores 4` (teto físico).
+- **I/O de Disco:** `qm set 107 --scsi1 file=/dev/disk/by-id/[...],iothread=1,mbps_wr=250,mbps_rd=400,aio=threads,discard=on,backup=0`. Limitou-se a escrita a 250 MB/s para que a controladora da placa-mãe não trave os SSDs NVMe do pool ZFS principal.
+
+### Erros, Falhas e Soluções (Post-Mortem do Setup)
+- **Erro de Traffic Shaping (Network):** Ao tentar limitar a rede a 15MB/s (`rate=15` no `net0`), o Kernel do Proxmox disparou alertas do algoritmo *sch_htb* (`quantum of class 10001 is big`). Limitar a placa virtual L2 estrangulou a comunicação com o Gateway e DNS. **Solução:** Removi o limite físico (`qm set 107 --net0 virtio=...,bridge=vmbr0,tag=30`) e deleguei o controle de rede à aplicação (`maxconnections=40` no `bitcoin.conf`).
+- **Engano de Hot-Plug de SCSI:** Tentei injetar os parâmetros assíncronos (`aio=threads`) com a VM rodando. O Proxmox registrou a mudança em laranja (Pending Change), pois KVM não altera o pipeline de disco root a quente. **Solução:** Foi necessário o ciclo elétrico bruto (`qm stop 107` seguido de `qm start 107`). Um simples reboot via Linux não injetaria a alteração do Hypervisor.
+- **Erro Estratégico de P2P:** Iniciei com `listen=1`. Isso permitiu conexões de entrada. A máquina começou a ler do disco e servir blocos históricos para outros nós, gastando I/O que deveria ser da própria validação. **Solução:** Alterado para `listen=0` (Modo Parasita) temporariamente até o fim do IBD.
+
+### Validação de FS e Instalação
+- Verifiquei o `/etc/fstab` e constatei que o disco do blockchain já havia sido montado com a diretriz `noatime`. Isso evitou a escrita contínua de metadados (*Access Time*) cada vez que um bloco de 2MB é lido, salvando ciclos cruciais de IOPS.
+- Instalação via binários pré-compilados (`v28.1`) verificados por `sha256sum`.
+
+### Correção Crítica de Backups (Restic)
+O arquivo `setup_backup.yml` do Ansible instruía o backup da pasta blockchain inteira e do `wallet.dat`. Isso subiria 700GB de dados públicos inúteis para a nuvem e, pior, poderia vazar chaves privadas. **Solução:** O Restic na OrangeShadow foi reescrito para fazer o backup **estritamente** da inteligência do nó (`bitcoin.conf`, `bitcoind.service`), ignorando `/opt/blockchain`.
+
 ## 2026-03-07
 **Status:** ✅ Sucesso
 **Foco:** Implementação de Web Drive (File Browser) sobre o Syncthing.
