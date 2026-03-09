@@ -1,0 +1,15 @@
+# Onde o Electrs salvará meu índice próprio
+db_dir = "/opt/blockchain/electrs"
+
+# Onde ele deve ler os blocos brutos do Bitcoin
+daemon_dir = "/opt/blockchain/bitcoin"
+
+# Comunicação local com o Bitcoin Core
+daemon_rpc_addr = "127.0.0.1:8332"
+daemon_p2p_addr = "127.0.0.1:8333"
+
+# Escuta na placa de rede da VM para permitir a conexão do meu Arch
+electrum_rpc_addr = "0.0.0.0:50001"
+
+# Nível de log no journald
+log_filters = "INFO"

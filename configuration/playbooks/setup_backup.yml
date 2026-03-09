@@ -134,7 +134,7 @@
           restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
       when: "'management' in group_names"
 
-    # ORANGESHADOW (Bitcoin/Monero)
+    # ORANGESHADOW (Bitcoin/Electrs/Monero)
     - name: Script Backup OrangeShadow
       copy:
         dest: "/usr/local/bin/backup-daily.sh"
@@ -145,11 +145,19 @@
 
           echo "--> [OrangeShadow] Iniciando Backup..."
 
-          # Bitcoin: Apenas Configurações (SEM WALLET.DAT)
+          # Bitcoin e Tor: Apenas Configurações (SEM WALLET.DAT)
           if [ -d "/home/fajre/.bitcoin" ]; then
               restic backup /home/fajre/.bitcoin/bitcoin.conf \
                             /etc/systemd/system/bitcoind.service \
+                            /etc/tor/torrc \
                             --tag "bitcoin-config"
+          fi
+
+          # Electrs: Configuração e Limites de Memória
+          if [ -d "/home/fajre/.electrs" ]; then
+              restic backup /home/fajre/.electrs/config.toml \
+                            /etc/systemd/system/electrs.service \
+                            --tag "electrs-config"
           fi
 
           # Monero: Apenas Configurações também

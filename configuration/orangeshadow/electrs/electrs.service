@@ -1,0 +1,23 @@
+[Unit]
+Description=Electrs (Electrum Server in Rust)
+After=bitcoind.service
+Requires=bitcoind.service
+
+[Service]
+ExecStart=/usr/local/bin/electrs --conf /home/fajre/.electrs/config.toml
+Type=simple
+User=fajre
+Group=fajre
+Restart=on-failure
+TimeoutSec=300
+
+# Hardening
+# Garante que a indexação pesada não mate o host.
+MemoryMax=10G
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=false
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

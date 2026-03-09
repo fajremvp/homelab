@@ -4,6 +4,30 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-09
+**Status:** ✅ Sucesso (Nó Público Onion e Indexação em Andamento).
+**Foco:** Abertura do Perímetro Tor (Inbound) e Engenharia de Compilação do Electrs (Fase 2).
+
+### O Risco do "Erro Fatal do GitHub" (Segurança P2P)
+- **O Dilema:** Para o nó do Bitcoin ser um cidadão útil e validar/enviar blocos, ele precisa aceitar conexões (Inbound). O padrão da comunidade é definir o parâmetro `externalip=xyz.onion` no `bitcoin.conf`.
+- **A Falha de OPSEC:** Como minha infraestrutura segue o paradigma *Infrastructure as Code* (GitOps), commitar um arquivo com o endereço onion exato no GitHub vincularia imediatamente minha identidade digital (DevOps) ao nó na Darknet, quebrando o princípio básico de anonimato.
+- **A Solução (Tor Control API):**
+  - Habilitei as diretrizes `ControlPort 9051` e `CookieAuthentication 1` no `/etc/tor/torrc`.
+  - Inseri o usuário do sistema (`fajre`) no grupo `debian-tor` para permitir a leitura do cookie criptográfico.
+  - No `bitcoin.conf`, apliquei `listen=1`, `listenonion=1` e `discover=1`.
+  - **Resultado:** O Bitcoin Core conversou com o Daemon do Tor, negociou a criação de um *Hidden Service* em background, e publicou-se na rede. O comando `bitcoin-cli getnetworkinfo` retornou o endereço `.onion` na porta 8333 com sucesso absoluto. Zero rastros no Git.
+
+### Compilação (Electrs vs Debian Trixie)
+- **Necessidade:** O Bitcoin Core armazena blocos, mas não é um banco de dados pesquisável por endereços. O Electrs (Rust) atua como tradutor para a carteira Sparrow. A exigência de segurança (Supply Chain) forçou a compilação local (sem binários pré-compilados de terceiros).
+- **Incidente 1 (Crash de API JSON):** A versão estável (tag `v0.10.4`) do Electrs compilou perfeitamente em ~8 minutos. Porém, ao iniciar, entrou em *Crash Loop* (Erro: `JSON error: invalid type: sequence, expected a string`).
+  - *Causa Raiz:* O Bitcoin `v28.1` (Bleeding Edge) alterou a estrutura da resposta do RPC `localaddresses` de string para array (sequence). O Electrs legado quebrou.
+  - *Roll-Forward:* Mudei a branch git do Electrs para a `master` para pegar as atualizações de API mais recentes.
+- **Incidente 2 (O labirinto do Clang/LLVM):** Durante a recompilação da `master`, o script falhou criticamente no pacote `rust-rocksdb` (Erro: `couldn't find any valid shared libraries matching: ['libclang.so']`).
+  - *Causa Raiz:* O script do Rust não encontrou o caminho da biblioteca dinâmica C++ no Debian Testing (que a instala como `libclang-19-dev` em diretórios específicos versionados).
+  - *Solução:* Instalação forçada do pacote base e injeção do caminho correto via variável de ambiente antes da compilação: `export LIBCLANG_PATH=$(llvm-config-19 --libdir)`.
+- **Vitória:** O binário otimizado da versão `0.11.1` foi gerado (3m 18s).
+- **Ignição:** O serviço `electrs.service` foi iniciado (com colete de força `MemoryMax=10G`). Os logs mostraram que a comunicação com o Bitcoin via `.cookie` funcionou perfeitamente e o Electrs começou a engolir os blocos da rede a velocidades extremas. A indexação completa no SSD SATA vai durar a madrugada.
+
 ## 2026-03-08 (Parte 2)
 **Status:** ✅ Sucesso (IBD Concluído e Camuflagem).
 **Foco:** Finalização da Sincronização do Bitcoin e Transição para a Rede Tor.

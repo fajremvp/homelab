@@ -44,10 +44,10 @@ Esta VM atua como uma ilha escura na rede.
 ## Estratégia de Backup (Zero Knowledge)
 A infraestrutura assume que a nuvem (Backblaze B2) é insegura.
 * **Escopo do Restic (Ansible Provisioned):** Apenas inteligência do sistema. Nenhuma chave privada é salva.
-  * `/home/fajre/.bitcoin/bitcoin.conf`
-  * `/etc/systemd/system/bitcoind.service`
-  * `/home/fajre/.bitmonero/bitmonero.conf`
-  * `/etc/systemd/system/monerod.service`
+  * `/home/fajre/.bitcoin/bitcoin.conf` e `/etc/systemd/system/bitcoind.service`
+  * `/home/fajre/.electrs/config.toml` e `/etc/systemd/system/electrs.service`
+  * `/etc/tor/torrc` (Inteligência de roteamento)
+  * `/home/fajre/.bitmonero/bitmonero.conf` e `/etc/systemd/system/monerod.service`
 * **Exclusões Forçadas:** Todo o diretório `/opt/blockchain`. A blockchain é um dado público de >720GB que pode ser reconstruído do zero. Fazer backup disso gera custo excessivo e abre vetor para vazamento de banco de dados e eventuais resquícios de arquivos soltos.
 
 ## Observabilidade
@@ -75,8 +75,15 @@ Para evitar o colapso do sistema (OOM Killer) ou saturação da rede, os serviç
 
 ### Fase 2: Transição Tor e Indexação de Endereços (Electrs) - **[EM ANDAMENTO]**
 *O Bitcoin cede espaço para o indexador Rust construir o banco de dados pesquisável, permitindo conectar a carteira Sparrow sem a necessidade de ativar o massivo `txindex=1` no Core.*
-* **Bitcoin:** Operação 100% Tor (`onlynet=onion`). `dbcache` reduzido para `512` MB.
-* **Electrs:** Mapeamento intensivo de I/O (Lê os blocos e cria índices).
+* **Bitcoin:**
+  * Tráfego de saída forçado para o proxy SOCKS5 (`127.0.0.1:9050`) via `onlynet=onion`.
+  * Criação automática de Hidden Service via interação nativa com a API do Tor (`discover=1`, `listenonion=1`). Endereço IP e DNS não expostos no GitHub para OPSEC máxima.
+  * Cache (`dbcache`) estrangulado para `512` MB para poupar a RAM do sistema.
+* **Electrs:**
+  * Compilado do código-fonte (Rust) na versão `0.11.1`.
+  * Indexação inicial massiva de I/O no disco SATA de Passthrough (Diretório `/opt/blockchain/electrs`).
+  * Serviço de backend: `MemoryMax=10G` (Garante margem térmica de RAM para o host).
+  * Conexão LAN na porta `TCP 50001` isolada pelo UFW para permitir apenas tráfego interno das VLANs do Homelab (`10.10.0.0/16`).
 
 ### Fase 3: Sincronização Inicial (IBD - Monero)
 *Bitcoin e Electrs operam em background (já sincronizados).*

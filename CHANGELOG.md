@@ -12,6 +12,20 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-03-09] - Tor Inbound e Indexador Electrs
+### Adicionado (Added)
+- **Tor Inbound (Soberania P2P):** Implementada a descoberta e criação automática de Hidden Service via API do Tor (ControlPort 9051 e autenticação via Cookie).
+- **Electrs (v0.11.1):** Servidor Electrum (escrito em Rust) compilado a partir do código-fonte nativamente na OrangeShadow para fornecer indexação rápida de saldos.
+- **Firewall (UFW):** Criada regra para permitir entrada na porta TCP 50001 (Electrs) estritamente a partir da LAN (`10.10.0.0/16`), isolando o serviço da internet pública.
+- **Systemd Hardening:** Criado serviço `electrs.service` com `MemoryMax=10G` para conter o consumo do banco de dados (RocksDB) durante a fase de indexação massiva (I/O intensivo).
+
+### Alterado (Changed)
+- **Bitcoin Core Config:**
+  - `listen=1` e `listenonion=1` ativados. O nó deixou de ser um parasita (Fase 1) e assumiu o papel de validador público na rede Tor.
+  - `discover=1` ativado para permitir o registro autônomo do endereço `.onion` sem intervenção humana.
+  - Segurança Operacional (DevOps): Como o endereço onion é gerado dinamicamente e armazenado apenas no cache do Bitcoin Core, a identidade física do nó permanece oculta e protegida, eliminando vazamentos de endereços criptográficos no repositório GitHub público.
+- **Backup Policy (`setup_backup.yml`):** Atualizado o escopo do Restic na `OrangeShadow` para incluir o `/etc/tor/torrc`, `config.toml` do Electrs e o `electrs.service`.
+
 ## [2026-03-08] [Parte 2] - Conclusão do IBD e Transição para Rede Tor (OrangeShadow)
 ### Adicionado (Added)
 - **Tor Daemon:** Instalado e habilitado (`tor@default.service`) na VM 107 para roteamento seguro de camada 3.
