@@ -25,6 +25,7 @@ homelab/
 ├── configuration/          # Gerenciamento de Configuração (Ansible & GitOps).
 │   ├── proxmox/            # Configurações do Host Virtualizador (ex: NUT Secondary).
 │   ├── rpi/                # Configurações do Edge Node (ex: NUT Primary e Scripts).
+│   ├── orangeshadow/       # Configurações da VM OrangeShadow (Bitcoin e Monero)
 │   ├── dockerhost/         # Stacks de Microsserviços (Docker Compose).
 │   │   ├── auth/           # Gestão de Identidade e Acesso (Authentik).
 │   │   ├── monitoring/     # Observabilidade PLG (Prometheus, Loki, Grafana, Alloy).

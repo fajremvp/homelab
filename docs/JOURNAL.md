@@ -4,6 +4,23 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-08 (Parte 2)
+**Status:** ✅ Sucesso (IBD Concluído e Camuflagem).
+**Foco:** Finalização da Sincronização do Bitcoin e Transição para a Rede Tor.
+
+### A Matemática do Sucesso (Benchmark do IBD)
+- O *Initial Block Download* (IBD) processou toda a história do Bitcoin (de 2009 até o bloco 939.920) em aproximadamente **21 horas**.
+- **Fatores de Êxito:** A estratégia de utilizar um SSD com cache DRAM (Samsung 870 EVO) aliado à alocação de 11GB de RAM (`dbcache=11000`) foi impecável. No pico, o nó segurou mais de 63 milhões de UTXOs em ~8.6 GB de RAM antes de consolidar no disco, evitando o *thrashing* da controladora SATA.
+
+### O Grande Flush e a Transição (Fase 2)
+- Executei o `systemctl stop bitcoind`. O tempo de *flush* dos dados da RAM para o disco levou vários minutos, validando a necessidade do parâmetro `TimeoutStopSec=600` que configurei no Systemd ontem para evitar corrupção por encerramento forçado.
+- **Redução de Pegada:** Com o banco de dados atualizado, o nó não precisa mais devorar a memória do servidor. O `dbcache` foi estrangulado para `512` (MB), devolvendo mais de 10GB de RAM para o Sistema Operacional (que serão usados pelo Electrs).
+
+### Camuflagem (Tor)
+- O pacote `tor` já havia sido instalado no Debian. O teste via `curl --socks5` confirmou a saída anônima.
+- O `bitcoin.conf` foi alterado para operar **estritamente via Tor** (`onlynet=onion`). A máquina sumiu da Clearnet.
+- **Validação:** Ao reiniciar, os logs reportaram `Leaving InitialBlockDownload` e as novas conexões `block-relay-only` passaram a ocorrer perfeitamente através de *peers* Onion (v2/v3). O motor base está concluído.
+
 ## 2026-03-08
 **Status:** ✅ Sucesso (IBD Iniciado).
 **Foco:** Ignição do Nó Bitcoin (OrangeShadow - VM 107), Engenharia de Throttling e Correção de Backup.

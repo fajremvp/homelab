@@ -63,7 +63,8 @@ A infraestrutura assume que a nuvem (Backblaze B2) é insegura.
 ## Parâmetros Operacionais e Limites (Cgroups)
 Para evitar o colapso do sistema (OOM Killer) ou saturação da rede, os serviços operarão com limites estritos via Systemd. As fases de construção do nó devem ser feitas **sequencialmente**.
 
-### Fase 1: Sincronização Inicial (IBD - Bitcoin)
+### Fase 1: Sincronização Inicial (IBD - Bitcoin) - **[CONCLUÍDO em 08/03/2026]**
+*Duração: ~21 horas. Máquina provou estabilidade térmica e de I/O.*
 *Executado com a VM dimensionada temporariamente para 16GB de RAM. Clearnet.*
 * **`bitcoin.conf`:** * `dbcache=11000` (Consumo agressivo para evitar *thrashing* no SSD).
   * `blocksonly=1` (Ignora mempool).
@@ -72,9 +73,9 @@ Para evitar o colapso do sistema (OOM Killer) ou saturação da rede, os serviç
 * **Systemd (`bitcoind.service`):** * `MemoryMax=14G` (Garante 2GB de fôlego para o kernel).
   * `TimeoutStopSec=600` (10 minutos para flush seguro do DB; evita corrupção se o Host enviar sinal de desligamento via NUT).
 
-### Fase 2: Indexação de Endereços (Electrs)
+### Fase 2: Transição Tor e Indexação de Endereços (Electrs) - **[EM ANDAMENTO]**
 *O Bitcoin cede espaço para o indexador Rust construir o banco de dados pesquisável, permitindo conectar a carteira Sparrow sem a necessidade de ativar o massivo `txindex=1` no Core.*
-* **Bitcoin:** Reduzir `dbcache` para liberar RAM.
+* **Bitcoin:** Operação 100% Tor (`onlynet=onion`). `dbcache` reduzido para `512` MB.
 * **Electrs:** Mapeamento intensivo de I/O (Lê os blocos e cria índices).
 
 ### Fase 3: Sincronização Inicial (IBD - Monero)

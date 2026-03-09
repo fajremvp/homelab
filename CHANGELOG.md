@@ -12,6 +12,15 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-03-08] [Parte 2] - Conclusão do IBD e Transição para Rede Tor (OrangeShadow)
+### Adicionado (Added)
+- **Tor Daemon:** Instalado e habilitado (`tor@default.service`) na VM 107 para roteamento seguro de camada 3.
+
+### Alterado (Changed)
+- **Bitcoin Core (Fase 2):** Transição de estado de sincronização (Clearnet) para produção (Darknet). IBD processado em cerca de 21 horas.
+    - Tráfego de rede forçado 100% via proxy SOCKS5 (`127.0.0.1:9050`) com a flag `onlynet=onion`.
+    - Cache de banco de dados (`dbcache`) reduzido de 11GB para 512MB, liberando recursos críticos de RAM para a futura indexação do Electrs.
+
 ## [2026-03-08] - Ignição do Nó (BTC na OrangeShadow) e Revisão de Backups
 ### Adicionado (Added)
 - **Bitcoin Core (v28.1):** Instalado manualmente via binários pré-compilados (`sha256sum` validado).
