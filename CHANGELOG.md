@@ -12,6 +12,16 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-03-10] - Client-Side Interface (Sparrow Wallet)
+### Adicionado (Added)
+- **Sparrow Wallet (v2.4.1):** Instalado no Arch Linux via AUR.
+- **Supply Chain Security:** Verificação estrita de assinatura PGP (`craig@sparrowwallet.com` / Fingerprint: `D4D0...4B40`) exigida antes da compilação do pacote.
+- **Carteira Sandbox (Hot Wallet):** Gerada carteira nativa de software (BIP39 - 24 Palavras) estritamente para fins didáticos e testes de transação, com criptografia local do arquivo de chaves.
+
+### Alterado (Changed)
+- **Privacy Hardening (Sparrow):** - Conexão configurada estritamente para `Private Electrum` apontando para o servidor interno (`tcp://10.10.30.20:50001`).
+  - Fontes de consulta externas (`mempool.space`) para Fee Rates e Block Explorer desativadas/redirecionadas para o nó local, eliminando vazamento de IP da operadora associado a transações financeiras.
+
 ## [2026-03-09] - Tor Inbound e Indexador Electrs
 ### Adicionado (Added)
 - **Tor Inbound (Soberania P2P):** Implementada a descoberta e criação automática de Hidden Service via API do Tor (ControlPort 9051 e autenticação via Cookie).

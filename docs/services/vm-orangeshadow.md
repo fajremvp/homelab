@@ -73,8 +73,8 @@ Para evitar o colapso do sistema (OOM Killer) ou saturação da rede, os serviç
 * **Systemd (`bitcoind.service`):** * `MemoryMax=14G` (Garante 2GB de fôlego para o kernel).
   * `TimeoutStopSec=600` (10 minutos para flush seguro do DB; evita corrupção se o Host enviar sinal de desligamento via NUT).
 
-### Fase 2: Transição Tor e Indexação de Endereços (Electrs) - **[EM ANDAMENTO]**
-*O Bitcoin cede espaço para o indexador Rust construir o banco de dados pesquisável, permitindo conectar a carteira Sparrow sem a necessidade de ativar o massivo `txindex=1` no Core.*
+### Fase 2: Transição Tor e Indexação de Endereços (Electrs) - **[CONCLUÍDO em 10/03/2026]**
+*A indexação do histórico da blockchain (2009-2026) pelo Electrs (RocksDB) foi finalizada em cerca de 20 horas. Client Sparrow Wallet (Arch Linux) conectado com sucesso via `Private Electrum`.*
 * **Bitcoin:**
   * Tráfego de saída forçado para o proxy SOCKS5 (`127.0.0.1:9050`) via `onlynet=onion`.
   * Criação automática de Hidden Service via interação nativa com a API do Tor (`discover=1`, `listenonion=1`). Endereço IP e DNS não expostos no GitHub para OPSEC máxima.

@@ -4,8 +4,30 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-10
+**Status:** ✅ Sucesso (Integração End-to-End).
+**Foco:** Implementação do Client (Sparrow Wallet), Supply Chain Security e Hardening de Privacidade.
+
+### A Batalha do Supply Chain (Confiança Matemática)
+- **Risco:** Instalar softwares financeiros (Carteiras) via repositórios mantidos por terceiros (AUR por exemplo) abre vetor para injeção de malware roubador de chaves.
+- **Defesa (PGP):** Antes da instalação, a chave pública do desenvolvedor principal (Craig Raw) foi importada via Keybase e seu *fingerprint* validado (`D4D0 D320 2FC0 6849 A257 B38D E946 1833 4C67 4B40`). O comando `yay` foi instruído a validar o `.tar.gz` assinado antes da descompactação.
+
+### Hardening de Privacidade (A Armadilha do Mempool.space)
+- **O Problema:** Por padrão, o Sparrow Wallet "vaza" a identidade de rede. Ele usa o `mempool.space` público para consultar o preço das taxas de rede e visualizar blocos, vinculando o IP físico da operadora (ISP) ao interesse na blockchain.
+- **Solução:** Nas configurações gerais do Sparrow (`File -> Preferences`), a fonte de taxas (Fee Rates Source) foi alterada para `Server` (apontando as consultas para a própria VM `OrangeShadow`). O *Block Explorer* foi silenciado. Consultas FIAT (Coingecko) foram mantidas por não transmitirem dados criptográficos de conta.
+
+### Conexão e O "Aperto de Mão"
+- A conexão `Private Electrum` foi estabelecida sem TLS (visto que a rede local VLAN 20 -> VLAN 30 já é um conduíte confiável) na porta `50001`.
+- **Telemetria:** O Sparrow retornou `Batched RPC enabled` e conectou ao `electrs 0.11.1`. Os blocos da mempool exibidos na aba de envio agora são alimentados em tempo real pelo meu próprio hardware.
+
+### Criação da Sandbox (Arquitetura de Cofres)
+- **Escala de Paranoia:** Foi definido que a carteira criada hoje (Software Wallet nativa) operará como uma **Sandbox (Hot Wallet)** para aprendizado. Em cenários de produção futuros para reserva de valor, será exigida a implementação de Airgapped Cold Storage (ex: SeedSigner) ou uso amnésico via Tails OS.
+- **Protocolo de Criação:** A semente BIP39 de 24 palavras foi gerada off-screen e registrada/armazenada de forma segura.
+- **Resultado Final:** A carteira importou o `xpub` (Master Public Key) e o nó `OrangeShadow` varreu os 750GB de disco em milissegundos via índice RocksDB, confirmando a inexistência histórica de UTXOs atrelados à chave. Soberania alcançada.
+
 ## 2026-03-09
 **Status:** ✅ Sucesso (Nó Público Onion e Indexação em Andamento).
+
 **Foco:** Abertura do Perímetro Tor (Inbound) e Engenharia de Compilação do Electrs (Fase 2).
 
 ### O Risco do "Erro Fatal do GitHub" (Segurança P2P)
@@ -30,6 +52,7 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ## 2026-03-08 (Parte 2)
 **Status:** ✅ Sucesso (IBD Concluído e Camuflagem).
+
 **Foco:** Finalização da Sincronização do Bitcoin e Transição para a Rede Tor.
 
 ### A Matemática do Sucesso (Benchmark do IBD)
@@ -47,6 +70,7 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ## 2026-03-08
 **Status:** ✅ Sucesso (IBD Iniciado).
+
 **Foco:** Ignição do Nó Bitcoin (OrangeShadow - VM 107), Engenharia de Throttling e Correção de Backup.
 
 ### Desilusões Arquiteturais e Realismo Físico
@@ -72,6 +96,7 @@ O arquivo `setup_backup.yml` do Ansible instruía o backup da pasta blockchain i
 
 ## 2026-03-07
 **Status:** ✅ Sucesso
+
 **Foco:** Implementação de Web Drive (File Browser) sobre o Syncthing.
 
 - **O Problema da Autenticação via Proxy:** Abandonei a tentativa de usar a autenticação via injeção de Headers (`X-Authentik-Username`) no File Browser. Essa integração é historicamente frágil e sujeita a bugs que quebram o acesso à menor alteração de roteamento.
@@ -80,6 +105,7 @@ O arquivo `setup_backup.yml` do Ansible instruía o backup da pasta blockchain i
 
 ## 2026-03-02
 **Status:** ✅ Sucesso (Validação Empírica e Engenharia de Resiliência)
+
 **Foco:** Implementação do NUT Primary (Master) no Edge Node (RPi), Disaster Recovery e Radar de Energia L3 (Prometheus/Grafana).
 
 ### Validação de Autonomia e Firmware (Intelbras Gamer Ultimate)
@@ -123,6 +149,7 @@ O arquivo `setup_backup.yml` do Ansible instruía o backup da pasta blockchain i
 
 ## 2026-03-01
 **Status:** ✅ Sucesso (Otimização RF, Manutenção e Ergonomia)
+
 **Foco:** Sintonia Fina de Wi-Fi 6 (Camada L1/L2), Ergonomia do UPS e Mitigação Térmica (RPi).
 
 ### Otimização de Rádio Frequência (Access Point TP-Link Omada)
@@ -153,6 +180,7 @@ O arquivo `setup_backup.yml` do Ansible instruía o backup da pasta blockchain i
 
 ## 2026-02-28
 **Status:** ✅ Disaster Recovery & Networking
+
 **Foco:** Resolução do isolamento L3 após migração física para Ibirama.
 
 - **Incidente:** O modem da Unifique (ISP local) opera forçadamente na rede `192.168.1.0/24`. O homelab possuía a fundação de gerenciamento "hardcoded" em `192.168.0.0/24`.
@@ -181,6 +209,7 @@ O arquivo `setup_backup.yml` do Ansible instruía o backup da pasta blockchain i
 
 ## 2026-02-27
 **Status:** ❌ Falha (Planejamento)
+
 **Foco:** Mudança física de hardware.
 
 - **A Ilusão do Plug & Play:** O hardware foi trazido e ligado. A premissa de que a infraestrutura seria agnóstica de localização caiu por terra devido à dependência de sub-rede estrita (`/24`) do Gateway ISP.
@@ -188,6 +217,7 @@ O arquivo `setup_backup.yml` do Ansible instruía o backup da pasta blockchain i
 
 ## 2026-02-26
 **Status:** ✅ Sucesso (Validação de Hardware)
+
 **Foco:** Teste de compatibilidade do Nobreak Intelbras Gamer Ultimate com o Linux (NUT).
 
 - **Teste de Carga e Reconhecimento:** Após 24h de carga inicial, o equipamento foi conectado ao RPi isolado. O comando `lsusb` retornou `ID 0764:0601 Cyber Power System, Inc.`. Diferente da Ragtech e do NHS, a Intelbras usou um chipset padrão de mercado (OEM CyberPower), livrando-me de engenharia reversa ou possível nova devolução.
