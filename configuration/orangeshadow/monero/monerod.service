@@ -1,0 +1,18 @@
+[Unit]
+Description=Monero Full Node
+After=network.target
+
+[Service]
+User=fajre
+Group=fajre
+Type=simple
+ExecStart=/usr/local/bin/monerod --config-file=/home/fajre/.bitmonero/bitmonero.conf --non-interactive
+Restart=always
+RestartSec=10
+
+# Limites da Fase 3
+MemoryMax=10G
+TimeoutStopSec=300
+
+[Install]
+WantedBy=multi-user.target

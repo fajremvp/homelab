@@ -85,10 +85,10 @@ Para evitar o colapso do sistema (OOM Killer) ou saturação da rede, os serviç
   * Serviço de backend: `MemoryMax=10G` (Garante margem térmica de RAM para o host).
   * Conexão LAN na porta `TCP 50001` isolada pelo UFW para permitir apenas tráfego interno das VLANs do Homelab (`10.10.0.0/16`).
 
-### Fase 3: Sincronização Inicial (IBD - Monero)
-*Bitcoin e Electrs operam em background (já sincronizados).*
-* **Bitcoin:** Systemd `MemoryMax=2G`.
-* **Monero:** Sincronização nativa rápida via LMDB. Systemd: `MemoryMax=10G`.
+### Fase 3: Sincronização Inicial (IBD - Monero) - **[EM ANDAMENTO]**
+*Iniciada sincronização da blockchain do Monero (v0.18.4.6) na Clearnet para o banco de dados LMDB no disco SSD em Passthrough.*
+* **Bitcoin:** Systemd `MemoryMax=2G` (Otimizado para ceder RAM).
+* **Monero:** `db-sync-mode=fast:async:250000000bytes`, `in-peers=0`. Systemd: `MemoryMax=10G`.
 
 ### Fase 4: Produção 24/7 (Soberania Total)
 *Executado com a VM reduzida para seu tamanho final de 8GB de RAM. Operação 100% Tor (`onlynet=onion`).*

@@ -19,7 +19,7 @@ RuntimeDirectory=bitcoind
 RuntimeDirectoryMode=0710
 
 # Hardening measures
-MemoryMax=14G # Impede que o bitcoind estoure os 16GB de RAM da VM e puxe Swap
+MemoryMax=2G # Impede que o bitcoind estoure os 16GB de RAM da VM e puxe Swap
 PrivateTmp=true
 ProtectSystem=full
 ProtectHome=false

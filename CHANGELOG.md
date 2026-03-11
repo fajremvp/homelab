@@ -9,9 +9,20 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 ### Planejado
 
 - Automatizar testes de alertas.
-- Alertas de Segurança: Implementar regras no Loki (Ruler) para notificar via Ntfy uso de `sudo` e falhas de SSH.
 
 ---
+## [2026-03-11] - Fase 3: Ignição do Monero Node
+### Adicionado (Added)
+- **Monero Daemon (v0.18.4.6):** Instalada a última versão estável (*Fluorine Fermi*) via binários oficiais, com validação estrita de integridade PGP e SHA256.
+- **Systemd Hardening:** Criado `monerod.service` com `MemoryMax=10G` e `TimeoutStopSec=300` para otimização da sincronização (LMDB).
+
+### Alterado (Changed)
+- **Bitcoin Core:** Serviço encolhido em tempo de execução via Systemd (`MemoryMax=2G`) para ceder recursos de RAM ao processo de Initial Block Download (IBD) do Monero.
+- **Monero Config:** Otimizações extremas de I/O aplicadas para a Fase 3 (Clearnet). Configurado `db-sync-mode=fast:async:250000000bytes` e modo parasita (`in-peers=0`) no arquivo `bitmonero.conf`.
+
+### Removido (Removed)
+- **Monero Config (Obsoleto):** Removido parâmetro depreciado `disable-rpc-login` do `bitmonero.conf` que causava *Crash Loop* na versão atual do daemon.
+
 ## [2026-03-10] - Client-Side Interface (Sparrow Wallet)
 ### Adicionado (Added)
 - **Sparrow Wallet (v2.4.1):** Instalado no Arch Linux via AUR.

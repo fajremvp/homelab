@@ -1,3 +1,7 @@
+**Ainda não mexi em nada em relação a K8s, quero aprender ainda.**
+
+---
+
 * **Cluster Kubernetes:** `[Cluster de VMs - Talos Linux]`
     * **Justificativa:** Uso do **Talos Linux**, um SO imutável e minimalista projetado exclusivamente para rodar Kubernetes. O Talos gerencia o ciclo de vida do cluster via API (não é necessário instalar K3s manualmente sobre um Debian, o próprio SO é o cluster).
     * **Topologia:** 3 VMs (1 Control Plane + 2 Workers) para simular um ambiente de alta disponibilidade real e aprender a arquitetura distribuída.

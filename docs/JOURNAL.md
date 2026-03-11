@@ -4,8 +4,27 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-11
+**Status:** ✅ Sucesso (IBD do Monero em Andamento).
+
+**Foco:** Início da Fase 3 (Implementação do Nó Monero e Otimização Lógica).
+
+### Engenharia de Software e Gestão de Versão
+- **Ameaça da Versão Obsoleta:** O plano original previa a instalação da v0.18.3.4. Uma auditoria de última hora no repositório do *Monero Project* identificou que a versão estável atual é a **v0.18.4.6** (lançada em 04 de março de 2026). O download foi abortado e a versão atualizada foi baixada.
+- **Supply Chain:** O *checksum* SHA256 do binário validou matematicamente contra as assinaturas oficiais do projeto (Arquivo não comprometido).
+
+### Crash Loop Inicial (Evolução do Código)
+- **Sintoma:** O `monerod` entrou em falha imediata após a inicialização.
+- **Diagnóstico Forense:** O log do daemon reportou `Unrecognized option 'disable-rpc-login'`. A arquitetura do Monero atualizou o protocolo de segurança local, inferindo proteção por padrão quando vinculado ao IP de loopback (`127.0.0.1`), tornando a flag obsoleta e bloqueante.
+- **Solução:** Arquivo `bitmonero.conf` retificado.
+
+### Gerenciamento de Carga (Hypervisor vs Kernel)
+- O nó do Bitcoin teve sua restrição de Kernel ampliada. O Systemd agora o limita a `MemoryMax=2G`, liberando o fôlego necessário na RAM (`10G`) para suportar as gravações assíncronas em lotes de 250MB do banco de dados LMDB do Monero.
+- A sincronização (IBD) foi iniciada com sucesso em Clearnet, consumindo blocos do ano de 2014 a uma velocidade extrema na interface de disco Passthrough. O sistema aguarda agora o fim orgânico desse processamento nos próximos horas/dia.
+
 ## 2026-03-10
 **Status:** ✅ Sucesso (Integração End-to-End).
+
 **Foco:** Implementação do Client (Sparrow Wallet), Supply Chain Security e Hardening de Privacidade.
 
 ### A Batalha do Supply Chain (Confiança Matemática)
