@@ -11,6 +11,23 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-03-12] - Fase 4: Monero Darknet e Client Feather Wallet
+### Adicionado (Added)
+- **Feather Wallet (v2.8.1):** Instalado no Arch Linux via AppImage oficial devido à indisponibilidade/falha do AUR.
+- **Supply Chain Security:** Validação manual da assinatura PGP (`dev@featherwallet.org` / Fingerprint: `8185...A71C`) exigida antes da execução do AppImage.
+- **Carteira Sandbox (XMR):** Gerada *Hot Wallet* em padrão Polyseed (16 palavras) para testes e validação de fluxo.
+
+### Alterado (Changed)
+- **Hardware (VM 107):** Downgrade de memória RAM finalizado no Proxmox. A VM passou de 16GB (Modo IBD) para **8GB** (Modo Produção 24/7).
+- **Systemd Cgroups (Rebalanceamento):** Redistribuição da memória para o estado estacionário da Fase 4:
+  - `bitcoind.service`: `MemoryMax=3G` (antes 2G)
+  - `monerod.service`: `MemoryMax=3G` (antes 10G)
+  - `electrs.service`: `MemoryMax=1G` (antes 10G)
+- **Monero Config (`bitmonero.conf`):** - Transição de Clearnet para Darknet concluída. Todo o roteamento P2P e broadcast de TX forçado via `proxy=127.0.0.1:9050` e `tx-proxy=tor...`.
+  - RPC exposto para a LAN (`rpc-bind-ip=0.0.0.0`) com a flag mandatória `confirm-external-bind=1` para ignorar o bloqueio de segurança nativo do Monero contra binds não-SSL.
+- **Firewall (UFW):** Criada regra para permitir entrada na porta TCP 18081 (Monero RPC) estritamente a partir da LAN (`10.10.0.0/16`).
+- **Privacy Hardening (Feather Wallet):** Proxy Tor interno desabilitado (`Proxy: None`) para permitir roteamento direto à VLAN 30. Conexões Websocket de terceiros e Telemetria Fiat desativadas. Explorador de blocos alterado para `.onion`.
+
 ## [2026-03-11] - Fase 3: Ignição do Monero Node
 ### Adicionado (Added)
 - **Monero Daemon (v0.18.4.6):** Instalada a última versão estável (*Fluorine Fermi*) via binários oficiais, com validação estrita de integridade PGP e SHA256.

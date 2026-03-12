@@ -52,8 +52,6 @@ homelab/
 │   └── services/           # Documentação Técnica dos Serviços (VMs e LXCs).
 │
 └── provisioning/           # Infraestrutura como Código (IaC).
-    ├── cloud/              # Provisionamento de recursos em nuvem.
     ├── proxmox-host/       # Configs Críticas (Network Interfaces, LUKS Encryption).
-    ├── tailscale/          # ACLs de Rede Mesh (HuJSON).
-    └── terraform/          # Provisionamento de VMs/LXCs.
+    └── tailscale/          # ACLs de Rede Mesh (HuJSON).
 ```

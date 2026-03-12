@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 ExecStart=/usr/local/bin/bitcoind -conf=/home/fajre/.bitcoin/bitcoin.conf -pid=/run/bitcoind/bitcoind.pid
-
 # Process management
+####################
 Type=simple
 PIDFile=/run/bitcoind/bitcoind.pid
 Restart=on-failure
@@ -13,13 +13,15 @@ TimeoutStartSec=infinity
 TimeoutStopSec=600 # 10 MINUTOS. O DB cache enorme demora muito para fazer o flush pro disco ao desligar.
 
 # Directory creation and permissions
+####################################
 User=fajre
 Group=fajre
 RuntimeDirectory=bitcoind
 RuntimeDirectoryMode=0710
 
 # Hardening measures
-MemoryMax=2G # Impede que o bitcoind estoure os 16GB de RAM da VM e puxe Swap
+####################
+MemoryMax=3G
 PrivateTmp=true
 ProtectSystem=full
 ProtectHome=false

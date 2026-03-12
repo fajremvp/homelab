@@ -4,6 +4,50 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-12
+**Status:** ✅ Sucesso Absoluto (Soberania Financeira Concluída).
+
+**Foco:** Conclusão do IBD do Monero, Transição para Darknet (Fase 4), Hardening de RPC e Deploy do Client (Feather Wallet).
+
+### A Matemática do Sucesso (Benchmark IBD Monero)
+- O *Initial Block Download* (IBD) do Monero baixou e verificou mais de 3.628.000 blocos em **11 horas e 30 minutos** (das 20:44 de 11/03 às 08:12 de 12/03).
+- **Fatores de Êxito:** A estratégia de entregar 10GB de RAM ao banco LMDB e forçar gravações assíncronas em lotes de 250MB (`db-sync-mode=fast:async:250000000bytes`) no SSD Samsung obliterou o gargalo crônico do Monero. A mensagem de log `You are now synchronized with the network` oficializou o fim do modo de alto esforço.
+
+### Cirurgia no Metal: Downgrade para Fase 4 (Produção)
+- Com ambos os nós (BTC e XMR) sincronizados, a VM 107 (`OrangeShadow`) não precisa mais de 16GB de RAM. A máquina foi desligada com flush gracioso dos bancos de dados e a RAM foi cortada para **8GB** via hypervisor Proxmox.
+- **Rebalanceamento de Cgroups (Systemd):**
+  Para evitar que o *OOM Killer* destruísse a máquina, a RAM foi matematicamente fatiada nos serviços:
+  - `bitcoind.service`: Subiu de 2G para `3G`.
+  - `monerod.service`: Caiu de 10G para `3G`.
+  - `electrs.service`: Caiu de 10G para `1G`.
+  - OS / Tor: `~1G` livre.
+  - A telemetria pós-reboot (`free -h`) confirmou uso estável de 1.4GB, com 6.3GB em cache e 0B de Swap, rodando de forma lisa e fria.
+
+### Conectando na Darknet (Monero)
+- O `bitmonero.conf` foi reescrito para o estado de camuflagem total.
+- **Dandelion++ via Tor:** Configurado `tx-proxy=tor,127.0.0.1:9050,10` para broadcast de transações e `proxy=127.0.0.1:9050` para sincronização.
+- **Nó Cego:** Diferente do Bitcoin, optei por manter `in-peers=0`. Não há um *Hidden Service* publicado para receber conexões P2P, garantindo anonimato direcional absoluto para mitigar qualquer vazamento de IP no repositório.
+
+### O Incidente do RPC Bind e a Defesa do Monero
+- **Objetivo:** Expor a porta 18081 para a VLAN 20 (Arch Linux) conectar a Feather Wallet (`rpc-bind-ip=0.0.0.0`). Liberada a porta no UFW (`10.10.0.0/16`).
+- **Crash Loop:** Ao reiniciar o daemon, ele falhou criticamente com a exception: `--rpc-bind-ip permits inbound unencrypted external connections`.
+- **Análise:** O Monero é defensivo por design. Ele se recusa a abrir a porta em IP público/LAN sem SSL, assumindo que será hackeado. Como a segurança L3 já é garantida pelo firewall OPNsense e pelo isolamento em VLANs (`10.10.x.x`), adicionei a flag de força bruta `confirm-external-bind=1`. O daemon acatou a exceção e subiu o RPC.
+
+### Instalação do Client (Feather Wallet) e Supply Chain
+- **A Queda do AUR:** O pacote `feather-wallet-bin` desapareceu/quebrou no AUR do Arch Linux.
+- **A Alternativa (AppImage):** Migrei para o formato AppImage oficial portátil.
+- **Validação de Assinatura (PGP):**
+  - Chave importada: `curl https://featherwallet.org/files/featherwallet.asc | gpg --import`.
+  - Fingerprint validado: `8185 E158 A333 30C7 FD61 BC0D 1F76 E155 CEFB A71C`.
+  - Assinatura do binário verificada (`Good signature`), evitando riscos de software malicioso.
+
+### Privacy Hardening na Interface (Feather)
+Durante o setup, a Feather Wallet tentou vazar metadados por conta de "configurações amigáveis" nativas:
+1. **O Loop do Tor LAN:** A Feather forçava o roteamento pelo Tor local (`127.0.0.1:9050`). O Tor não roteia IPs RFC 1918 (VLAN 30 - `10.10.30.20`), o que causou falha de conexão ("Disconnected"). Solução: Roteamento de Proxy alterado para `None`.
+2. **Ping a Terceiros:** A opção de Websocket foi desmarcada para impedir que o IP físico do Arch consultasse o preço do XMR em servidores centrais.
+3. **Block Explorer:** O explorador público (xmrchain.net) foi alterado para um endereço `.onion`.
+- **Aperto de Mão Final:** A carteira Polyseed (16 palavras) foi criada. O ícone de rede cravou no verde (`Synchronized`) com leitura imediata do Daemon local na porta 18081. A Soberania Total (Fase 4) foi oficialmente atingida.
+
 ## 2026-03-11
 **Status:** ✅ Sucesso (IBD do Monero em Andamento).
 

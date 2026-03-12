@@ -13,7 +13,7 @@ Implementação realizada em 18/02/2026 e atualizada pela última vez em 08/03/2
 | **OS** | Debian 13 (Trixie) | Instalação "Minimal". Sem GUI. |
 | **Kernel** | Linux 6.x - 2.6 Kernel | Guest Agent ativado. |
 | **vCPU** | 4 Cores | Type: `host` (AES-NI vital para validação de blocos) (**Cgroups `cpuunits: 512`**). |
-| **RAM** | 16 GB (Temporário - IBD) | Ballooning: `0`. Swapness reduzido para `10` via Sysctl. |
+| **RAM** | 8 GB (Produção - 24/7) | Ballooning: `0`. Swapness reduzido para `10` via Sysctl. |
 | **Disco 1 (Boot)** | 32 GB (SCSI 0) | Storage: `local-zfs`. Sistema Operacional e Logs. |
 | **Disco 2 (Dados)** | 1.8 TB (SCSI 1) | **SATA Físico (Passthrough)**. Otimizações de barramento KVM: `aio=threads`, `iothread=1`, `discard=on`, `backup=0` (Proíbe snapshots do Proxmox neste volume). Throttling rígido aplicado: `mbps_wr=250`, `mbps_rd=400`. |
 | **Rede** | `vmbr0` | **VLAN Tag: 30** (SERVER). IP: `10.10.30.20`. |
@@ -55,7 +55,7 @@ A infraestrutura assume que a nuvem (Backblaze B2) é insegura.
 * **Integração:** Prometheus configurado para raspar `10.10.30.20:9100`.
 
 ## System Tuning & Hardening Local
-* **Firewall (UFW):** Ativado com política *Default Deny*. Apenas SSH (Porta 22) e Node Exporter (Porta 9100, estritamente a partir de `10.10.30.10`) são permitidos. Portas P2P (8333, 18080) permanecem fechadas pois a comunicação externa ocorre exclusivamente via Tor.
+* **Firewall (UFW):** Ativado com política *Default Deny*. Portas permitidas internamente: SSH (22), Node Exporter (9100 restrito ao DockerHost), Electrs (50001 restrito à LAN 10.10.0.0/16) e Monero RPC (18081 restrito à LAN 10.10.0.0/16). Portas P2P de Clearnet (8333, 18080) permanecem fechadas, pois a comunicação externa ocorre exclusivamente via Tor.
 * **Gerenciamento de Memória:**
     * **Swap:** Arquivo de contingência de 2GB configurado no disco de boot (protegido por LUKS no host físico).
     * **Swappiness:** Reduzido de `60` (padrão) para `10` (`vm.swappiness=10`) para evitar paginação desnecessária e preservar a latência e vida útil do SSD.
@@ -85,14 +85,14 @@ Para evitar o colapso do sistema (OOM Killer) ou saturação da rede, os serviç
   * Serviço de backend: `MemoryMax=10G` (Garante margem térmica de RAM para o host).
   * Conexão LAN na porta `TCP 50001` isolada pelo UFW para permitir apenas tráfego interno das VLANs do Homelab (`10.10.0.0/16`).
 
-### Fase 3: Sincronização Inicial (IBD - Monero) - **[EM ANDAMENTO]**
-*Iniciada sincronização da blockchain do Monero (v0.18.4.6) na Clearnet para o banco de dados LMDB no disco SSD em Passthrough.*
+### Fase 3: Sincronização Inicial (IBD - Monero) - **[CONCLUÍDO em 12/03/2026]**
+*Iniciada sincronização da blockchain do Monero (v0.18.4.6) na Clearnet para o banco de dados LMDB no disco SSD em Passthrough. Duração total: 11h 30m.*
 * **Bitcoin:** Systemd `MemoryMax=2G` (Otimizado para ceder RAM).
 * **Monero:** `db-sync-mode=fast:async:250000000bytes`, `in-peers=0`. Systemd: `MemoryMax=10G`.
 
-### Fase 4: Produção 24/7 (Soberania Total)
+### Fase 4: Produção 24/7 (Soberania Total) - **[ATIVA]**
 *Executado com a VM reduzida para seu tamanho final de 8GB de RAM. Operação 100% Tor (`onlynet=onion`).*
 * **Bitcoin:** `dbcache=512`, `listen=1`, Systemd: `MemoryMax=3G`.
-* **Electrs:** Ativo como ponte para a carteira externa.
-* **Monero:** `--out-peers=16`, `--in-peers=16`, Systemd: `MemoryMax=3G`.
-* **Reserva de Sistema:** ~1.5GB garantidos para o SO, Node Exporter e Tor Daemon.
+* **Electrs:** Ativo como ponte para o Sparrow Wallet (LAN TCP 50001). Systemd: `MemoryMax=1G`.
+* **Monero:** `--out-peers=16`, `--in-peers=0` (Zero rastros na rede pública). RPC LAN Aberto na TCP 18081 para Client Feather Wallet. Systemd: `MemoryMax=3G`.
+* **Reserva de Sistema:** ~1.0GB garantidos para o SO, Node Exporter e instâncias do Tor Daemon.

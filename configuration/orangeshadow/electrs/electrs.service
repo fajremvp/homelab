@@ -12,8 +12,7 @@ Restart=on-failure
 TimeoutSec=300
 
 # Hardening
-# Garante que a indexação pesada não mate o host.
-MemoryMax=10G
+MemoryMax=1G
 PrivateTmp=true
 ProtectSystem=full
 ProtectHome=false
