@@ -133,6 +133,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Política de Sync (Atualizada em 2026-03-07):**
               - **Servidor e Clientes:** Send & Receive + Staggered File Versioning.
               - **Motivo:** Permitir que alterações realizadas via interface Web (File Browser) sejam propagadas bidirecionalmente para todos os dispositivos (Arch Linux e Android M55).
+          - **File Pull Order:** Definido globalmente como `Oldest First` em todos os nós. Impede o comportamento padrão (`Random`) de fragmentar arquivos na memória flash/ZFS durante sincronizações massivas.
           - **Segurança:** Autenticação Dupla (Authentik Middleware + Senha da App).
           - **Matriz de Configuração (Tuning):**
               - **DockerHost (Hub Central):**

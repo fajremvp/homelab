@@ -11,6 +11,14 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-03-18] - Disaster Recovery, CrowdSec & Syncthing Tuning
+### Corrigido (Fixed)
+- **CrowdSec:** Resolvido crash loop (`network is unreachable`) causado por perda de binding na rede Docker bridge após o boot. Corrigido forçando a recriação do container (`--force-recreate`).
+
+### Alterado (Changed)
+- **Disaster Recovery (NUT):** Tempo de corte de energia no script `ups-kill.sh` ajustado de 130s para 140s. Benchmark provou que o Proxmox (agora com a OrangeShadow rodando) leva 77s para executar o shutdown gracioso e exportar o ZFS. A nova margem de ~63s garante proteção total contra corrupção dos bancos de dados do Bitcoin e Monero.
+- **Syncthing (Tuning & Expansão):** Adicionadas pastas de Screen Recordings e Voice Recordings do M55. Alterada globalmente (Server, Arch Linux, M55) a ordem de puxada de arquivos (*File Pull Order*) de "Random" para "Oldest First", otimizando o I/O sequencial dos discos e reduzindo a fragmentação na memória flash do mobile.
+
 ## [2026-03-12] - Fase 4: Monero Darknet e Client Feather Wallet
 ### Adicionado (Added)
 - **Feather Wallet (v2.8.1):** Instalado no Arch Linux via AppImage oficial devido à indisponibilidade/falha do AUR.

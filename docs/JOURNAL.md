@@ -4,6 +4,27 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-18
+**Status:** ✅ Sucesso (Teste de DR, Correção de Rede e Adições ao Syncthing)
+
+**Foco:** Validação de Shutdown da OrangeShadow, Fix do CrowdSec e Otimização do Syncthing.
+
+- **CrowdSec Crash Loop:**
+  - *Sintoma:* Erro de DNS `network is unreachable` para `10.10.30.5`.
+  - *Causa:* Race condition no boot faz o Docker perder a rota da rede interna do container.
+  - *Correção:* `docker compose up -d --force-recreate` em `/opt/security` resolveu o problema instantaneamente, recriando as interfaces lógicas e o pareamento com o Bouncer.
+- **Auditoria de Disaster Recovery (OrangeShadow):**
+  - Realizado *Cold Boot* forçado via GUI do Proxmox para medir o tempo real de shutdown do servidor com os bancos de dados criptográficos ativos.
+  - *Tempo Medido:* 77 segundos (Graças aos limites de RAM de 3GB no Cgroups, o flush da memória pro disco SSD foi rápido).
+  - *Validação:* Logs do `bitcoind` e `monerod` subiram limpos. Swap zerado. Nenhuma corrupção no LevelDB ou LMDB.
+- **Ajuste Matemático do Nobreak:**
+  - O script `/usr/local/bin/ups-kill.sh` no Raspberry Pi foi corrigido para evitar o corte prematuro de energia.
+  - *Cálculo:* 77s (Shutdown real medido) + 63s (Margem de segurança contra variações de I/O) = `sleep 140`. Garante a morte do hardware elétrico apenas 140s após o alerta de bateria baixa.
+- **Expansão e Otimização do Syncthing:**
+  - *Expansão:* Integradas as pastas de "Screen Recordings" e "Voice Recordings" do celular M55 ao servidor, mantendo a topologia "Send & Receive".
+  - *Tuning de I/O:* Identificada falha de configuração padrão onde o "File Pull Order" estava como "Random" (Aleatório). Isso causa picos de IOPS e fragmentação desnecessária na memória UFS do Android e no SSD do servidor em topologias *Hub-and-Spoke*.
+  - *Ação:* Alterado globalmente nos três nós (DockerHost, Arch Linux e Samsung M55) o "File Pull Order" para **Oldest First** (Mais antigos primeiro), garantindo leitura/escrita sequencial amigável aos discos.
+
 ## 2026-03-12
 **Status:** ✅ Sucesso Absoluto (Soberania Financeira Concluída).
 
