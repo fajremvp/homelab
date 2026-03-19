@@ -42,6 +42,12 @@ Para garantir a recuperabilidade e auditoria, os painéis do Grafana seguem o mo
 - `provisioning/dashboards/main.yml`: Instrui o Grafana a carregar os arquivos.
 - `dashboards/*.json`: O código fonte dos painéis (Node Exporter, Traefik, cAdvisor).
 
+### Datasources (Provisionamento IaC)
+
+- Todos os datasources do Grafana devem ser declarados via YAML em `grafana/provisioning/datasources/`.
+- É obrigatório o uso de UIDs fixos e semânticos (ex: `uid: prometheus-homelab`).
+- *Justificativa:* Garante compatibilidade direta com dashboards versionados em JSON, eliminando dependência de injeção dinâmica (`sed`) e assegurando portabilidade total em cenários de rebuild ou Disaster Recovery.
+
 ---
 
 ## 🛡️ Threat Model & Limites de Confiança (Fase 1)

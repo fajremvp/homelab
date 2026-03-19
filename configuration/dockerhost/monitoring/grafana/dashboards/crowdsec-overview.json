@@ -43,7 +43,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -109,7 +109,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "exemplar": true,
           "expr": "(count(cs_info{instance=~\"$instance\"})) or vector(0)",
@@ -127,7 +127,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -181,7 +181,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "exemplar": true,
           "expr": "(sum(cs_active_decisions{instance=~\"$instance\"})) or vector(0)",
@@ -198,7 +198,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -253,7 +253,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "exemplar": true,
           "expr": "(sum(cs_alerts{instance=~\"$instance\"})) or vector(0)",
@@ -270,7 +270,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -356,7 +356,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "sum(increase(cs_parser_hits_total{instance=~\"$instance\"}[$__rate_interval])) by (instance)",
           "interval": "",
@@ -372,7 +372,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -458,7 +458,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "exemplar": true,
           "expr": "sum(increase(cs_filesource_hits_total{instance=~\"$instance\"}[$__rate_interval])) by (instance)",
@@ -470,7 +470,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "exemplar": true,
           "expr": "sum(increase(cs_journalctlsource_hits_total{instance=~\"$instance\"}[$__rate_interval])) by (instance)",
@@ -482,7 +482,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "exemplar": true,
           "expr": "sum(increase(cs_cloudwatch_stream_hits_total{instance=~\"$instance\"}[$__rate_interval])) by (instance)",
@@ -494,7 +494,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "exemplar": true,
           "expr": "sum(increase(cs_syslogsource_hits_total{instance=~\"$instance\"}[$__rate_interval])) by (instance)",
@@ -524,7 +524,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -607,7 +607,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "exemplar": true,
           "expr": "sum(cs_active_decisions{instance=~\"$instance\"}) by (reason)",
@@ -622,7 +622,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -705,7 +705,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "exemplar": true,
           "expr": "sum(cs_active_decisions{instance=~\"$instance\"}) by (action)",
@@ -733,7 +733,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -816,7 +816,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "sum(increase(cs_node_hits_ok_total{instance=~\"$instance\"}[$__rate_interval])) by (name)",
           "format": "time_series",
@@ -834,7 +834,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -917,7 +917,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "(sum(increase(cs_node_hits_ko_total{instance=~\"$instance\"}[$__rate_interval])) by (source)) or (sum(up{instance=~\"$instance\"}) * 0)",
           "interval": "",
@@ -946,7 +946,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -1029,7 +1029,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "(sum(increase(cs_bucket_created_total{instance=~\"$instance\"}[$__rate_interval])) by (name)) or (sum(up{instance=~\"$instance\"}) * 0)",
           "interval": "",
@@ -1045,7 +1045,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -1128,7 +1128,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "(sum(increase(cs_bucket_overflowed_total{instance=~\"$instance\"}[$__rate_interval])) by (name)) or (sum(up{instance=~\"$instance\"}) * 0)",
           "interval": "",
@@ -1144,7 +1144,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -1227,7 +1227,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "(sum(cs_buckets{instance=~\"$instance\"}) by (name)) or (sum(up{instance=~\"$instance\"}) * 0)",
           "interval": "",
@@ -1255,7 +1255,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "dfa44v3b15a80b"
+          "uid": "prometheus-homelab"
         },
         "definition": "label_values(cs_info, instance)",
         "includeAll": true,

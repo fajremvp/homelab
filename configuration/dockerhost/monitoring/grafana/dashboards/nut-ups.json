@@ -39,7 +39,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": " * OL - On line (mains is present)\n * OB - On battery (mains is not present)\n * LB - Low battery\n * HB - High battery\n * RB - The battery needs to be replaced\n * CHRG - The battery is charging\n * DISCHRG - The battery is discharging (inverter is providing load power)\n * BYPASS - UPS bypass circuit is active -- no battery protection is available\n * CAL - UPS is currently performing runtime calibration (on battery)\n * OFF - UPS is offline and is not supplying power to the load\n * OVER - UPS is overloaded\n * TRIM - UPS is trimming incoming voltage (called \"buck\" in some hardware)\n * BOOST - UPS is boosting incoming voltage\n * FSD and SD - Forced Shutdown",
       "fieldConfig": {
@@ -93,7 +93,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "network_ups_tools_ups_status{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"} == 1",
@@ -110,7 +110,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -181,7 +181,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -268,7 +268,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "network_ups_tools_ups_load{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
           "interval": "",
@@ -283,7 +283,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -345,7 +345,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "network_ups_tools_battery_charge{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
           "instant": false,
@@ -361,7 +361,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -424,7 +424,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "network_ups_tools_input_voltage{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
           "interval": "",
@@ -439,7 +439,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -526,7 +526,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "network_ups_tools_input_voltage{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
           "interval": "",
@@ -542,7 +542,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -611,7 +611,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "network_ups_tools_battery_voltage{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
           "interval": "",
@@ -621,7 +621,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "network_ups_tools_battery_voltage_low{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
           "interval": "",
@@ -631,7 +631,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "network_ups_tools_battery_voltage_high{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
           "interval": "",
@@ -641,7 +641,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "network_ups_tools_battery_voltage_high{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
           "interval": "",
@@ -706,7 +706,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -792,7 +792,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "network_ups_tools_battery_voltage{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
@@ -803,7 +803,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "network_ups_tools_battery_voltage_low{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
@@ -814,7 +814,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "network_ups_tools_battery_voltage_high{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}*1.1",
@@ -825,7 +825,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "network_ups_tools_battery_voltage_high{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"}",
@@ -887,7 +887,7 @@
         "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "dfa44v3b15a80b"
+          "uid": "prometheus-homelab"
         },
         "definition": "label_values(network_ups_tools_device_info,instance)",
         "includeAll": false,
@@ -908,7 +908,7 @@
         "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "dfa44v3b15a80b"
+          "uid": "prometheus-homelab"
         },
         "definition": "label_values(network_ups_tools_device_info,job)",
         "includeAll": false,
@@ -928,7 +928,7 @@
       {
         "datasource": {
           "type": "prometheus",
-          "uid": "dfa44v3b15a80b"
+          "uid": "prometheus-homelab"
         },
         "definition": "label_values(network_ups_tools_device_info,ups)",
         "includeAll": false,

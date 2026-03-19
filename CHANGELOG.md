@@ -11,6 +11,11 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-03-19] - Technical Debt: Grafana Datasource
+### Corrigido (Fixed)
+- **Grafana Provisioning:** Resolvida a dívida técnica do UID do Prometheus (`dfa44v3b15a80b`). O Datasource agora é provisionado via IaC (`prometheus.yml`) com o UID estático e legível `prometheus-homelab`.
+- **Dashboards:** Todos os arquivos JSON foram atualizados via `sed` para utilizar o novo UID, eliminando a dependência de scripts para importação e tornando a stack 100% portável.
+
 ## [2026-03-18] - Disaster Recovery, CrowdSec & Syncthing Tuning
 ### Corrigido (Fixed)
 - **CrowdSec:** Resolvido crash loop (`network is unreachable`) causado por perda de binding na rede Docker bridge após o boot. Corrigido forçando a recriação do container (`--force-recreate`).

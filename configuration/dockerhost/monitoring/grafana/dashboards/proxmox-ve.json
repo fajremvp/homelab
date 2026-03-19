@@ -34,7 +34,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "",
       "fieldConfig": {
@@ -337,7 +337,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -352,7 +352,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -367,7 +367,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -382,7 +382,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -397,7 +397,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -412,7 +412,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -427,7 +427,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -484,7 +484,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -551,7 +551,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -569,7 +569,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "",
       "fieldConfig": {
@@ -664,7 +664,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -678,7 +678,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -711,7 +711,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -781,7 +781,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "exemplar": true,
           "expr": "pve_disk_usage_bytes{instance=\"$instance\", id=~\"storage/.+\"} / pve_disk_size_bytes{instance=\"$instance\"} * on (id, instance) group_left(storage) pve_storage_info",
@@ -799,7 +799,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "",
       "fieldConfig": {
@@ -871,7 +871,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "pve_cpu_usage_ratio{instance=\"$instance\"} / pve_cpu_usage_limit{instance=\"$instance\"} and on(id) pve_node_info",
           "format": "time_series",
@@ -886,7 +886,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "",
       "fieldConfig": {
@@ -958,7 +958,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "pve_memory_usage_bytes{instance=\"$instance\"} / pve_memory_size_bytes{instance=\"$instance\"} and on(id) pve_node_info",
           "format": "time_series",
@@ -973,7 +973,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -1067,7 +1067,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "((pve_cpu_usage_ratio{instance=\"$instance\"} / pve_cpu_usage_limit{instance=\"$instance\"}) * on(id, instance) group_left(name, type) pve_guest_info) and on(id, instance) pve_up == 1",
           "format": "time_series",
@@ -1083,7 +1083,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "",
       "fieldConfig": {
@@ -1150,7 +1150,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "exemplar": false,
@@ -1185,7 +1185,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -1279,7 +1279,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "(pve_memory_usage_bytes{instance=\"$instance\"} / pve_memory_size_bytes{instance=\"$instance\"} * on(id, instance) group_left(name, type) pve_guest_info) and on(id, instance) pve_up == 1",
           "format": "time_series",
@@ -1295,7 +1295,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -1393,7 +1393,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "pve_disk_usage_bytes{instance=\"$instance\"} / pve_disk_size_bytes{instance=\"$instance\"} * on (id, instance) group_left(name, type) pve_guest_info",
@@ -1411,7 +1411,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "",
       "fieldConfig": {
@@ -1516,7 +1516,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "(rate(pve_network_receive_bytes{instance=\"$instance\"}[5m]) * on(id, instance) group_left(name, type) pve_guest_info) and on(id, instance) pve_up == 1",
           "format": "time_series",
@@ -1528,7 +1528,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "(rate(pve_network_transmit_bytes{instance=\"$instance\"}[5m])* on(id, instance) group_left(name, type) pve_guest_info) and on(id, instance) pve_up == 1",
           "format": "time_series",
@@ -1544,7 +1544,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "",
       "fieldConfig": {
@@ -1636,7 +1636,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "((rate(pve_disk_write_bytes{instance=\"$instance\"}[5m]) + rate(pve_disk_read_bytes{instance=\"$instance\"}[5m])) * on(id, instance) group_left(name, type) pve_guest_info) and on(id, instance) pve_up == 1",
           "format": "time_series",
@@ -1666,7 +1666,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "dfa44v3b15a80b"
+          "uid": "prometheus-homelab"
         },
         "definition": "label_values(pve_node_info, instance)",
         "includeAll": false,

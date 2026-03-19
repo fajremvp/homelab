@@ -4,6 +4,22 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-19
+**Status:** ✅ Sucesso (Eliminação de Dívida Técnica Crítica)
+
+**Foco:** Correção estrutural do provisionamento de Datasource no Grafana (UID determinístico).
+
+- **A Dívida Técnica (UID Aleatório):**
+  - *Problema:* O Grafana gerava um UID aleatório para o datasource do Prometheus (ex: `dfa44v3b15a80b`).
+  - *Impacto:* Os dashboards dependiam de um `sed` para injetar esse UID nos JSONs, quebrando o princípio da imutabilidade/reprodutibilidade. Em caso de perda do volume, um novo UID seria gerado e todos os painéis falhariam silenciosamente.
+- **Correção:**
+  - Criação do arquivo `datasources/prometheus.yml` forçando um UID fixo e semântico (`uid: prometheus-homelab`).
+  - Refatoração de todos os dashboards (dashboards/*.json) para apontar para esse identificador imutável.
+- **Resultado:**
+  - Stack de observabilidade agora **100% efêmera e reprodutível.
+  - Eliminação total de scripts de `find-and-replace`.
+  - Garantia de integridade em cenários de Disaster Recovery.
+
 ## 2026-03-18
 **Status:** ✅ Sucesso (Teste de DR, Correção de Rede e Adições ao Syncthing)
 

@@ -15684,7 +15684,7 @@
       {
         "current": {
           "text": "prometheus",
-          "value": "dfa44v3b15a80b"
+          "value": "prometheus-homelab"
         },
         "includeAll": false,
         "label": "Datasource",

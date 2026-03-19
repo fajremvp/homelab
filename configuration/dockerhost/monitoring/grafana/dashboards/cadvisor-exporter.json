@@ -23,7 +23,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -93,7 +93,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -188,7 +188,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -299,7 +299,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -390,7 +390,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "sum(rate(container_cpu_usage_seconds_total{image!=\"\", instance=~\"$host\",name=~\"$container\",name=~\".+\"}[5m])) by (name) / scalar(max(machine_cpu_cores{instance=~\"$host\"})) * 100",
@@ -420,7 +420,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -511,7 +511,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "sum(container_memory_working_set_bytes{image!=\"\", instance=~\"$host\",name=~\"$container\",name=~\".+\"}) by (name)",
@@ -541,7 +541,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -629,7 +629,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "sum(rate(container_network_receive_bytes_total{interface=~\"eth0|tailscale0\", image!=\"\", instance=~\"$host\",name=~\"$container\",name=~\".+\"}[5m])) by (name)",
           "hide": false,
@@ -644,7 +644,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -732,7 +732,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "sum(rate(container_network_transmit_bytes_total{interface=~\"eth0|tailscale0\", image!=\"\", instance=~\"$host\",name=~\"$container\",name=~\".+\"}[5m])) by (name)",
           "interval": "",
@@ -746,7 +746,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -839,7 +839,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -951,7 +951,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "fieldConfig": {
         "defaults": {
@@ -1043,7 +1043,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "expr": "(time() - container_start_time_seconds{image!=\"\", instance=~\"$host\",name=~\"$container\",name=~\".+\"})",
           "format": "table",
@@ -1106,7 +1106,7 @@
           "text": "All",
           "value": "$__all"
         },
-        "datasource": "dfa44v3b15a80b",
+        "datasource": "prometheus-homelab",
         "definition": "label_values({__name__=~\"container.*\"},instance)",
         "includeAll": true,
         "label": "Host",
@@ -1127,7 +1127,7 @@
           "text": "All",
           "value": "$__all"
         },
-        "datasource": "dfa44v3b15a80b",
+        "datasource": "prometheus-homelab",
         "definition": "label_values(container_memory_working_set_bytes{image!=\"\", instance=~\"$host\"},name)",
         "includeAll": true,
         "label": "Container",

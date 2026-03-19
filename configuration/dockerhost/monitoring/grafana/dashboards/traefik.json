@@ -44,7 +44,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "",
       "fieldConfig": {
@@ -98,7 +98,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "count(traefik_config_reloads_total)",
@@ -113,7 +113,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "",
       "fieldConfig": {
@@ -203,7 +203,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "sum(rate(traefik_entrypoint_requests_total{entrypoint=~\"$entrypoint\"}[$interval])) by (entrypoint)",
@@ -218,7 +218,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "https://medium.com/@tristan_96324/prometheus-apdex-alerting-d17a065e39d0",
       "fieldConfig": {
@@ -307,7 +307,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "(sum(rate(traefik_entrypoint_request_duration_seconds_bucket{le=\"0.3\",code=\"200\",entrypoint=~\"$entrypoint\"}[$interval])) by (method) + \n sum(rate(traefik_entrypoint_request_duration_seconds_bucket{le=\"1.2\",code=\"200\",entrypoint=~\"$entrypoint\"}[$interval])) by (method)) / 2 / \n sum(rate(traefik_entrypoint_request_duration_seconds_count{code=\"200\",entrypoint=~\"$entrypoint\"}[$interval])) by (method)\n",
@@ -322,7 +322,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "Mean Distribution",
       "fieldConfig": {
@@ -378,7 +378,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "sum(rate(traefik_service_requests_total{service=~\"$service.*\",protocol=\"http\"}[$interval])) by (method, code)",
@@ -393,7 +393,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "",
       "fieldConfig": {
@@ -483,7 +483,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "topk(15, sum by (service) (rate(traefik_service_request_duration_seconds_sum{service=~\"$service.*\",protocol=\"http\"}[$interval])) / sum by (service) (rate(traefik_service_request_duration_seconds_count{service=~\"$service.*\",protocol=\"http\"}[$interval])) > 0)",
@@ -498,7 +498,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dfa44v3b15a80b"
+        "uid": "prometheus-homelab"
       },
       "description": "",
       "fieldConfig": {
@@ -588,7 +588,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "editorMode": "code",
           "expr": "topk(15, sum by (service,code) (rate(traefik_service_requests_total{service=~\"$service.*\",protocol=\"http\"}[$interval])) > 0)",
@@ -613,7 +613,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "description": "",
           "fieldConfig": {
@@ -692,7 +692,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "dfa44v3b15a80b"
+                "uid": "prometheus-homelab"
               },
               "editorMode": "code",
               "expr": "label_replace(\n  1 - (sum by (service)\n    (rate(traefik_service_request_duration_seconds_bucket{le=\"1.2\",service=~\"$service.*\"}[$interval])) / sum by (service) \n    (rate(traefik_service_request_duration_seconds_count{service=~\"$service.*\"}[$interval]))\n  ) > 0,\n  \"service\", \"$1\", \"service\", \"([^-]+-[^-]+).*\"\n)",
@@ -707,7 +707,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "description": "",
           "fieldConfig": {
@@ -786,7 +786,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "dfa44v3b15a80b"
+                "uid": "prometheus-homelab"
               },
               "editorMode": "code",
               "expr": "label_replace(\n  1 - (sum by (service)\n    (rate(traefik_service_request_duration_seconds_bucket{le=\"0.3\",service=~\"$service.*\"}[$interval])) / sum by (service) \n    (rate(traefik_service_request_duration_seconds_count{service=~\"$service.*\"}[$interval]))\n  ) > 0,\n  \"service\", \"$1\", \"service\", \"([^-]+-[^-]+).*\"\n)",
@@ -815,7 +815,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "description": "",
           "fieldConfig": {
@@ -898,7 +898,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "dfa44v3b15a80b"
+                "uid": "prometheus-homelab"
               },
               "editorMode": "code",
               "expr": "topk(15, sum by (service,method,code) (rate(traefik_service_requests_total{service=~\"$service.*\",protocol=\"http\"}[$interval])) > 0)",
@@ -913,7 +913,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "description": "",
           "fieldConfig": {
@@ -997,7 +997,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "dfa44v3b15a80b"
+                "uid": "prometheus-homelab"
               },
               "editorMode": "code",
               "expr": "topk(15, sum by (service,method,code) (rate(traefik_service_requests_total{service=~\"$service.*\",protocol=\"http\"}[$interval])) > 0)",
@@ -1012,7 +1012,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "description": "",
           "fieldConfig": {
@@ -1096,7 +1096,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "dfa44v3b15a80b"
+                "uid": "prometheus-homelab"
               },
               "editorMode": "code",
               "expr": "topk(15, sum by (service,method,code) (rate(traefik_service_requests_total{service=~\"$service.*\",protocol=\"http\"}[$interval])) > 0)",
@@ -1111,7 +1111,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "description": "",
           "fieldConfig": {
@@ -1195,7 +1195,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "dfa44v3b15a80b"
+                "uid": "prometheus-homelab"
               },
               "editorMode": "code",
               "expr": "topk(15, sum by (service,method) (rate(traefik_service_requests_bytes_total{service=~\"$service.*\",protocol=\"http\"}[$interval])) > 0)",
@@ -1210,7 +1210,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "description": "",
           "fieldConfig": {
@@ -1294,7 +1294,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "dfa44v3b15a80b"
+                "uid": "prometheus-homelab"
               },
               "editorMode": "code",
               "expr": "topk(15, sum by (service,method) (rate(traefik_service_responses_bytes_total{service=~\"$service.*\",protocol=\"http\"}[$interval])) > 0)",
@@ -1309,7 +1309,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dfa44v3b15a80b"
+            "uid": "prometheus-homelab"
           },
           "description": "",
           "fieldConfig": {
@@ -1392,7 +1392,7 @@
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "dfa44v3b15a80b"
+                "uid": "prometheus-homelab"
               },
               "editorMode": "code",
               "expr": "sum(traefik_open_connections{entrypoint=~\"$entrypoint\"}) by (entrypoint)\n",
@@ -1418,7 +1418,7 @@
       {
         "current": {
           "text": "prometheus",
-          "value": "dfa44v3b15a80b"
+          "value": "prometheus-homelab"
         },
         "includeAll": false,
         "label": "datasource",
@@ -1491,7 +1491,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "dfa44v3b15a80b"
+          "uid": "prometheus-homelab"
         },
         "definition": "label_values(traefik_open_connections, entrypoint)",
         "includeAll": true,
@@ -1512,7 +1512,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "dfa44v3b15a80b"
+          "uid": "prometheus-homelab"
         },
         "definition": "label_values(traefik_service_requests_total, service)",
         "includeAll": true,
