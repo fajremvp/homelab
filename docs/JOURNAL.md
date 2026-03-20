@@ -4,6 +4,20 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-20
+**Status:** ✅ Sucesso (Controle de Blast Radius)
+
+**Foco:** Implementação de limites de recursos no Docker (Cgroups) e habilitação de métricas de Saturação.
+
+- **A Dívida Técnica:** Os containers rodavam sem restrições de CPU/RAM. Isso impedia o Grafana de calcular a Saturação (USE Method) e criava um risco arquitetural: um "vizinho barulhento" (ex: Syncthing fazendo hash de arquivos grandes ou Loki ingerindo burst de logs) poderia acionar o OOM Killer do host e derrubar serviços críticos como Traefik e Authentik.
+- **Estratégia Adotada:** Em vez de limitar todos os containers e arriscar instabilidade por micro-management, apliquei apenas nos ofensores (PLG Stack + Syncthing).
+- **Validação via Cgroups (`docker stats` / `docker inspect`):**
+  - **Prometheus:** Média de ~187MB -> Limite de 1.2GB (Margem alta projetada para suportar a compactação pesada de TSDB em disco).
+  - **Loki:** Média de ~105MB -> Limite de 500MB (Margem para suportar burst repentino de logs).
+  - **Alloy:** Média de ~66MB -> Limite de 300MB.
+  - **Syncthing:** Média de ~44MB -> Limite de 700MB e 1 vCore inteiro (Para garantir performance de I/O em arquivos massivos sem travar a VM).
+- **Resultado:** Os serviços base permanecem intocados, garantindo que eu nunca fique "trancado para o lado de fora". Os coletores e indexadores agora operam numa "caixa de areia" com teto rígido validado diretamente no Kernel.
+
 ## 2026-03-19
 **Status:** ✅ Sucesso (Eliminação de Dívida Técnica Crítica)
 

@@ -11,6 +11,11 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-03-20] - Resource Limits & Blast Radius Control
+### Adicionado (Added)
+- **Docker Cgroups:** Implementados limites estritos de recursos (CPU e RAM) via bloco `deploy.resources.limits` nos containers com maior potencial de consumo: Prometheus (1.2G), Loki (500M), Alloy (300M) e Syncthing (700M). A fundação crítica (Traefik, Authentik) permanece sem restrições nesta fase para evitar possíveis lockouts administrativos.
+- **Observabilidade:** A aba de Saturação no Grafana (cAdvisor Dashboard) (USE Method) agora possui os tetos necessários definidos, permitindo calcular e exibir porcentagens reais de uso da infraestrutura.
+
 ## [2026-03-19] - Technical Debt: Grafana Datasource
 ### Corrigido (Fixed)
 - **Grafana Provisioning:** Resolvida a dívida técnica do UID do Prometheus (`dfa44v3b15a80b`). O Datasource agora é provisionado via IaC (`prometheus.yml`) com o UID estático e legível `prometheus-homelab`.

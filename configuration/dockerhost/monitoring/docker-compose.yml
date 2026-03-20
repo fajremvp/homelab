@@ -22,6 +22,11 @@ services:
       - "traefik.http.routers.prometheus.tls=true"
       - "traefik.http.routers.prometheus.middlewares=authentik@docker"
       - "traefik.docker.network=proxy"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 1.2G
 
   # --- CÉREBRO DE LOGS ---
   loki:
@@ -34,6 +39,11 @@ services:
       - loki_data:/loki
     networks:
       - monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 500M
 
   # --- VISUALIZAÇÃO ---
   grafana:
@@ -97,6 +107,11 @@ services:
     networks:
       - monitoring
       - proxy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 300M
 
   # --- EXPORTER DE CONTAINERS ---
   cadvisor:

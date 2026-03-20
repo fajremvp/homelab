@@ -33,6 +33,12 @@ services:
       # O App do celular NÃO usa essa rota (usa a porta 22000), então não quebra o sync.
       - "traefik.http.routers.syncthing.middlewares=authentik@docker"
 
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 700M
+
 networks:
   proxy:
     external: true

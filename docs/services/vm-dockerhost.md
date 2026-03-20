@@ -16,6 +16,13 @@ Implementação realizada em: 2025-12-27.
 | **Disco 2 (Data)** | 100 GB (SCSI 1) | Storage: `local-zfs`. Dados brutos (`/mnt/syncthing`). |
 | **Rede** | `vmbr0` (VirtIO) | **VLAN Tag: 30** (Rede SERVER). Firewall do Proxmox: Desligado. |
 
+### Gestão de Recursos e Blast Radius (Cgroups)
+Implementação realizada em: 2026-03-20.
+
+Para evitar que "vizinhos barulhentos" (Noisy Neighbors) causem a exaustão total dos 8GB de RAM e acionem o OOM Killer do Linux sobre serviços vitais, a infraestrutura adota uma política de limites assimétricos:
+* **Serviços Críticos / Fundação (Sem Limites Restritivos):** `traefik`, `authentik`. Possuem prioridade máxima de retenção de memória no Host para evitar lockout administrativo.
+* **Coletores e Indexadores Pesados (Teto Rígido):** Serviços propensos a picos de I/O e RAM (ex: `prometheus`, `loki`, `alloy` e `syncthing`) recebem limites estritos via `deploy.resources.limits` em seus manifestos Compose. Isso os confina em uma "caixa de areia", ativando a coleta de métricas de Saturação (USE Method) pelo cAdvisor e protegendo a estabilidade global da VM.
+
 ## Estratégia de Ingress e Proxy Reverso (Traefik)
 Implementação realizada em: 2026-01-02.
 
