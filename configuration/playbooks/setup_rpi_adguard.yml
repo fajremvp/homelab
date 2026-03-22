@@ -91,17 +91,19 @@
             protection_enabled: true
             filtering_enabled: true
             dnssec_enabled: true
-            cache_size: 4096
+            cache_size: 4194304
             cache_optimistic: true
             ratelimit: 20
 
             upstream_dns:
-              - "https://dns.cloudflare.com/dns-query"
-              - "tls://dns.quad9.net"
+              - "192.168.1.1:53"
 
             bootstrap_dns:
-              - "1.1.1.1"
-              - "9.9.9.10"
+              - "192.168.1.1"
+
+            local_ptr_upstreams:
+              - "192.168.1.1"
+            use_private_ptr_resolvers: true
 
           querylog:
             enabled: false

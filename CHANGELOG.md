@@ -11,6 +11,12 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-03-22] - DNS Sovereignty & Zero Leak
+### Alterado (Changed)
+- **DHCP:** VLANs de infraestrutura (10 MGMT, 30 SERVER, 40 SECURE) agora recebem exclusivamente o gateway local (Unbound) em vez de DNS públicos (`1.1.1.1`/`8.8.8.8`). Isso isola vazamentos de telemetria sem criar dependência cíclica com o AdGuard.
+- **AdGuard Home:** Upstreams alterados de Cloudflare/Quad9 para o OPNsense local (Unbound recursivo). Servidores de Fallback removidos para aderir ao princípio de "Fail Closed".
+- **Ansible:** Playbook `setup_rpi_adguard.yml` atualizado com o `cache_size` corrigido (em bytes) e upstreams soberanos.
+
 ## [2026-03-20] - Resource Limits & Blast Radius Control
 ### Adicionado (Added)
 - **Docker Cgroups:** Implementados limites estritos de recursos (CPU e RAM) via bloco `deploy.resources.limits` nos containers com maior potencial de consumo: Prometheus (1.2G), Loki (500M), Alloy (300M) e Syncthing (700M). A fundação crítica (Traefik, Authentik) permanece sem restrições nesta fase para evitar possíveis lockouts administrativos.

@@ -5,9 +5,12 @@
       - **VLAN TRUSTED/IOT (Clientes):** O OPNsense entregará via DHCP **dois endereços IP** de DNS para garantir alta disponibilidade:
         1. **Primário:** IP do LXC AdGuard (Proxmox).
         2. **Secundário:** IP do Raspberry Pi.
-        - *Comportamento:* Os clientes alternam automaticamente para o Pi caso o servidor principal não responda (timeout), garantindo navegação ininterrupta durante manutenções sem intervenção do usuário.
-      - **VLAN SERVER (Infraestrutura):** Recebem apenas o IP do **Gateway (OPNsense) ou 1.1.1.1**.
-        - *Justificativa:* Garante que servidores nunca percam conectividade DNS (updates/NTP) mesmo se o container do AdGuard falhar ou estiver em loop de boot, evitando dependência cíclica.
+        - *Comportamento:* Os clientes alternam automaticamente para o Pi caso o servidor principal não responda, garantindo navegação ininterrupta e bloqueio de anúncios contínuo.
+      - **VLANs SERVER, MGMT e SECURE (Infraestrutura):** Recebem **apenas** o IP do respectivo Gateway (OPNsense). O uso de DNS externos (`1.1.1.1` ou `8.8.8.8`) é **PROIBIDO**.
+        - *Justificativa Dupla:* 1. Garante que servidores nunca percam conectividade DNS mesmo se os containers do AdGuard falharem (Evita dependência cíclica).
+          2. Mantém a Soberania Total de Dados: A infraestrutura consulta o Unbound, que vai direto nos Root Servers, eliminando rastreamento corporativo.
+      - **Pipeline de Resolução (Security Funnel):**
+        * Os AdGuards **não usam Cloudflare ou Quad9**. Seu único upstream é o Unbound do OPNsense.
       - **Definição dos Nós DNS:**
         * **Primário:** `[LXC Alpine]` - No servidor principal. Serviço leve. Ter um IP dedicado (via LXC) facilita apontar o OPNsense para ele.
         * **Secundário:** `[Raspberry Pi]` - Instância de backup rodando no Pi de gerenciamento.

@@ -4,6 +4,19 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-22
+**Status:** ✅ Sucesso (Soberania de DNS e Zero Leaks)
+
+**Foco:** Transição para DNS Recursivo (Unbound), eliminação de DNS público e ativação estrita de DNSSEC.
+
+- **Dívida Técnica:** A infraestrutura e o AdGuard dependiam de DNS públicos (Cloudflare `1.1.1.1`, Quad9, Google `8.8.8.8`). Isso criava vazamento de metadados de navegação e quebrava o princípio de Soberania. As VLANs de infra (MGMT, SERVER, SECURE) usavam `1.1.1.1` como rota de escape, vazando telemetria interna.
+- **Estratégia Adotada:**
+  1. O **Unbound** no OPNsense foi configurado como Resolver Recursivo Puro (sem forwarding), indo buscar IPs diretamente nos *Root Servers* da internet.
+  2. O **AdGuard** (Proxmox e RPi) teve seus upstreams e fallbacks limpos, apontando estritamente para o OPNsense (`:53`).
+  3. O **DHCP** das VLANs de infraestrutura (10, 30 e 40) foi corrigido para entregar apenas o IP do gateway local, forçando os servidores a usarem o Unbound nativo, eliminando a dependência do AdGuard sem comprometer a privacidade.
+- **Hardening Adicional:** O DNSSEC foi ativado no OPNsense para prevenir *Cache Poisoning* e ataques MitM.
+- **Validação:** Teste de *DNS Leak* realizado com sucesso. Apenas o ASN do provedor local (ISP) é detectado pela internet, provando que NENHUMA Big Tech intermediária está mapeando o tráfego.
+
 ## 2026-03-20
 **Status:** ✅ Sucesso (Controle de Blast Radius)
 
