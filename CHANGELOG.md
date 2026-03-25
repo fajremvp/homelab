@@ -11,6 +11,20 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-03-24] - L2 Network Hardening & Desktop Wired Uplink
+### Adicionado (Added)
+- **Cabeamento Físico:** Desktop provisionado na rede física (Cabo Cat6 Furukawa Sohoplus 100% Cobre 10m Gigabit na Porta 3 do Switch).
+- **Isolamento de VLAN:** Porta 3 isolada nativamente pelo switch para cair estritamente na VLAN 20 (`TRUSTED`) via configuração *Untagged/PVID 20*.
+- **LLDP:** Protocolo de descoberta ativado no switch para futuro mapeamento de portas (`apt install lldpd` pendente no Proxmox).
+
+### Alterado (Changed)
+- **Topologia de Acesso L2:** Spanning Tree modernizado de STP legado para **RSTP** (recuperação rápida) ativado ativamente nas portas físicas.
+- **Gerenciamento de Tráfego:** Ativado **IGMP Snooping** na VLAN 20 e 50 para isolar e otimizar tráfego multicast (smart devices), mitigando CPU thrashing no AP e devices.
+
+### Segurança (Security)
+- **SSH vs Telnet:** Desativado protocolo Telnet (padrão de fábrica) e Protocolo SSH V1. Gerência do switch TP-Link agora é restrita exclusivamente a SSH V2 e HTTPS.
+- **Port Security (Prevenção de Ataques):** Habilitada proteção L2 contra Loops Locais (Loopback Detection).
+
 ## [2026-03-22] - DNS Sovereignty & Zero Leak
 ### Alterado (Changed)
 - **DHCP:** VLANs de infraestrutura (10 MGMT, 30 SERVER, 40 SECURE) agora recebem exclusivamente o gateway local (Unbound) em vez de DNS públicos (`1.1.1.1`/`8.8.8.8`). Isso isola vazamentos de telemetria sem criar dependência cíclica com o AdGuard.

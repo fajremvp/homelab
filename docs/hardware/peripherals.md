@@ -148,17 +148,31 @@ A configuração foi otimizada para ambientes de apartamento (alta interferênci
 
 ---
 
-## Cabos de Rede — Furukawa Sohoplus Cat6
+## Cabeamento de Rede
 
-### Especificações
-- **Tipo:** Cat6 U/UTP (Gigabit Ready).
-- **Material:** 100% Cobre Nu (Sem CCA - Alumínio Cobreado).
-- **Conectores:** RJ45 Storm Tech (Crimpados de fábrica).
-- **Bitola:** 23/24 AWG.
-- **Qualidade:** Padrão ANSI/TIA-568-C.2 e ISO/IEC 11801.
+A infraestrutura de rede física utiliza exclusivamente cabos CAT6 100% cobre para garantir estabilidade, baixa latência e suporte pleno a conexões Gigabit (1000BASE-T) entre os nós críticos e estações de trabalho.
 
-### Aplicação
-- Interconexão de alta velocidade e estabilidade para todo o Homelab.
+### Patch Cords de Interconexão (Infraestrutura Base)
+- **Status:** Ativos em Produção.
+- **Função:** Interligação de curta distância entre os ativos principais do rack (Modem ISP ↔ Switch TP-Link ↔ Servidor Proxmox ↔ Access Point ↔ RPi).
+- **Especificações Técnicas:**
+  - **Fabricante/Modelo:** Furukawa Soho Plus CAT6 (U/UTP 24AWG).
+  - **Comprimento:** 1,5 metros (Kit com 5 cabos).
+  - **Material Condutor:** 100% Cobre Eletrolítico Nu (Fio Sólido), minimizando atenuação e perda de pacotes.
+  - **Conectores:** RJ-45 (Storm Tech) crimpados de fábrica.
+  - **Revestimento:** PVC Retardante a Chama (Normas CM/CMX, IEC 60332-1-2).
+  - **Normas Atendidas:** ANSI/TIA-568-C.2 Category 6, ISO/IEC 11801.
+
+### Cabo de Uplink do Desktop (Acesso Direto)
+- **Status:** Homologado e Ativo em Produção (Implementado em 24/03/2026).
+- **Função:** Conexão gigabit primária entre o Desktop Pessoal e o Switch TP-Link (Porta 3), substituindo a conexão Wi-Fi para mitigar picos de *jitter* e estabilizar a latência (ICMP médio de ~11.9ms c/ `mdev` de 0.3ms) no acesso à rede segura (VLAN 20).
+- **Especificações Técnicas:**
+  - **Fabricante/Modelo:** Furukawa Sohoplus CAT6 (U/UTP 24AWG).
+  - **Comprimento:** 10 metros.
+  - **Material Condutor:** 100% Cobre Nu (Cabo Sólido), garantindo integridade de sinal em média distância sem perda de SNR.
+  - **Conectores:** RJ-45 Blindados EZ-Crimp, com capas de proteção.
+  - **Frequência / Banda:** 250 MHz.
+  - **Link Negociado:** 1000Mb/s (1 Gbps) Full-Duplex.
 
 ---
 ## Hardware Legado / Descartado

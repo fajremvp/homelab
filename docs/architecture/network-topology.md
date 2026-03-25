@@ -12,6 +12,7 @@
 |:------|:------------|:----------|
 | 1     | Servidor (Proxmox)| Interface `nic0`. Funciona como "Trunk Hybrid". Passa tráfego nativo (Proxmox IP) + todas as VLANs (VMs). |
 | 2     | Access Point (AP) | Wi-Fi. Transmite SSID Pessoal (VLAN 20) e Guest/IoT (VLAN 50). |
+| 3     | Desktop Pessoal | Conexão cabeada Gigabit. Porta de Acesso (Untagged) com PVID 20, entregando tráfego direto para a rede TRUSTED (10.10.20.x). |
 | 8     | Modem (ISP)       | Uplink de Internet. Entrega DHCP na rede nativa `192.168.1.x`. |
 
 ## Mapeamento Lógico (Proxmox)

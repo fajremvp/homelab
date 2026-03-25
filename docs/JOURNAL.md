@@ -4,6 +4,29 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-24
+**Status:** ✅ Sucesso (Conexão Cabeada do Desktop e Hardening L2)
+
+**Foco:** Provisionamento da rede cabeada para o Desktop (VLAN 20) e auditoria geral de segurança no Switch TP-Link SG2008.
+
+- **Dívida Técnica:** O Desktop de uso pessoal dependia do Wi-Fi para acessar a rede (SSID Homelab_Trusted). Embora o AP suporte Wi-Fi 6, a placa do Desktop é antiga, gerando latência alta sob estresse e instabilidade em conexões com o server/internet.
+- **Implementação Física:** Cabo de rede (Cat6 Furukawa Sohoplus 100% Cobre 10 Metros) passado do Desktop até a Porta 3 do Switch TP-Link (Modelo SG2008 v4.0).
+- **Hardening e Configuração do Switch L2:**
+  - **Reset de Fábrica:** Como a senha de gerência do switch foi perdida, procedeu-se com o Hard Reset (mantendo o funcionamento da rede via OPNsense Router-on-a-Stick restabelecido posteriormente).
+  - **Reconfiguração de VLANs (802.1Q):**
+    - `VLAN 1 (System)`: Removida a porta 3 para evitar bypass de firewall.
+    - `VLAN 20 (TRUSTED)`: Proxmox (P1) e AP (P2) configurados como *Tagged*. Desktop (P3) configurado como *Untagged* com PVID 20.
+    - `VLAN 50 (IOT)`: Reconfigurada em P1 e P2 (*Tagged*).
+  - **Proteção L2 e QoS:**
+    - **Spanning Tree (STP):** Modo alterado de legado para **RSTP** e ativado globalmente e em todas as portas físicas (P1 a P8) para proteção contra loops.
+    - **Loopback Detection:** Habilitado com modo *Auto-Recovery* em todas as portas físicas.
+    - **Multicast:** Ativado **IGMP Snooping v3** (Fast Leave e Querier) globalmente e restrito às VLANs 20 e 50 para mitigar flood de pacotes (Chromecast/AirPlay).
+    - **Visibilidade:** Ativado **LLDP** (Tx/Rx) para mapeamento futuro com o Proxmox.
+  - **Auditoria de Acesso (Ação Corretiva):** - Desativado serviço Telnet (texto plano) que estava ativado por padrão.
+    - Ativado serviço SSH para gerência com imposição de criptografia apenas para **Protocol V2** (V1 depreciado/vulnerável desativado).
+  - **Backup:** Configuração final do switch (L2/VLANs/Security) exportada e salva no repositório local (`.cfg`) para garantir rápida restauração (RTO minimizado) em caso de falha de hardware.
+- **Validação:** Desktop obteve IP via DHCP do OPNsense (`10.10.20.103`). Teste de ping para `8.8.8.8` indicou melhoria drástica de estabilidade: `mdev` caiu de `20.639 ms` (com picos de 145ms no Wi-Fi) para incríveis `0.333 ms` na rede cabeada Gigabit Full Duplex.
+
 ## 2026-03-22
 **Status:** ✅ Sucesso (Soberania de DNS e Zero Leaks)
 
