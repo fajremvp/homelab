@@ -11,6 +11,12 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-03-28] - Minecraft Server
+### Adicionado (Added)
+- **Servidor Minecraft (PaperMC):** Implementação de servidor Survival via Docker (`itzg/minecraft-server`) focado em alta performance single-thread e eficiência energética.
+- **Auto-Pause Nativo:** Configurado congelamento da engine após 60s ocioso, derrubando o consumo de CPU do host para ~0% quando não há jogadores ativos.
+- **Zero Trust VPN (Tailscale ACL):** Adicionado grupo de acesso para usuários externos (amigos). O roteamento restringe os convidados única e exclusivamente à porta TCP 25565 do DockerHost (`10.10.30.10`), tornando o restante do homelab invisível para os mesmos.
+
 ## [2026-03-24] - L2 Network Hardening & Desktop Wired Uplink
 ### Adicionado (Added)
 - **Cabeamento Físico:** Desktop provisionado na rede física (Cabo Cat6 Furukawa Sohoplus 100% Cobre 10m Gigabit na Porta 3 do Switch).

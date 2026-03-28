@@ -1,30 +1,39 @@
-// Tailscale Policy for RPi
-// Apply at: https://login.tailscale.com/admin/acls
 {
+  // Tailscale Policy for RPi
+  // Apply at: https://login.tailscale.com/admin/acls
+
+  // Criar grupos para facilitar a gestão
+  "groups": {
+    "group:admin": ["meu.email@mail.com"],
+    "group:minecraft": ["email.amigo1@mail.com", "email.amigo2@mail.com"]
+  },
+
   // Define quem manda na Tag (Admin)
   "tagOwners": {
-    "tag:rpi": ["meu.email@exemplo.com"], // <--- MUDAR NO PAINEL
+    "tag:rpi": ["group:admin"],
   },
 
   // ACLs: O que é permitido?
   "acls": [
-    // Regra Única e Absoluta:
+    // --- REGRAS DO ADMIN (EU) ---
     // Origem: SÓ EU (Celular/Arch logado na minha conta)
-    // Destino: Apenas a porta 2222 (Dropbear) no IP fixo do Proxmox.
     {
       "action": "accept",
-      "src": ["seu.email@exemplo.com"], // <--- MUDAR NO PAINEL
+      "src": ["group:admin"],
       "dst": [
-        "192.168.1.200:2222",
+        "192.168.1.200:2222", // Unlock do Proxmox (Dropbear)
+        "*:*",                // Acesso ao próprio container da VPN
+        "10.10.0.0/16:*",     // Acesso a TODAS as VLANs (10, 20, 30, 40)
       ],
     },
-    // Permite acesso completo à rede interna quando conectado via DockerHost VPN.
+
+    // --- REGRAS DOS AMIGOS (ZERO TRUST) ---
+    // Eles SÓ enxergam o Minecraft, nada mais
     {
       "action": "accept",
-      "src": ["fogacafajrereidopvp@gmail.com"],
+      "src": ["group:minecraft"],
       "dst": [
-        "dockerhost-vpn:*", // Acesso ao próprio container da VPN
-        "10.10.0.0/16:*",   // Acesso a TODAS as VLANs (10, 20, 30, 40)
+        "10.10.30.10:25565" // IP do DockerHost (Minecraft)
       ],
     },
   ],

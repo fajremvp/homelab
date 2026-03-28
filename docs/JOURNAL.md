@@ -4,6 +4,29 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-28
+**Status:** ✅ Sucesso (Implementação de Servidor Minecraft)
+
+**Foco:** Deploy do PaperMC, tuning do Java, eficiência energética e liberação restrita via Tailscale.
+
+- **Implementação:**
+    - Utilizada a imagem `itzg/minecraft-server` em `/opt/services/minecraft` (já contemplado automaticamente no backup diário do Restic).
+    - Motor alterado para **PaperMC** (`TYPE=PAPER`) para máxima otimização sem alterar o client-side (Vanilla).
+    - Mundo gerado com sucesso utilizando a seed customizada (`SEED="-3361685360695458093"` - aspas duplas exigidas no YAML para números negativos).
+    - **Otimização Java e Auto-Pause:** Configurado `PAUSE_WHEN_EMPTY_SECONDS=60` para hibernar o servidor quando vazio. Para evitar conflitos e crashes (falsos positivos do watchdog), as variáveis `MAX_TICK_TIME=-1` e `JVM_DD_OPTS=disable.watchdog:true` foram aplicadas, em conjunto com as famosas flags de otimização do Aikar (`USE_AIKAR_FLAGS=true`).
+
+- **Segurança & Rede (Zero Trust):**
+    - Sem NAT no OPNsense. Acesso ocorre puramente via Tailscale.
+    - Criado `group:minecraft` no `acls.hujson` permitindo acesso estrito ao destino `10.10.30.10:25565`.
+
+- **Troubleshooting & Aprendizados:**
+    - **Erro de Limite de CPU (Cgroups):** Ao tentar definir `cpus: '2.0'` no `deploy.resources`, o Docker retornou erro (`range of CPUs is from 0.01 to 2.00, as there are only 2 CPUs available`).
+        - *Solução:* Ajustado para `1.5`. A VM do DockerHost possui apenas 2 vCores no Proxmox. O limite de 1.5 concede potência suficiente à engine do jogo (que é essencialmente single-thread) e reserva os 0.5 vCores restantes para a sobrevivência do Sistema Operacional e de serviços vitais (Traefik, Authentik).
+    - **Erro no Tailscale ACL (`invalid address`):** Tentativa de usar hostname `dockerhost-vpn` diretamente na chave `dst` do ACL gerou erro de sintaxe.
+        - *Solução:* Ajustado para utilizar o padrão de notação de rede e curingas suportados: `*:*` para acesso ao próprio nó e `10.10.0.0/16:*` para liberação administrativa total das VLANs.
+    - **Comportamento de Memória e SWAP:** Durante o boot e geração agressiva das chunks iniciais do mundo, o uso de RAM da VM saltou de 3.3GB para 5.5GB, acionando fortemente o SWAP do Debian (atingindo 87% da partição de 2GB).
+        - *Conclusão:* Comportamento perfeitamente normal e esperado. A JVM consumiu seu heap de 3GB + non-heap, e o Kernel alocou *Page Cache* agressivamente para otimizar o I/O do SSD durante a gravação das chunks, jogando processos inativos para o swap temporariamente. O *Hard Limit* de 4GB do container evitou perfeitamente um *OOM Kill*. *(Nota para o futuro: Avaliar o incremento de RAM da VM DockerHost se mais containers pesados forem adicionados).*
+
 ## 2026-03-24
 **Status:** ✅ Sucesso (Conexão Cabeada do Desktop e Hardening L2)
 

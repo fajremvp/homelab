@@ -1,0 +1,45 @@
+services:
+  minecraft:
+    image: itzg/minecraft-server:latest
+    container_name: minecraft-survival
+    restart: unless-stopped
+    ports:
+      # Exposto apenas na rede do DockerHost.
+      - "25565:25565"
+    environment:
+      TZ: "America/Sao_Paulo"
+      EULA: "TRUE"
+      TYPE: "PAPER"
+      VERSION: "LATEST"
+
+      # Geração do Mundo
+      SEED: "-3361685360695458093"
+      DIFFICULTY: "normal"
+      MODE: "survival"
+
+      # Limite do Java
+      MEMORY: "3G"
+      # Garbage Collector Aikar
+      USE_AIKAR_FLAGS: "true"
+
+      # Auto-Pause nativo e moderno da Mojang
+      PAUSE_WHEN_EMPTY_SECONDS: "60"
+      MAX_TICK_TIME: "-1"
+      JVM_DD_OPTS: "disable.watchdog:true"
+
+      # Zero Trust Minecraft
+      ENABLE_WHITELIST: "TRUE"
+      ENFORCE_WHITELIST: "TRUE"
+      WHITELIST: "FajreBR,Amigo1,Amigo2"
+
+      MOTD: "Meu Server Survival"
+
+    volumes:
+      # Montagem na pasta /opt/services/minecraft/data
+      - ./data:/data
+
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 4G

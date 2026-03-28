@@ -180,6 +180,21 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - **Nível 1 (Rede):** Protegido por Middleware Authentik (Zero Trust).
               - **Nível 2 (App):** Variáveis de ambiente (`TUDUDI_SESSION_SECRET`) injetadas via Ansible Prompt, sem persistência de senhas no Git.
           - **Persistência:** SQLite e Uploads mapeados em `/opt/services/tududi/data`, cobertos pelo backup diário do Restic.
+      * `Minecraft Server (PaperMC)`: [Implementado em 2026-03-28]
+          - **Função:** Servidor Survival focado em altíssima eficiência energética e resiliência (permanece online 24/7 de forma hibernada).
+          - **Local:** `/opt/services/minecraft`
+          - **Motor e Versão:** Imagem `itzg/minecraft-server`. Tipo PaperMC (`TYPE=PAPER`, `VERSION=LATEST`). Mantém a experiência de jogo Vanilla para os clientes, mas otimiza severamente o processamento no backend.
+          - **Segurança & Zero Trust:**
+              - Sem exposição à internet pública (Ausência de Port Forwarding no OPNsense).
+              - Protegido por Whitelist estrita (`ENABLE_WHITELIST=TRUE`).
+              - Acesso externo fornecido **exclusivamente via VPN (Tailscale)**, com grupo de ACL (no `acls.hujson`) dedicado, restringindo o roteamento apenas ao IP `10.10.30.10` na porta TCP `25565`.
+          - **Eficiência Energética (Auto-Pause):**
+              - Utiliza o recurso nativo da Mojang (`PAUSE_WHEN_EMPTY_SECONDS=60`) para congelar o *tick* do mundo após 1 minuto vazio, reduzindo o uso de CPU a ~0%.
+              - **Tuning Crítico:** Watchdogs desativados (`MAX_TICK_TIME=-1` e `JVM_DD_OPTS=disable.watchdog:true`) para evitar que o servidor sofra um "crash" falso forçado ao acordar do Auto-Pause.
+          - **Isolamento de Recursos (Cgroups) e Tuning:**
+              - **Java:** Limite de 3GB de Heap (`MEMORY=3G`) atrelado às Otimizações de Garbage Collector do Aikar (`USE_AIKAR_FLAGS=true`).
+              - **Docker:** Hard limit de 4GB de RAM e 1.5 vCores. O limite de 1.5 CPU é vital: como a VM possui apenas 2 núcleos, garante-se que o processo do Minecraft (intensivo em single-thread) não sufoque processos essenciais do host como o Traefik, Alloy e Authentik.
+          - **Persistência:** Volumes montados em `./data` (usuário nativo UID/GID 1000). Backup integral, consistente e diário coberto pela rotina padrão do Restic.
 
 * **Resiliência de Boot**: Todos os containers críticos (Vaultwarden, Stalwart) devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
 
