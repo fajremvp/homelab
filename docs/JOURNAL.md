@@ -4,6 +4,34 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-03-29
+**Status:** ✅ Sucesso (Expansão de Recursos da VM DockerHost)
+
+**Foco:** Aumento de RAM e disco da VM DockerHost para acomodar a carga crescente de containers.
+
+- **Motivação:**
+    - A entrada de 2026-03-28 já havia sinalizado o risco: durante o boot do Minecraft, a RAM da VM saltou para 5.5GB e acionou 87% do swap de 2GB. Com 8GB estáticos e múltiplos serviços pesados (Authentik/PostgreSQL, Prometheus, Loki, Syncthing, PaperMC), a margem de segurança havia se esgotado.
+    - O disco raiz de 32GB (ext4) estava em **81% de ocupação** (23GB usados de 29GB disponíveis), criando risco real de exaustão que travaria os containers via `no space left on device`.
+
+- **Implementação — RAM (8GB → 12GB):**
+    - Alterado via GUI no Proxmox.
+    - A VM reiniciou com 12GB alocados (`11Gi` visíveis pelo kernel — normal, overhead do sistema).
+    - Ballooning permanece desativado (`balloon: 0`), conforme padrão da infraestrutura para VMs de produção com serviços Java/stateful.
+
+- **Implementação — Disco (32GB → 64GB):**
+    - Expansão do disco virtual no hypervisor: `qm resize 105 scsi0 +32G`.
+    - **Obstáculo (Swap como Bloqueio L2):** O `growpart` falhou com `NOCHANGE: partition 2 is size 61630464. it cannot be grown`. Causa: a partição `sda3` (swap de 1.7GB criada durante a instalação) ocupava o espaço imediatamente após a `sda2`, impedindo sua extensão.
+    - **Resolução (fdisk + swapfile):**
+        1. Partição `sda3` removida via `fdisk` (sem necessidade de `swapoff` prévio, pois o swap não estava ativo no momento).
+        2. `growpart /dev/sda 2` expandiu com sucesso a partição raiz para ~63GB.
+        3. `resize2fs /dev/sda2` expandiu o filesystem ext4 online, sem necessidade de desmontar.
+        4. Swap recriado como **arquivo** (`/swapfile` de 2GB via `fallocate`), em vez de partição — solução mais flexível e elegante, pois permite redimensionamento futuro sem reparticionar.
+        5. UUID da partição antiga removido do `/etc/fstab`; entrada do `/swapfile` adicionada.
+    - **Resultado:** Disco raiz passou de **29G (81% cheio)** para **62G (41% cheio)**, com 36GB livres.
+
+- **Hardening Pós-Expansão:**
+    - Aplicado `vm.swappiness=1` via `/etc/sysctl.d/99-swappiness.conf`, alinhando o comportamento ao padrão das outras VMs de produção (OrangeShadow usa `vm.swappiness=10`). O kernel só recorrerá ao swap em situação de esgotamento absoluto de RAM física.
+
 ## 2026-03-28
 **Status:** ✅ Sucesso (Implementação de Servidor Minecraft)
 

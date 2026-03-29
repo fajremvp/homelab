@@ -11,6 +11,15 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-03-29] - DockerHost Resource Expansion
+### Alterado (Changed)
+- **RAM (VM 105):** Memória da VM DockerHost expandida de **8GB para 12GB** para acomodar a carga crescente. Ballooning permanece desativado.
+- **Disco Raiz (VM 105):** Disco de boot expandido de **32GB para 64GB** (`qm resize 105 scsi0 +32G`). Filesystem ext4 crescido online via `growpart` + `resize2fs` sem downtime. Disco raiz passou de 81% de ocupação para 41%.
+- **Swap:** Partição de swap (`/dev/sda3`) substituída por **swapfile** de 2GB (`/swapfile`). A mudança de paradigma (partição → arquivo) elimina restrições de posicionamento no disco e permite redimensionamento futuro sem reparticionar.
+
+### Adicionado (Added)
+- **Kernel Tuning:** Aplicado `vm.swappiness=1` via `/etc/sysctl.d/99-swappiness.conf` no DockerHost, alinhando a política de uso de swap ao padrão da infraestrutura (uso apenas em esgotamento absoluto de RAM).
+
 ## [2026-03-28] - Minecraft Server
 ### Adicionado (Added)
 - **Servidor Minecraft (PaperMC):** Implementação de servidor Survival via Docker (`itzg/minecraft-server`) focado em alta performance single-thread e eficiência energética.

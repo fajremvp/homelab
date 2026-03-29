@@ -1,6 +1,7 @@
 # --- AUTHENTIK (ID FIXO) ---
 # Força o tipo 'authentik' para este container específico
 filenames:
+  # Ainda preciso encontrar uma alternativa pra parar de usar esse ID hardcoded aqui (se o Authentik for recriado, esse ID muda e o CrowdSec volta a ficar cego)
   - /var/lib/docker/containers/62bfb1acf60feb891a1b70fb50dbf23ebf1c34a6215af4f5a44bca16965c5834/*-json.log
 labels:
   type: authentik

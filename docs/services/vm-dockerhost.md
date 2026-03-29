@@ -11,8 +11,8 @@ Implementação realizada em: 2025-12-27.
 | **OS** | Debian GNU/Linux | ISO: `debian-13.2.0-amd64.netinst` (Rolling/Testing)*. |
 | **Kernel** | Linux 6.x | Guest Agent ativado para telemetria no host. |
 | **vCPU** | 2 Cores | Type: `host` (Repassa instruções AES-NI da CPU real). |
-| **RAM** | 8 GB | Ballooning: **Não** (Desativado para estabilidade de serviços Java/ZFS). |
-| **Disco 1 (Boot)** | 32 GB (SCSI 0) | Storage: `local-zfs`. Sistema Operacional. |
+| **RAM** | 12 GB | Ballooning: **Não** (Desativado para estabilidade de serviços Java/ZFS). Expandido de 8GB em 2026-03-29 para acomodar carga crescente. |
+| **Disco 1 (Boot)** | 64 GB (SCSI 0) | Storage: `local-zfs`. Sistema Operacional. Expandido de 32GB em 2026-03-29. Swap recriado como arquivo (`/swapfile`) em vez de partição dedicada. |
 | **Disco 2 (Data)** | 100 GB (SCSI 1) | Storage: `local-zfs`. Dados brutos (`/mnt/syncthing`). |
 | **Rede** | `vmbr0` (VirtIO) | **VLAN Tag: 30** (Rede SERVER). Firewall do Proxmox: Desligado. |
 
