@@ -98,12 +98,12 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
             - **Networking Helper:** Serviço `tailscale-nat.service` (Systemd) garante que as regras de `iptables` (NAT Masquerade na interface `ens18` e permissão na chain `FORWARD`) sejam aplicadas a cada boot, permitindo que o tráfego da VPN atravesse o firewall restritivo do Docker.
     	* `Stalwart Mail Server`: A escolha definitiva. Servidor moderno escrito em **Rust** (memory-safe). Substitui Postfix/Dovecot/Rspamd por um binário único e eficiente. Suporta JMAP/IMAP/SMTP e consome apenas ~150MB de RAM. Também com aliases. Já aviso que não enviarei e-mails, somente receber (estou ciente da dificuldade de manter a famosa "reputação"). Uso de SMTP Relay externo ou e-mail comum que já uso (Tuta e Proton) caso haja bloqueio da porta 25 pelo ISP.
         * `Nostr Relay (nostr-rs-relay)`: [Implementado em 2026-01-31]
-        - **Motivo:** Garantir soberania e resiliência. Caso eu seja banido de relays públicos, continuo com meu próprio relay operando normalmente. Além disso, ele funciona como backup pessoal do meu conteúdo e da minha presença no Nostr, independente de terceiros.
-        - **Tecnologia:** Rust (Substituiu a ideia inicial do Strfry/C++ pelo suporte ao whitelist nativo).
-        - **Privacidade:** Configurado com *whitelist* de escrita (apenas minha chave privada pode postar).
-        - **Acesso:**
-            - **Local:** `wss://nostr.home` (Alta performance).
-            - **Tor:** Hidden Service `.onion` (Soberania e acesso externo sem abrir portas na WAN).
+            - **Motivo:** Garantir soberania e resiliência. Caso eu seja banido de relays públicos, continuo com meu próprio relay operando normalmente. Além disso, ele funciona como backup pessoal do meu conteúdo e da minha presença no Nostr, independente de terceiros.
+            - **Tecnologia:** Rust (Substituiu a ideia inicial do Strfry/C++ pelo suporte ao whitelist nativo).
+            - **Privacidade:** Configurado com *whitelist* de escrita (apenas minha chave privada pode postar).
+            - **Acesso:**
+                - **Local:** `wss://nostr.home` (Alta performance).
+                - **Tor:** Hidden Service `.onion` (Soberania e acesso externo sem abrir portas na WAN).
       * **Authentik (Identity Provider):** `[DockerHost]`
           - **Local:** `/opt/auth/authentik`
           - **Versão:** `2025.10.3` (Stable).

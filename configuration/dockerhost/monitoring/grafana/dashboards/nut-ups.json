@@ -19,7 +19,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 17,
+  "id": 18,
   "links": [],
   "panels": [
     {
@@ -65,7 +65,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 5,
         "w": 3,
         "x": 0,
         "y": 1
@@ -109,7 +109,6 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
         "uid": "prometheus-homelab"
       },
       "fieldConfig": {
@@ -117,9 +116,8 @@
           "color": {
             "mode": "thresholds"
           },
+          "decimals": 0,
           "mappings": [],
-          "max": 700,
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -128,12 +126,8 @@
                 "value": 0
               },
               {
-                "color": "#EAB839",
-                "value": 400
-              },
-              {
                 "color": "red",
-                "value": 550
+                "value": 80
               }
             ]
           },
@@ -142,15 +136,15 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 10,
+        "h": 5,
+        "w": 3,
         "x": 3,
         "y": 1
       },
       "id": 27,
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
+        "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
@@ -169,7 +163,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "(network_ups_tools_ups_load{instance=~\"$instance\",job=~\"$job\",ups=\"$ups\"} / 100) * 700",
+          "expr": "(network_ups_tools_ups_load / 100) * 700",
           "legendFormat": "__auto",
           "range": true,
           "refId": "A"
@@ -243,9 +237,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 11,
-        "x": 13,
+        "h": 5,
+        "w": 18,
+        "x": 6,
         "y": 1
       },
       "id": 15,
@@ -276,7 +270,7 @@
           "refId": "A"
         }
       ],
-      "title": "Load History (%)",
+      "title": "Load History",
       "transparent": true,
       "type": "timeseries"
     },
@@ -322,7 +316,7 @@
         "h": 5,
         "w": 3,
         "x": 0,
-        "y": 4
+        "y": 6
       },
       "id": 2,
       "options": {
@@ -357,6 +351,108 @@
       "title": "Battery Charge",
       "transparent": true,
       "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus-homelab"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "dark-red",
+                "value": 60
+              },
+              {
+                "color": "yellow",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 21,
+        "x": 3,
+        "y": 6
+      },
+      "id": 28,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "network_ups_tools_battery_charge{job=\"ups-intelbras\"}",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Battery Charge History",
+      "transparent": true,
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -401,7 +497,7 @@
         "h": 5,
         "w": 3,
         "x": 0,
-        "y": 9
+        "y": 11
       },
       "id": 5,
       "options": {
@@ -504,7 +600,7 @@
         "h": 5,
         "w": 21,
         "x": 3,
-        "y": 9
+        "y": 11
       },
       "id": 12,
       "options": {
@@ -588,7 +684,7 @@
         "h": 5,
         "w": 3,
         "x": 0,
-        "y": 14
+        "y": 16
       },
       "id": 4,
       "options": {
@@ -770,7 +866,7 @@
         "h": 5,
         "w": 21,
         "x": 3,
-        "y": 14
+        "y": 16
       },
       "id": 13,
       "options": {
@@ -950,5 +1046,5 @@
   "timezone": "",
   "title": "UPS statistics",
   "uid": "j4a-DMWRk",
-  "version": 3
+  "version": 7
 }

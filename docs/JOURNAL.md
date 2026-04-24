@@ -4,6 +4,27 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-04-24
+**Status:** ✅ Sucesso (Manutenção Evolutiva e Hardening de CI/CD)
+
+**Foco:** Atualização de serviços, aprimoramento da observabilidade de energia e sincronização estrita de documentação do pipeline.
+
+- **Atualização de Serviço (Actual Budget):**
+  - O container do gerenciador financeiro foi atualizado com sucesso para a release mais recente (`26.4.0`).
+
+- **Observabilidade de Energia (Grafana):**
+  - Identificada a necessidade de visualizar o comportamento da bateria ao longo do tempo. Adicionado o gráfico **Battery Charge History** no painel do UPS/Nobreak. Isso permite correlacionar o histórico de retenção de carga com os eventos de queda de energia, ajudando a prever a degradação física das baterias.
+
+- **Segurança de CI/CD (Hardening do Gitleaks):**
+  - O hook do Gitleaks no `.pre-commit-config.yaml` foi enrijecido. Foram adicionados os argumentos `"--exit-code", "1"`.
+  - **Ação:** Agora, a detecção de qualquer segredo resulta em falha obrigatória (Hard Block) do commit, impedindo que o vazamento ocorra mesmo se o desenvolvedor ignorar o aviso visual.
+
+- **Sincronização e Saneamento de Documentação Técnica:**
+  - O documento `development-standards.md` estava defasado em relação à realidade do pipeline de pre-commit. Foi executada uma refatoração completa para alinhar a teoria à prática:
+    - **Novos Hooks Documentados:** Adicionadas as descrições para os hooks de higiene e integridade (`check-added-large-files`, `check-merge-conflict`, e `detect-private-key`).
+    - **Correção de Severidade:** O status do `shellcheck` foi corrigido de "Warning" para "Crítico (Block)".
+    - **Refinamento de Detalhes:** Especificados os argumentos reais em uso: inclusão da flag `--redact` no Gitleaks, perfil *relaxed* (e exclusão de templates `.j2`) no Yamllint, perfil *basic* no Ansible Lint e o uso do wrapper Python para o ShellCheck.
+
 ## 2026-03-29
 **Status:** ✅ Sucesso (Expansão de Recursos da VM DockerHost)
 
@@ -13,19 +34,19 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
     - A entrada de 2026-03-28 já havia sinalizado o risco: durante o boot do Minecraft, a RAM da VM saltou para 5.5GB e acionou 87% do swap de 2GB. Com 8GB estáticos e múltiplos serviços pesados (Authentik/PostgreSQL, Prometheus, Loki, Syncthing, PaperMC), a margem de segurança havia se esgotado.
     - O disco raiz de 32GB (ext4) estava em **81% de ocupação** (23GB usados de 29GB disponíveis), criando risco real de exaustão que travaria os containers via `no space left on device`.
 
-- **Implementação — RAM (8GB → 12GB):**
+- **Implementação - RAM (8GB -> 12GB):**
     - Alterado via GUI no Proxmox.
-    - A VM reiniciou com 12GB alocados (`11Gi` visíveis pelo kernel — normal, overhead do sistema).
+    - A VM reiniciou com 12GB alocados (`11Gi` visíveis pelo kernel - normal, overhead do sistema).
     - Ballooning permanece desativado (`balloon: 0`), conforme padrão da infraestrutura para VMs de produção com serviços Java/stateful.
 
-- **Implementação — Disco (32GB → 64GB):**
+- **Implementação - Disco (32GB -> 64GB):**
     - Expansão do disco virtual no hypervisor: `qm resize 105 scsi0 +32G`.
     - **Obstáculo (Swap como Bloqueio L2):** O `growpart` falhou com `NOCHANGE: partition 2 is size 61630464. it cannot be grown`. Causa: a partição `sda3` (swap de 1.7GB criada durante a instalação) ocupava o espaço imediatamente após a `sda2`, impedindo sua extensão.
     - **Resolução (fdisk + swapfile):**
         1. Partição `sda3` removida via `fdisk` (sem necessidade de `swapoff` prévio, pois o swap não estava ativo no momento).
         2. `growpart /dev/sda 2` expandiu com sucesso a partição raiz para ~63GB.
         3. `resize2fs /dev/sda2` expandiu o filesystem ext4 online, sem necessidade de desmontar.
-        4. Swap recriado como **arquivo** (`/swapfile` de 2GB via `fallocate`), em vez de partição — solução mais flexível e elegante, pois permite redimensionamento futuro sem reparticionar.
+        4. Swap recriado como **arquivo** (`/swapfile` de 2GB via `fallocate`), em vez de partição - solução mais flexível e elegante, pois permite redimensionamento futuro sem reparticionar.
         5. UUID da partição antiga removido do `/etc/fstab`; entrada do `/swapfile` adicionada.
     - **Resultado:** Disco raiz passou de **29G (81% cheio)** para **62G (41% cheio)**, com 36GB livres.
 

@@ -11,10 +11,11 @@ Adotei a política de **Shift-Left**, onde a validação ocorre na estação de 
 
 Utilizamos o framework [pre-commit](https://pre-commit.com/) para gerenciar hooks de Git.
 
-| Ferramenta | ID | Função | Bloqueio |
+| Ferramenta | ID(s) | Função | Bloqueio |
 | :--- | :--- | :--- | :--- |
-| **Gitleaks** | `gitleaks` | **Segurança.** Escaneia o código em busca de chaves privadas (RSA, PEM), tokens de API e credenciais hardcoded. | Crítico (Block) |
-| **Ansible Lint** | `ansible-lint` | **Boas Práticas.** Verifica playbooks contra regras de idempotência, sintaxe moderna e erros comuns. | Crítico (Block) |
-| **Yamllint** | `yamllint` | **Sintaxe.** Valida a indentação e estrutura estrita de arquivos YAML (`docker-compose`, configs). | Crítico (Block) |
-| **ShellCheck** | `shellcheck` | **Lógica.** Analisa scripts `.sh` em busca de erros de sintaxe, variáveis não citadas e portabilidade. | Warning |
-| **Fixers** | `trailing-whitespace`, `end-of-file` | **Higiene.** Remove espaços inúteis e garante quebra de linha no final dos arquivos automaticamente. | Auto-Fix |
+| **Higiene de Código** | `trailing-whitespace`, `end-of-file-fixer` | Remove espaços inúteis e garante quebra de linha no final dos arquivos automaticamente. | Auto-Fix |
+| **Integridade e Segurança Básica** | `check-added-large-files`, `check-merge-conflict`, `detect-private-key` | Bloqueia o commit de arquivos binários gigantes, marcas de conflito (`<<<<`) e chaves privadas (`id_rsa`, `.pem`). | Crítico (Block) |
+| **Gitleaks** | `gitleaks` | **Segurança Avançada.** Escaneia o código em busca de tokens de API e credenciais vazadas. Executa ocultando os valores nos logs de erro (`--redact`). | Crítico (Block) |
+| **Ansible Lint** | `ansible-lint` | **Boas Práticas.** Valida playbooks focando em erros fatais e depreciações (utilizando o perfil `--profile basic`). | Crítico (Block) |
+| **Yamllint** | `yamllint` | **Sintaxe.** Valida a estrutura YAML utilizando regras mais flexíveis (*relaxed*) e ignorando o tamanho máximo de linha. Ignora templates Jinja do Ansible (`.j2`). | Crítico (Block) |
+| **ShellCheck** | `shellcheck` | **Lógica.** Analisa scripts `.sh` em busca de erros de sintaxe e problemas de portabilidade (utilizando wrapper Python sem necessidade de Docker). | Crítico (Block) |

@@ -11,6 +11,16 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-04-24] - ActualBudget, UPS Dashboard e Pre-commit Hardening
+### Adicionado (Added)
+- **Grafana (UPS):** Adicionado o gráfico "Battery Charge History" no dashboard do Nobreak para monitoramento histórico de ciclos e retenção de carga da bateria.
+- **Documentação de CI/CD:** Adicionadas as descrições para os hooks de integridade do Git (`check-added-large-files`, `check-merge-conflict`, e `detect-private-key`) no arquivo `development-standards.md`.
+
+### Alterado (Changed)
+- **Actual Budget:** Serviço atualizado para a release mais recente (`v26.4.0`).
+- **Pre-commit (Gitleaks):** Injetados os argumentos `"--exit-code", "1"` na configuração do Gitleaks. O pipeline agora falha obrigatoriamente o commit em caso de detecção de segredos.
+- **Documentação de CI/CD:** Tabela do pipeline de validação no `development-standards.md` reescrita para refletir exatidão com o `.pre-commit-config.yaml`. Severidade do `shellcheck` corrigida para Crítico e detalhados os perfis específicos de execução do Yamllint, Ansible Lint e Gitleaks.
+
 ## [2026-03-29] - DockerHost Resource Expansion
 ### Alterado (Changed)
 - **RAM (VM 105):** Memória da VM DockerHost expandida de **8GB para 12GB** para acomodar a carga crescente. Ballooning permanece desativado.
