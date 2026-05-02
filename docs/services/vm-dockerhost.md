@@ -90,13 +90,12 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
 * **VM de Aplicações (DockerHost):** `[Debian Stable]`
     * **Justificativa:** Um "servidor" centralizado para rodar todos os aplicativos em contêineres Docker. Isso mantém o Host Proxmox limpo. (Uma VM oferece melhor isolamento; um LXC é mais leve).
     * **Serviços rodando neste Host (Docker):**
-        * **Tailscale (VPN Gateway):**
+        * `Tailscale` (VPN Gateway):
             - **Modo:** Container Docker rodando em `network_mode: host` para evitar duplo encapsulamento e perda de performance.
             - **Função:** Subnet Router para as VLANs de serviço (10, 30, 40).
             - **Automação:** - `AuthKey`: Injetada via Ansible (`.env`) como Reutilizável, permitindo recriação do container sem aprovação manual.
                 - `State`: Persistido em `./state` (protegido contra wipe do Ansible).
             - **Networking Helper:** Serviço `tailscale-nat.service` (Systemd) garante que as regras de `iptables` (NAT Masquerade na interface `ens18` e permissão na chain `FORWARD`) sejam aplicadas a cada boot, permitindo que o tráfego da VPN atravesse o firewall restritivo do Docker.
-    	* `Stalwart Mail Server`: A escolha definitiva. Servidor moderno escrito em **Rust** (memory-safe). Substitui Postfix/Dovecot/Rspamd por um binário único e eficiente. Suporta JMAP/IMAP/SMTP e consome apenas ~150MB de RAM. Também com aliases. Já aviso que não enviarei e-mails, somente receber (estou ciente da dificuldade de manter a famosa "reputação"). Uso de SMTP Relay externo ou e-mail comum que já uso (Tuta e Proton) caso haja bloqueio da porta 25 pelo ISP.
         * `Nostr Relay (nostr-rs-relay)`: [Implementado em 2026-01-31]
             - **Motivo:** Garantir soberania e resiliência. Caso eu seja banido de relays públicos, continuo com meu próprio relay operando normalmente. Além disso, ele funciona como backup pessoal do meu conteúdo e da minha presença no Nostr, independente de terceiros.
             - **Tecnologia:** Rust (Substituiu a ideia inicial do Strfry/C++ pelo suporte ao whitelist nativo).
@@ -104,7 +103,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
             - **Acesso:**
                 - **Local:** `wss://nostr.home` (Alta performance).
                 - **Tor:** Hidden Service `.onion` (Soberania e acesso externo sem abrir portas na WAN).
-      * **Authentik (Identity Provider):** `[DockerHost]`
+      * `Authentik` (Identity Provider): [Implementado em 2026-01-02]
           - **Local:** `/opt/auth/authentik`
           - **Versão:** `2025.10.3` (Stable).
           - **Banco de Dados:** PostgreSQL 16 e Redis 7 (Dedicados, rede `internal`).
@@ -208,7 +207,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - **Healthcheck:** Container possui verificação ativa (`curl /api/healthcheck`), permitindo que o daemon do Docker saiba o real estado de saúde da aplicação.
               - **Notificações:** Desabilitadas intencionalmente. As integrações nativas com Ntfy e Webhooks foram marcadas como *deprecated* pelos desenvolvedores do app.
 
-* **Resiliência de Boot**: Todos os containers críticos (Vaultwarden, Stalwart) devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
+* **Resiliência de Boot**: Todos os containers críticos devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
 
 ## Serviços Sob Demanda (Não vão estar sempre ligados)
 

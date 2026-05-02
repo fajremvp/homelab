@@ -4,34 +4,90 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-05-02
+**Status:** ✅ Sucesso (Validação Operacional do DNS Secundário - RPi)
+
+**Foco:** Auditoria completa do AdGuard Home secundário (`192.168.1.5`) para validar funcionamento, privacidade (Zero Footprint) e failover automático.
+
+- **Motivação:** Nunca havia sido realizado um teste formal e documentado de todos os aspectos do DNS secundário desde sua implementação em 2026-01-19. Com o ambiente estável, executou-se uma bateria completa de testes operacionais.
+
+- **Testes Realizados e Resultados:**
+    1. **Serviço ativo:** `systemctl status AdGuardHome` confirmou `active (running)` desde 30/03/2026 — uptime de 1 mês e 2 dias sem interrupção. Journald com apenas 1 linha (start do systemd), zero queries logadas no sistema.
+    2. **tmpfs montado e protegido:** tmpfs on /opt/AdGuardHome/data type tmpfs (rw,relatime,size=131072k,mode=700). Tamanho: 128M. Permissões `0700` (somente root). O usuário `fajre` não consegue acessar o diretório sem privilégios elevados (`ls: cannot access '/opt/AdGuardHome/data/': Permission denied`).
+    3. **Logs desativados na configuração:**
+        - Confirmado via `grep` no `AdGuardHome.yaml` com privilégios elevados.
+        ```yaml
+        querylog:
+        enabled: false
+        size_memory: 0
+        statistics:
+        enabled: false
+        ```
+    4. **DNS respondendo e filtrando:**
+        - `dig @192.168.1.5 google.com` → `NOERROR`, resposta em **0ms** (cache hit). ✅
+        - `dig @192.168.1.5 doubleclick.net` → `127.0.0.1` (bloqueado pela lista OISD). ✅
+    5. **Failover com LXC primário derrubado:**
+        - LXC AdGuard-Primary (101) parado via GUI do Proxmox.
+        - `dig @192.168.1.5 github.com` → `NOERROR` em 3ms. ✅
+        - `resolvectl flush-caches` executado para garantir ausência de cache.
+        - `resolvectl query github.com` → `4.228.31.150` via `enp1s0f1` em **1.5ms**. ✅
+        - Failover confirmado no nível do sistema operacional, não apenas via `dig` direto.
+    6. **Zero Footprint - Restart de serviço (amnésia parcial):**
+        - `systemctl restart AdGuardHome` não apaga o tmpfs — apenas reinicia o processo.
+        - `stats.db` sobreviveu ao restart com timestamp atualizado (comportamento correto e esperado).
+        - **Conclusão:** A amnésia total só ocorre no reboot físico do hardware, não no restart do serviço. Comportamento arquitetural documentado conscientemente.
+    7. **Zero Footprint - Reboot físico (amnésia total):**
+        - Antes do reboot: `stats.db` = 65536 bytes, `sessions.db` = 16384 bytes.
+        - `sudo reboot` executado no RPi.
+        - Após o boot: `stats.db` = 16384 bytes (zerado), `sessions.db` = 16384 bytes (zerado), timestamps recriados em `May 2 19:39`. ✅
+        - **Nenhum histórico de queries sobreviveu ao reboot físico. Zero Footprint confirmado empiricamente.**
+
+- **Observação - `nslookup` durante o failover:**
+    - Com o LXC primário desligado, `nslookup github.com` retornou `Server: 10.10.30.5` - indicando que o `systemd-resolved` ainda tinha o primário em cache. Isso evidencia que o teste de failover real exige `resolvectl flush-caches` antes, caso contrário o resultado é falso positivo. Procedimento adicionado ao runbook de DR.
+
+- **Resultado Final:**
+
+    | Teste | Resultado |
+    |:------|:----------|
+    | Serviço ativo (uptime 33 dias) | ✅ |
+    | tmpfs montado (`mode=700`) | ✅ |
+    | querylog desativado no YAML | ✅ |
+    | Journald silenciado (1 linha) | ✅ |
+    | DNS respondendo (`google.com`) | ✅ |
+    | Bloqueio OISD (`doubleclick.net` → `127.0.0.1`) | ✅ |
+    | Failover com flush de cache | ✅ |
+    | Amnésia no restart de serviço (tmpfs persiste) | ✅ esperado |
+    | Amnésia no reboot físico (tmpfs destruído) | ✅ |
+
+- **Documentação:** Adicionado Runbook de teste de failover e verificação de amnésia no `disaster-recovery.md`.
+
 ## 2026-05-01
 **Status:** ✅ Sucesso (Implementação do Speedtest Tracker, SRE e Observabilidade)
 
 **Foco:** Monitoramento histórico da performance da ISP (Download/Upload/Ping), diagnóstico de gargalos via cAdvisor e integração com Prometheus/Grafana.
 
-### Implementação Inicial e GitOps
-- **Serviço:** Adicionado o `speedtest-tracker` (imagem `lscr.io/linuxserver/speedtest-tracker:latest`) via Docker Compose na VM DockerHost.
-- **Segurança:** O painel na rota `speedtest-tracker.home` foi blindado pelo Traefik + Authentik (ForwardAuth). O `.env` com a `APP_KEY` do Laravel foi fornecido via Ansible (`vars_prompt`), mantendo o git protegido.
-- **Armazenamento:** Optado por SQLite nativo no diretório `/opt/services/speedtest-tracker/data`, garantindo que o backup diário automático do Restic faça a captura consistente sem necessidade de dumps complexos.
-- **Incidente de Path no Ansible:** O deploy inicial falhou (Erro `rsync code 23`). A causa foi uma divergência entre a pasta criada (`speedtest-tracker`) e o caminho no módulo `synchronize` do `services.yml` (`speedtest`). Corrigido rapidamente no playbook.
+- **Implementação Inicial e GitOps:**
+  - **Serviço:** Adicionado o `speedtest-tracker` (imagem `lscr.io/linuxserver/speedtest-tracker:latest`) via Docker Compose na VM DockerHost.
+  - **Segurança:** O painel na rota `speedtest-tracker.home` foi blindado pelo Traefik + Authentik (ForwardAuth). O `.env` com a `APP_KEY` do Laravel foi fornecido via Ansible (`vars_prompt`), mantendo o git protegido.
+  - **Armazenamento:** Optado por SQLite nativo no diretório `/opt/services/speedtest-tracker/data`, garantindo que o backup diário automático do Restic faça a captura consistente sem necessidade de dumps complexos.
+  - **Incidente de Path no Ansible:** O deploy inicial falhou (Erro `rsync code 23`). A causa foi uma divergência entre a pasta criada (`speedtest-tracker`) e o caminho no módulo `synchronize` do `services.yml` (`speedtest`). Corrigido rapidamente no playbook.
 
-### Prometheus (Crash Loop e TLS)
-A exposição e raspagem das métricas no endpoint `/prometheus` do Speedtest Tracker apresentou desafios técnicos e causou downtime temporário no serviço de monitoramento:
-- **Tentativa 1 (HTTP/80):** Falhou. Como a variável `APP_URL` estava definida como `https`, o Nginx interno do container forçou um redirecionamento (HTTP 301) que o Prometheus não soube lidar.
-- **Tentativa 2 (Erro de Sintaxe e Crash Loop):** Uma tentativa de injetar headers (`X-Forwarded-Proto`) gerou um erro de sintaxe no `prometheus.yml` (parâmetro `http_config` > `headers` inexistente no escopo do `scrape_configs`). O Prometheus entrou em *Crash Loop* (Erro: `field http_config not found in type config.ScrapeConfig`).
-- **Solução:** O `prometheus.yml` foi corrigido para raspar a porta **443** (HTTPS interno do container). Como o certificado gerado pelo LinuxServer.io é autoassinado (não possui SAN), foi obrigatório adicionar a flag oficial `insecure_skip_verify: true` sob `tls_config`. O Prometheus voltou à vida imediatamente e os dados fluíram.
+- **Prometheus (Crash Loop e TLS):**
+  - A exposição e raspagem das métricas no endpoint `/prometheus` do Speedtest Tracker apresentou desafios técnicos e causou downtime temporário no serviço de monitoramento:
+    - **Tentativa 1 (HTTP/80):** Falhou. Como a variável `APP_URL` estava definida como `https`, o Nginx interno do container forçou um redirecionamento (HTTP 301) que o Prometheus não soube lidar.
+    - **Tentativa 2 (Erro de Sintaxe e Crash Loop):** Uma tentativa de injetar headers (`X-Forwarded-Proto`) gerou um erro de sintaxe no `prometheus.yml` (parâmetro `http_config` > `headers` inexistente no escopo do `scrape_configs`). O Prometheus entrou em *Crash Loop* (Erro: `field http_config not found in type config.ScrapeConfig`).
+    - **Solução:** O `prometheus.yml` foi corrigido para raspar a porta **443** (HTTPS interno do container). Como o certificado gerado pelo LinuxServer.io é autoassinado (não possui SAN), foi obrigatório adicionar a flag oficial `insecure_skip_verify: true` sob `tls_config`. O Prometheus voltou à vida imediatamente e os dados fluíram.
 
-### Profiling de Rede: Bare Metal vs Docker (cAdvisor)
-Identificado uma discrepância na velocidade relatada: O Arch Linux (Bare Metal na VLAN 20) bateu **408.3 Mbps** de download, enquanto o container do Speedtest registrou **321.78 Mbps**.
-- **Investigação SRE:** A primeira suspeita foi o limite de `0.75` CPUs definido no Docker Compose atuando como gargalo para a criptografia do teste.
-- **Diagnóstico:** A telemetria do **cAdvisor** no Grafana provou o contrário: o uso máximo de CPU do container durante o teste às 19:07 foi de irrelevantes **1.25%**, e a RAM não passou de 160MB.
-- **Conclusão:** O *overhead* provém do NAT do Docker (bridge `proxy`) e da eventual escolha de servidores Ookla com rotas distintas pelo CLI em Linux.
-- **Decisão:** O limite de CPU foi mantido em `0.75`. O parâmetro `THRESHOLD_DOWNLOAD` foi reajustado de `400` para `300` Mbps, estabelecendo uma nova *Baseline* (linha de base) que reflete a realidade da virtualização sem gerar falsos positivos de falha da ISP.
+- **Profiling de Rede: Bare Metal vs Docker (cAdvisor)**
+  - Identificado uma aparente discrepância inicial na velocidade: O Arch Linux (Bare Metal na VLAN 20) bateu **408.3 Mbps** de download, enquanto o container do Speedtest registrava médias de **~351 Mbps**.
+    - **Investigação SRE e Falso Positivo:** A primeira suspeita foi gargalo de CPU (`0.75` cores), mas o cAdvisor provou uso de apenas 1.25%. A segunda suspeita foi overhead de NAT do Docker.
+    - **Realidade (Plano da ISP):** Após acompanhamento de 24 horas, os logs mostraram resultados perfeitamente consistentes de `351.5 Mbps / 173 Mbps`. Isso corresponde **exatamente** ao plano contratado da ISP (Unifique 350/175). O pico de 408 Mbps no Bare Metal era apenas *Overprovisioning/Burst* inicial da operadora, e não a linha de base real.
+    - **Conclusão e Ajustes:** O container não possui gargalo e entrega 100% da banda contratada. Mantive a CPU em `0.75` e os limites de alerta (Thresholds) em **300 Mbps (DL)** e **150 Mbps (UL)**. Essa "gordura" de 15% evita fadiga de alertas por oscilações naturais da rota.
 
-### Notificações e Dashboards
-- **Notificações:** Desativei todas as integrações de Webhook (incluindo Ntfy), pois a documentação oficial alertava que elas estão *deprecated* em prol do Apprise. Evitamos dívida técnica futura.
-- **AdGuard Home:** Adicionada a regra customizada `@@||icanhazip.com^` para evitar que bloqueadores de DNS interrompessem o estágio de checagem (Checking) do Speedtest.
-- **Grafana:** Importado o Dashboard comunitário (ID `24608`, Prometheus Edition) e persistido como JSON no repositório. O "Single Pane of Glass" agora consolida métricas de banda, jitter e perda de pacotes da infraestrutura.
+- **Notificações e Dashboards:**
+  - **Notificações:** Desativei todas as integrações de Webhook (incluindo Ntfy), pois a documentação oficial alertava que elas estão *deprecated* em prol do Apprise. Evitamos dívida técnica futura.
+  - **AdGuard Home:** Adicionada a regra customizada `@@||icanhazip.com^` para evitar que bloqueadores de DNS interrompessem o estágio de checagem (Checking) do Speedtest.
+  - **Grafana:** Importado o Dashboard comunitário (ID `24608`, Prometheus Edition) e persistido como JSON no repositório. O "Single Pane of Glass" agora consolida métricas de banda, jitter e perda de pacotes da infraestrutura.
 
 ## 2026-04-24
 **Status:** ✅ Sucesso (Manutenção Evolutiva e Hardening de CI/CD)
@@ -53,6 +109,45 @@ Identificado uma discrepância na velocidade relatada: O Arch Linux (Bare Metal 
     - **Novos Hooks Documentados:** Adicionadas as descrições para os hooks de higiene e integridade (`check-added-large-files`, `check-merge-conflict`, e `detect-private-key`).
     - **Correção de Severidade:** O status do `shellcheck` foi corrigido de "Warning" para "Crítico (Block)".
     - **Refinamento de Detalhes:** Especificados os argumentos reais em uso: inclusão da flag `--redact` no Gitleaks, perfil *relaxed* (e exclusão de templates `.j2`) no Yamllint, perfil *basic* no Ansible Lint e o uso do wrapper Python para o ShellCheck.
+
+## 2026-04-19
+**Status:** ✅ Sucesso (Trabalho Acadêmico — Testes de Aceitação Operacional)
+
+**Foco:** Apresentação prática de OAT (Operational Acceptance Testing) para a disciplina de Testes de Software, utilizando o Homelab como ambiente real de produção.
+
+**Contexto:**
+    - Trabalho em grupo sobre Testes de Aceitação. Minha responsabilidade foi a parte de **OAT (Testes Operacionais)**, demonstrando que um sistema não basta funcionar, ele precisa ser seguro, resiliente e isolado sob carga real.
+    - Minha parte da apresentação foi dividida em duas partes, ambas usando a infraestrutura do Homelab ao vivo.
+
+**Shift-Left Security (Pre-Commit como Teste de Aceitação Antecipado):**
+    - O primeira parte demonstrou o conceito de **Shift-Left**, onde a validação de qualidade e segurança ocorre na estação do desenvolvedor, antes do `git commit`, e não somente em produção ou na esteira de CI/CD.
+        - **Ferramenta:** Framework `pre-commit` (já presente na infra em `.pre-commit-config.yaml`).
+        - **Demonstração prática:**
+            1. **Vazamento de credencial:** Um arquivo com uma chave de acesso simulada foi adicionado ao stage. O hook **Gitleaks** detectou o vazamento em milissegundos e **bloqueou o commit**. O histórico do Git permaneceu limpo.
+            2. **Formatação suja:** Arquivo com espaços em branco e sem quebra de linha no final. Os hooks `trailing-whitespace` e `end-of-file-fixer` **corrigiram automaticamente** o arquivo antes do commit.
+            3. **Commit limpo:** Após remover a credencial e o arquivo ter sido autocorrigido, o commit foi aceito com todos os hooks passando.
+        - **Lição demonstrada:** Erros básicos de segurança e formatação detectados na origem jamais chegam ao histórico do repositório, liberando esteiras posteriores para focarem em testes mais avançados.
+
+**OAT na Prática: Segurança e Isolamento de Recursos:**
+    - A segunda parte demonstrou dois critérios clássicos de aceitação operacional, ambos também validados ao vivo contra o Homelab.
+    **Segurança (Zero Trust + SSO):**
+        - **Critério de aceitação:** *Nenhum recurso interno pode ser acessado sem autenticação validada.*
+        - **Ferramenta:** `curl --head --insecure https://grafana.home`
+        - **Resultado observado:**
+            - Acesso sem autenticação retornou **HTTP 302**, redirecionando para o Authentik (IdP). O Grafana nunca foi entregue diretamente.
+            - Tentativa de acesso direto à porta interna do serviço **falhou** (connection refused), confirmando que nenhuma porta de serviço está exposta diretamente na rede.
+            - Acesso via navegador confirmou o fluxo completo: redirect → Authentik → login com MFA → autorização por grupo (`infra-admins`).
+        - **Observação de OPSEC levantada durante a apresentação:** Mesmo sem acesso ao conteúdo, os headers HTTP da resposta revelam que o sistema utiliza o Authentik. Um atacante em fase de reconhecimento conseguiria mapear o IdP da infraestrutura.
+        - **Conclusão:** Critério de segurança **APROVADO**.
+    **Performance e Isolamento de Recursos (Blast Radius):**
+        - **Critério de aceitação:** *Um serviço sobrecarregado não pode consumir todos os recursos da máquina e derrubar serviços vizinhos críticos.*
+        - **Ferramenta:** Apache JMeter, com 250 usuários simultâneos, requisições ininterruptas por 1 minuto, alvo: container `whoami` (serviço de teste leve, escrito em Go).
+        - **Configuração do alvo:** Limites intencionalmente rígidos no Docker Compose (`cpus: 0.1`, `memory: 50M`) para forçar saturação controlada.
+        - **Monitoramento:** Grafana ao vivo com dashboards do cAdvisor (métricas por container).
+        - **Resultado observado:**
+            - CPU e rede do container `whoami` dispararam e atingiram o teto definido pelos Cgroups do Linux.
+        - **Mecanismo explicado:** O Docker utiliza **Cgroups** do Linux para impor limites físicos no kernel. O impacto ficou contido estritamente no container alvo, ou seja, o **blast radius foi controlado**.
+        - **Conclusão:** Critério de isolamento de recursos **APROVADO**.
 
 ## 2026-03-29
 **Status:** ✅ Sucesso (Expansão de Recursos da VM DockerHost)

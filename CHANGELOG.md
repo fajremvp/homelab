@@ -11,6 +11,20 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-05-02] - Validação Operacional do DNS Secundário (RPi)
+### Adicionado (Added)
+- **Runbook DNS:** Nova seção em `disaster-recovery.md` detalhando procedimentos de teste para o DNS Secundário (RPi).
+
+### Validado (Verified)
+- **DNS Secundário (RPi `192.168.1.5`):** Bateria completa de testes operacionais executada e aprovada. Uptime de 33 dias confirmado sem intervenção.
+- **Zero Footprint:** Confirmado empiricamente que o reboot físico do RPi destrói o tmpfs e zera `stats.db` e `sessions.db`. Nenhum histórico de queries DNS persiste no disco após reboot.
+- **Failover Automático:** Validado com `resolvectl flush-caches` + LXC primário parado. Sistema operacional do Arch resolveu nomes via secundário em 1.5ms sem intervenção manual.
+- **Filtragem ativa:** Lista OISD confirmada bloqueando `doubleclick.net` → `127.0.0.1` no nó secundário.
+
+### Documentado (Documented)
+- **Procedimento de teste de failover** adicionado ao `disaster-recovery.md`: flush de cache obrigatório antes do teste para evitar falso positivo por cache do `systemd-resolved`.
+- **Comportamento de amnésia** documentado: restart do serviço não apaga o tmpfs (apenas reboot físico o faz). Comportamento arquitetural consciente.
+
 ## [2026-05-01] - Speedtest Tracker & Observabilidade de ISP
 ### Adicionado (Added)
 - **Speedtest Tracker:** Implementado monitoramento de banda e uptime da ISP na VM DockerHost (`lscr.io/linuxserver/speedtest-tracker`).
@@ -30,6 +44,11 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - **Actual Budget:** Serviço atualizado para a release mais recente (`v26.4.0`).
 - **Pre-commit (Gitleaks):** Injetados os argumentos `"--exit-code", "1"` na configuração do Gitleaks. O pipeline agora falha obrigatoriamente o commit em caso de detecção de segredos.
 - **Documentação de CI/CD:** Tabela do pipeline de validação no `development-standards.md` reescrita para refletir exatidão com o `.pre-commit-config.yaml`. Severidade do `shellcheck` corrigida para Crítico e detalhados os perfis específicos de execução do Yamllint, Ansible Lint e Gitleaks.
+
+## [2026-04-19] - Operational Acceptance Testing (OAT) - Trabalho Acadêmico
+### Validado (Verified)
+- **Segurança (Zero Trust):** Confirmado via `curl` que nenhum serviço interno é acessível sem autenticação. Requisições não autenticadas recebem HTTP 302 e são redirecionadas ao Authentik (IdP). Acesso direto às portas internas resulta em connection refused.
+- **Isolamento de Recursos (Blast Radius):** Validado via Apache JMeter (250 usuários simultâneos / 1 minuto) que um container saturado ao limite dos Cgroups não impacta serviços vizinhos. Monitoramento ao vivo via Grafana + cAdvisor confirmou contenção total do impacto.
 
 ## [2026-03-29] - DockerHost Resource Expansion
 ### Alterado (Changed)

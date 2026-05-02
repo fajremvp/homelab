@@ -125,3 +125,90 @@ A cada 6 meses, o tempo de shutdown do Proxmox deve ser revalidado (ou após adi
 4. **Cronometre:** Verifique o tempo exato (Tempo A) que o Proxmox leva para desligar e o momento (Tempo B) em que o Nobreak dá o estalo do relé e apaga o RPi/Switch.
 5. Se `Tempo B` for MAIOR que `Tempo A`, a matemática está segura. Recoloque o cabo do Proxmox no UPS.
 6. Se `Tempo A` (Proxmox) ultrapassar o `Tempo B`, **cancele operações, ligue o Proxmox na energia** e recalcule o `sleep` no script do RPi.
+
+## Validação do DNS Secundário (RPi - AdGuard Home)
+
+Procedimento para verificar periodicamente o funcionamento, privacidade e failover do DNS secundário em `192.168.1.5`.
+
+### Pré-requisito
+O LXC AdGuard-Primary (101) deve estar rodando normalmente antes de iniciar. Ao final, verificar se foi religado.
+
+### 1. Verificar serviço e tmpfs
+
+```bash
+ssh fajre@192.168.1.5
+
+sudo systemctl status AdGuardHome
+# Esperado: active (running)
+
+sudo journalctl -u AdGuardHome --no-pager | wc -l
+# Esperado: 1 (apenas a linha de start)
+
+mount | grep AdGuardHome
+# Esperado: tmpfs on /opt/AdGuardHome/data type tmpfs (rw,relatime,size=131072k,mode=700)
+
+sudo ls -la /opt/AdGuardHome/ | grep data
+# Esperado: drwx------ (modo 0700, root)
+```
+
+### 2. Verificar configuração de privacidade
+
+```bash
+sudo grep -A5 'querylog' /opt/AdGuardHome/AdGuardHome.yaml
+# Esperado: enabled: false
+
+sudo grep -A3 'statistics' /opt/AdGuardHome/AdGuardHome.yaml
+# Esperado: enabled: false (ou ausente)
+```
+
+### 3. Verificar DNS e filtragem
+
+```bash
+# Do Arch Linux:
+dig @192.168.1.5 google.com
+# Esperado: status: NOERROR, resposta válida
+
+dig @192.168.1.5 doubleclick.net
+# Esperado: 127.0.0.1 (bloqueado pela lista OISD)
+```
+
+### 4. Testar failover (com flush obrigatório)
+
+> ⚠️ **CRÍTICO:** Sempre executar `resolvectl flush-caches` antes de testar. Sem isso, o `systemd-resolved` pode retornar resultado do cache do primário, gerando um **falso positivo**.
+
+```bash
+# 1. Derrubar o primário (via GUI Proxmox ou CLI)
+# pvesh create /nodes/homelab/lxc/101/status/stop  (no host Proxmox)
+
+# 2. Limpar o cache DNS do Arch
+sudo resolvectl flush-caches
+
+# 3. Testar resolução - deve usar o secundário automaticamente
+resolvectl query github.com
+# Esperado: resposta válida via enp1s0f1, sem erro
+
+# 4. Confirmar via dig direto no secundário
+dig @192.168.1.5 github.com
+# Esperado: NOERROR
+
+# 5. Religar o primário
+# pvesh create /nodes/homelab/lxc/101/status/start
+```
+
+### 5. Validar amnésia no reboot físico
+
+```bash
+# No RPi, verificar estado antes:
+sudo ls -la /opt/AdGuardHome/data/
+# Anotar tamanho do stats.db
+
+# Reboot:
+sudo reboot
+
+# Após o boot, verificar:
+sudo ls -la /opt/AdGuardHome/data/
+# Esperado: stats.db = 16384 bytes (vazio/zerado), timestamps recriados
+# Confirma que nenhum histórico de queries sobreviveu ao reboot
+```
+
+> **Nota arquitetural:** O restart do serviço (`systemctl restart AdGuardHome`) **não** apaga o tmpfs - apenas o reboot físico do hardware o faz. Isso é comportamento correto e esperado. A amnésia só é total com a perda de energia ou reboot do RPi.
