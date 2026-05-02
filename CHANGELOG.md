@@ -11,6 +11,16 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-05-01] - Speedtest Tracker & Observabilidade de ISP
+### Adicionado (Added)
+- **Speedtest Tracker:** Implementado monitoramento de banda e uptime da ISP na VM DockerHost (`lscr.io/linuxserver/speedtest-tracker`).
+- **Métricas:** Integrado ao Prometheus via porta 443 com bypass de verificação SSL (Certificado Autoassinado Local).
+- **Dashboard:** Adicionado painel no Grafana (ID 24608) para análise gráfica de performance da internet.
+- **AdGuard Rules:** Whitelist explícita para `icanhazip.com` para permitir os pre-checks do Ookla CLI.
+
+### Alterado (Changed)
+- **Baseline de Rede:** Configurado o threshold de falha de download para 300 Mbps para contornar o overhead basal de NAT da rede Docker.
+
 ## [2026-04-24] - ActualBudget, UPS Dashboard e Pre-commit Hardening
 ### Adicionado (Added)
 - **Grafana (UPS):** Adicionado o gráfico "Battery Charge History" no dashboard do Nobreak para monitoramento histórico de ciclos e retenção de carga da bateria.

@@ -85,3 +85,13 @@ scrape_configs:
       ups: ['intelbras']
     static_configs:
       - targets: ['nut-exporter:9199']
+
+  # --- Speedtest Tracker ---
+  - job_name: 'speedtest-tracker'
+    scrape_interval: 60s
+    metrics_path: /prometheus
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    static_configs:
+      - targets: ['speedtest-tracker:443']

@@ -1,0 +1,51 @@
+services:
+  speedtest-tracker:
+    image: lscr.io/linuxserver/speedtest-tracker:latest
+    container_name: speedtest-tracker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - DB_CONNECTION=sqlite
+      - APP_NAME=Speedtest Tracker
+      - APP_TIMEZONE=America/Sao_Paulo
+      - DISPLAY_TIMEZONE=America/Sao_Paulo
+      - DATETIME_FORMAT=d/m/Y H:i:s
+      - CHART_DATETIME_FORMAT=d/m H:i
+      # Testa a cada hora, no minuto 7 (minuto ímpar para evitar congestionamento)
+      - SPEEDTEST_SCHEDULE=7 * * * *
+      # Prune resultados com mais de 90 dias
+      - PRUNE_RESULTS_OLDER_THAN=90
+      # Alertas de Threshold
+      - THRESHOLD_ENABLED=true
+      - THRESHOLD_DOWNLOAD=300
+      - THRESHOLD_UPLOAD=150
+      - THRESHOLD_PING=30
+    volumes:
+      - ./data:/config
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.speedtest.rule=Host(`speedtest-tracker.home`)"
+      - "traefik.http.routers.speedtest.entrypoints=websecure"
+      - "traefik.http.routers.speedtest.tls=true"
+      - "traefik.http.routers.speedtest.middlewares=authentik@docker"
+      - "traefik.http.services.speedtest.loadbalancer.server.port=80"
+    healthcheck:
+      test: curl -fSs http://localhost/api/healthcheck | grep -q "running" || exit 1
+      interval: 30s
+      retries: 3
+      start_period: 60s
+      timeout: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 500M
+
+networks:
+  proxy:
+    external: true

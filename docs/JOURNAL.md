@@ -4,6 +4,35 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-05-01
+**Status:** ✅ Sucesso (Implementação do Speedtest Tracker, SRE e Observabilidade)
+
+**Foco:** Monitoramento histórico da performance da ISP (Download/Upload/Ping), diagnóstico de gargalos via cAdvisor e integração com Prometheus/Grafana.
+
+### Implementação Inicial e GitOps
+- **Serviço:** Adicionado o `speedtest-tracker` (imagem `lscr.io/linuxserver/speedtest-tracker:latest`) via Docker Compose na VM DockerHost.
+- **Segurança:** O painel na rota `speedtest-tracker.home` foi blindado pelo Traefik + Authentik (ForwardAuth). O `.env` com a `APP_KEY` do Laravel foi fornecido via Ansible (`vars_prompt`), mantendo o git protegido.
+- **Armazenamento:** Optado por SQLite nativo no diretório `/opt/services/speedtest-tracker/data`, garantindo que o backup diário automático do Restic faça a captura consistente sem necessidade de dumps complexos.
+- **Incidente de Path no Ansible:** O deploy inicial falhou (Erro `rsync code 23`). A causa foi uma divergência entre a pasta criada (`speedtest-tracker`) e o caminho no módulo `synchronize` do `services.yml` (`speedtest`). Corrigido rapidamente no playbook.
+
+### Prometheus (Crash Loop e TLS)
+A exposição e raspagem das métricas no endpoint `/prometheus` do Speedtest Tracker apresentou desafios técnicos e causou downtime temporário no serviço de monitoramento:
+- **Tentativa 1 (HTTP/80):** Falhou. Como a variável `APP_URL` estava definida como `https`, o Nginx interno do container forçou um redirecionamento (HTTP 301) que o Prometheus não soube lidar.
+- **Tentativa 2 (Erro de Sintaxe e Crash Loop):** Uma tentativa de injetar headers (`X-Forwarded-Proto`) gerou um erro de sintaxe no `prometheus.yml` (parâmetro `http_config` > `headers` inexistente no escopo do `scrape_configs`). O Prometheus entrou em *Crash Loop* (Erro: `field http_config not found in type config.ScrapeConfig`).
+- **Solução:** O `prometheus.yml` foi corrigido para raspar a porta **443** (HTTPS interno do container). Como o certificado gerado pelo LinuxServer.io é autoassinado (não possui SAN), foi obrigatório adicionar a flag oficial `insecure_skip_verify: true` sob `tls_config`. O Prometheus voltou à vida imediatamente e os dados fluíram.
+
+### Profiling de Rede: Bare Metal vs Docker (cAdvisor)
+Identificado uma discrepância na velocidade relatada: O Arch Linux (Bare Metal na VLAN 20) bateu **408.3 Mbps** de download, enquanto o container do Speedtest registrou **321.78 Mbps**.
+- **Investigação SRE:** A primeira suspeita foi o limite de `0.75` CPUs definido no Docker Compose atuando como gargalo para a criptografia do teste.
+- **Diagnóstico:** A telemetria do **cAdvisor** no Grafana provou o contrário: o uso máximo de CPU do container durante o teste às 19:07 foi de irrelevantes **1.25%**, e a RAM não passou de 160MB.
+- **Conclusão:** O *overhead* provém do NAT do Docker (bridge `proxy`) e da eventual escolha de servidores Ookla com rotas distintas pelo CLI em Linux.
+- **Decisão:** O limite de CPU foi mantido em `0.75`. O parâmetro `THRESHOLD_DOWNLOAD` foi reajustado de `400` para `300` Mbps, estabelecendo uma nova *Baseline* (linha de base) que reflete a realidade da virtualização sem gerar falsos positivos de falha da ISP.
+
+### Notificações e Dashboards
+- **Notificações:** Desativei todas as integrações de Webhook (incluindo Ntfy), pois a documentação oficial alertava que elas estão *deprecated* em prol do Apprise. Evitamos dívida técnica futura.
+- **AdGuard Home:** Adicionada a regra customizada `@@||icanhazip.com^` para evitar que bloqueadores de DNS interrompessem o estágio de checagem (Checking) do Speedtest.
+- **Grafana:** Importado o Dashboard comunitário (ID `24608`, Prometheus Edition) e persistido como JSON no repositório. O "Single Pane of Glass" agora consolida métricas de banda, jitter e perda de pacotes da infraestrutura.
+
 ## 2026-04-24
 **Status:** ✅ Sucesso (Manutenção Evolutiva e Hardening de CI/CD)
 

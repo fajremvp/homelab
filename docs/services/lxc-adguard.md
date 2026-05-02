@@ -15,6 +15,9 @@
         * **Primário:** `[LXC Alpine]` - No servidor principal. Serviço leve. Ter um IP dedicado (via LXC) facilita apontar o OPNsense para ele.
         * **Secundário:** `[Raspberry Pi]` - Instância de backup rodando no Pi de gerenciamento.
     * **Estratégia Anti-Loop:** O OPNsense (Router) usará seu próprio **Unbound nativo** (localhost) para resolver nomes de infraestrutura, garantindo que ele nunca dependa do AdGuard para bootar. O AdGuard será entregue apenas aos clientes (PCs/Celulares) via DHCP.
+    * **Exceções e Whitelists Globais:** Para garantir o funcionamento pleno da stack de infraestrutura, as seguintes exceções foram aplicadas diretamente nas **Custom Rules** do AdGuard:
+        * **Speedtest Tracker (Pre-Check):** `@@||icanhazip.com^`
+            * **Justificativa:** Antes de inicializar as threads de teste do Ookla CLI, a aplicação faz um ICMP/GET para `icanhazip.com` para descobrir o IP WAN e atestar a existência de conectividade externa. Sem essa whitelist, algumas listas agressivas do AdGuard bloqueiam o domínio, fazendo o teste falhar precocemente com o status "Checking failed".
 
 ### Relacionados/Ligados ao AdGuard (melhor explicado em network-stack.md):
 

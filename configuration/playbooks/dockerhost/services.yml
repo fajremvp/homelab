@@ -22,6 +22,9 @@
     - name: tududi_secret
       prompt: "Tududi Session Secret (String longa aleatória)"
       private: true
+    - name: speedtest_app_key
+      prompt: "Speedtest Tracker APP_KEY (base64:...)"
+      private: true
 
   tasks:
     # --- WHOAMI ---
@@ -249,6 +252,43 @@
     - name: Start Minecraft
       community.docker.docker_compose_v2:
         project_src: "{{ base_dir }}/minecraft"
+        state: present
+
+    # --- SPEEDTEST TRACKER ---
+    - name: Sync Speedtest Tracker
+      synchronize:
+        src: "../../dockerhost/services/speedtest-tracker/"
+        dest: "{{ base_dir }}/speedtest-tracker/"
+        recursive: true
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--chown={{ ansible_user }}:{{ ansible_user }}"
+          - "--exclude=.env"
+          - "--exclude=data/"
+
+    - name: Garantir diretório de dados do Speedtest Tracker
+      file:
+        path: "{{ base_dir }}/speedtest-tracker/data"
+        state: directory
+        owner: "1000"
+        group: "1000"
+        mode: '0755'
+
+    - name: Gerar .env do Speedtest Tracker
+      copy:
+        dest: "{{ base_dir }}/speedtest-tracker/.env"
+        content: |
+          APP_KEY={{ speedtest_app_key }}
+          APP_URL=https://speedtest-tracker.home
+          ASSET_URL=https://speedtest-tracker.home
+        owner: "1000"
+        group: "1000"
+        mode: '0600'
+        force: true
+
+    - name: Start Speedtest Tracker
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/speedtest-tracker"
         state: present
 
   handlers:

@@ -195,6 +195,18 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - **Java:** Limite de 3GB de Heap (`MEMORY=3G`) atrelado às Otimizações de Garbage Collector do Aikar (`USE_AIKAR_FLAGS=true`).
               - **Docker:** Hard limit de 4GB de RAM e 1.5 vCores. O limite de 1.5 CPU é vital: como a VM possui apenas 2 núcleos, garante-se que o processo do Minecraft (intensivo em single-thread) não sufoque processos essenciais do host como o Traefik, Alloy e Authentik.
           - **Persistência:** Volumes montados em `./data` (usuário nativo UID/GID 1000). Backup integral, consistente e diário coberto pela rotina padrão do Restic.
+      * `Speedtest Tracker`: [Implementado em 2026-05-01]
+          - **Função:** Serviço essencial para auditar a entrega de banda da operadora. A configuração foi altamente customizada para otimização de recursos e integração total com o ecossistema do Homelab:
+              - **Armazenamento (DB):** Utiliza `sqlite` local em `/opt/services/speedtest-tracker/data`. Não requer um container de DB dedicado (MariaDB/Postgres), tornando-o leve e facilmente backupeável pelo Restic.
+              - **Agendamento (Cron):** A variável `SPEEDTEST_SCHEDULE=7 * * * *` foi definida para o **minuto 7 de cada hora**. Isso evita os minutos redondos (`:00`, `:30`), onde os servidores do Ookla sofrem picos de congestionamento global, garantindo resultados mais limpos.
+              - **Resource Limits:** Configurado com `cpus: '0.75'` e `memory: 500M`. A análise via cAdvisor comprovou que o container gasta, no máximo, `~1.25%` de CPU durante testes a +300Mbps, não necessitando de mais núcleos.
+              - **Limiares de Alerta (Thresholds):**
+                  - `THRESHOLD_DOWNLOAD=300` (Ajustado para refletir a Baseline com o overhead de NAT do Docker, ao invés dos 400 Mbps nominais do Bare Metal).
+                  - `THRESHOLD_UPLOAD=150`
+                  - `THRESHOLD_PING=30`
+              - * **Retenção de Dados:** `PRUNE_RESULTS_OLDER_THAN=90`. Dados mais velhos que 3 meses são expurgados automaticamente para evitar inchaço do SQLite.
+              - **Healthcheck:** Container possui verificação ativa (`curl /api/healthcheck`), permitindo que o daemon do Docker saiba o real estado de saúde da aplicação.
+              - **Notificações:** Desabilitadas intencionalmente. As integrações nativas com Ntfy e Webhooks foram marcadas como *deprecated* pelos desenvolvedores do app.
 
 * **Resiliência de Boot**: Todos os containers críticos (Vaultwarden, Stalwart) devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
 
