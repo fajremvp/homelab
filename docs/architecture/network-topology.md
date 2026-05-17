@@ -32,7 +32,7 @@
 |:---|:-----|:-----|:------------------------|
 | N/A | ISP/MODEM/LAN | 192.168.1.x | Tráfego Externo/Nativo. Rede do modem da operadora. Habitantes: Modem, Raspiberry Pi, WAN do OPNsense e Proxmox Host (.200) e Dropbear SSH (Boot/Unlock). |
 | 10 | MGMT (Management) | 10.10.10.0/24 | "A Torre de Controle". Acesso restrito. Regra de Ouro: IPs Estáticos obrigatórios. Não dependem de DHCP. Porta de Emergência: Uma porta física do switch será configurada como "Untagged VLAN 10". Etiqueta Física (Protocolo de Crise): Colar uma etiqueta no switch contendo: "IP Emergência: 10.10.10.99 / GW: 10.10.10.1". Garante acesso rápido via notebook. Nota: O Proxmox migrará para cá apenas quando houver acesso Out-of-Band (Pi). Habitantes: LXC Management. |
-| 20 | TRUSTED (Home) | 10.10.20.0/24 | "Dispositivos Pessoais". Rede de confiança média-alta. Habitantes: Notebook Arch, Celular (via AP Porta 2). Acesso permitido à Internet e a serviços na VLAN SERVER. |
+| 20 | TRUSTED (Home) | 10.10.20.0/24 | "Dispositivos Pessoais". Rede de confiança média-alta. Habitantes: Notebook NixOS, Celular (via AP Porta 2). Acesso permitido à Internet e a serviços na VLAN SERVER. |
 | 30 | SERVER (Services) | 10.10.30.0/24 | "Produção". Onde rodam os serviços estáveis. Habitantes: VM DockerHost (Stalwart, Nostr, Vaultwarden, Forgejo), LXC AdGuard-Primary e futura VM do Bitcoin Node. Isolados, acessíveis apenas via portas específicas (ex: 443 via Traefik). |
 | 40 | SECURE (Vault) | 10.10.40.0/24 | "O Cofre". Isolamento máximo. Sem acesso direto à internet (exceto update controlado e backups diários). Habitantes: VM Vault. Fisicamente separada na interface vtnet0. |
 | 50 | IOT (Guest) | 10.10.50.0/24 | "A Selva". Dispositivos que não controlo e não confio. Sem acesso à VLAN de gerenciamento ou servidores. Habitantes: TV Smart, Lâmpadas, Visitantes (via AP Porta 2). |
@@ -46,7 +46,7 @@
 | Origem | Destino | Porta/Serviço | Justificativa |
 |:-------|:--------|:--------------|:---------------|
 | MGMT (10) | ANY | SSH (22) | Ansible precisa configurar os servidores. |
-| TRUSTED (20) | ANY | SSH (22) | Acesso a todos os servidores (Arch). |
+| TRUSTED (20) | ANY | SSH (22) | Acesso a todos os servidores (Notebook NixOS). |
 | TRUSTED (20) | SERVER (30) | HTTPS (443) | Acessar serviços e painéis (Vaultwarden, Grafana, Traefik...). |
 | TRUSTED (20) | SERVER (30) | UDP 53 (DNS) | Clientes usam o AdGuard (10.10.30.5) para resolver nomes. |
 | TRUSTED (20) | SECURE (40) | SSH (22) | Desbloquear o Vault. |

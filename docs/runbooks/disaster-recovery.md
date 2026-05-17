@@ -68,7 +68,7 @@ O OPNsense não utilizar Restic. Ele utilizar o plugin `os-git-backup`.
 Utilizar em caso o servidor estar travado na tela de senha (LUKS) e eu estiver fora da rede local.
 
 ### Pré-requisitos
-1.  **Meu celular ou Arch** com cliente Tailscale instalado e autenticado.
+1.  **Meu celular ou NixOS (Acer Aspire)** com cliente Tailscale instalado e autenticado.
 2.  **Chave Privada SSH** (Ed25519) carregada no dispositivo cliente.
 
 ### Procedimento de Desbloqueio (Via Android/Celular)
@@ -82,7 +82,7 @@ Utilizar em caso o servidor estar travado na tela de senha (LUKS) e eu estiver f
 5.  **Desbloquear:** Digitar `cryptroot-unlock` e inserir a passphrase do disco.
 6.  **Encerrar:** Assim que o comando retornar sucesso, desconecte o Tailscale e reative sua VPN de privacidade.
 
-### Procedimento no Arch Linux (Client) & Troubleshooting DNS
+### Procedimento no NixOS (Client) & Troubleshooting DNS
 
 #### Conectar
 O comando deve aceitar explicitamente as rotas anunciadas pelo RPi.
@@ -164,7 +164,7 @@ sudo grep -A3 'statistics' /opt/AdGuardHome/AdGuardHome.yaml
 ### 3. Verificar DNS e filtragem
 
 ```bash
-# Do Arch Linux:
+# Do NixOS:
 dig @192.168.1.5 google.com
 # Esperado: status: NOERROR, resposta válida
 
@@ -180,7 +180,7 @@ dig @192.168.1.5 doubleclick.net
 # 1. Derrubar o primário (via GUI Proxmox ou CLI)
 # pvesh create /nodes/homelab/lxc/101/status/stop  (no host Proxmox)
 
-# 2. Limpar o cache DNS do Arch
+# 2. Limpar o cache DNS do NixOS
 sudo resolvectl flush-caches
 
 # 3. Testar resolução - deve usar o secundário automaticamente

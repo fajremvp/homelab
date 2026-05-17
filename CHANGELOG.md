@@ -11,6 +11,31 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-05-16] - Migração de SO do Client (NixOS) e Ergonomia
+### Alterado (Changed)
+- **Ergonomia Física:** Luzes (LEDs) das ventoinhas do gabinete do servidor e do nobreak desligadas para reduzir a poluição visual do ambiente.
+
+### Documentado (Documented)
+- **Client OS:** Documentação do repositório revisada e completamente ajustada para refletir a migração do notebook de Arch Linux para NixOS.
+
+## [2026-05-10] - Manutenção de Client OS
+### Alterado (Changed)
+- **Syncthing:** Reconfigurado o pareamento do Syncthing devido à mudança de sistema operacional do notebook principal (Arch Linux para NixOS).
+
+## [2026-05-07] - Controle de Estado do Minecraft
+### Alterado (Changed)
+- **PaperMC (Docker):** Política de restart do `docker-compose.yml` alterada de `unless-stopped` para `no`. O servidor agora exige inicialização estritamente manual (`docker compose up -d`), prevenindo auto-starts, atualizações ou consumo de recursos inesperados após reboots do host ou execuções do Ansible.
+
+## [2026-05-05] - Auditoria OrangeShadow e Otimização de Alertas
+### Validado (Verified)
+- **OrangeShadow (Fase 4):** Auditoria operacional 24/7 concluída com sucesso. Confirmada a sincronização total dos daemons na Darknet (`block-relay-only v2`), sem vazamentos. Limites de recursos do Systemd Cgroups operando com exatidão matemática (BTC 2.9/3G, XMR 2.9/3G, Electrs 771M/1G).
+### Alterado (Changed)
+- **Observabilidade (Healthchecks.io):** Aumentado o `Grace Time` do monitoramento do DockerHost de 2 para 10 minutos (tolerância total de 15 min). A medida reduz falsos positivos de indisponibilidade causados por oscilações momentâneas de rede ou atrasos transientes do Docker.
+
+## [2026-05-03] - Redundância de Repositório (Multi-Remote)
+### Adicionado (Added)
+- **Git Flow:** Implementado fluxo *Multi-Remote*. O código-fonte da infraestrutura (com assinaturas GPG) agora é empurrado simultaneamente para o GitHub e espelhado no Codeberg (`https://codeberg.org/fajre/homelab`) a cada `git push`, garantindo mais um backup.
+
 ## [2026-05-02] - Validação Operacional do DNS Secundário (RPi)
 ### Adicionado (Added)
 - **Runbook DNS:** Nova seção em `disaster-recovery.md` detalhando procedimentos de teste para o DNS Secundário (RPi).

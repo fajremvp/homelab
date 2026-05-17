@@ -86,10 +86,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
 * **Max Files:** `3` (Total 30MB de retenção por container).
 
 ## Aplicações e Serviços (Sempre ativos)
-
-* **VM de Aplicações (DockerHost):** `[Debian Stable]`
     * **Justificativa:** Um "servidor" centralizado para rodar todos os aplicativos em contêineres Docker. Isso mantém o Host Proxmox limpo. (Uma VM oferece melhor isolamento; um LXC é mais leve).
-    * **Serviços rodando neste Host (Docker):**
         * `Tailscale` (VPN Gateway):
             - **Modo:** Container Docker rodando em `network_mode: host` para evitar duplo encapsulamento e perda de performance.
             - **Função:** Subnet Router para as VLANs de serviço (10, 30, 40).
@@ -103,25 +100,25 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
             - **Acesso:**
                 - **Local:** `wss://nostr.home` (Alta performance).
                 - **Tor:** Hidden Service `.onion` (Soberania e acesso externo sem abrir portas na WAN).
-      * `Authentik` (Identity Provider): [Implementado em 2026-01-02]
+        * `Authentik` (Identity Provider): [Implementado em 2026-01-02]
           - **Local:** `/opt/auth/authentik`
           - **Versão:** `2025.10.3` (Stable).
           - **Banco de Dados:** PostgreSQL 16 e Redis 7 (Dedicados, rede `internal`).
           - **Função:** Centraliza autenticação (SSO) e segurança Zero Trust.
           - **Integração:** Exposto via Traefik (`auth.home`).
           - **Middleware:** Exporta o middleware `authentik@docker` para o Traefik. Qualquer container que adicionar a label `middlewares=authentik@docker` torna-se imediatamente protegido por login, sem precisar implementar autenticação própria.
-      * `Vaultwarden` (Gerenciador de senhas):
+        * `Vaultwarden` (Gerenciador de senhas):
           - **Local:** `/opt/services/vaultwarden`
           - **Banco de Dados:** SQLite (Arquivo único em `./data`, foco em facilidade de backup).
           - **Integração Vault:** Usa AppRole dedicado para injetar o `ADMIN_TOKEN` na inicialização.
           - **Ingress:**
               - `/`: Acesso direto (necessário para Apps Mobile/Desktop).
               - `/admin`: Protegido via Authentik Middleware (Apenas `infra-admins`).
-      * `Grafana + Prometheus + Loki` (Observabilidade: Métricas, Logs e Alertas)
+        * `Grafana + Prometheus + Loki` (Observabilidade: Métricas, Logs e Alertas)
         	- **Política:** Retenção de logs configurada para **7 dias** para evitar que o armazenamento de logs lote o SSD NVMe principal.
             - **Módulos Ativos:** `cAdvisor` (Métricas de Container), `pve-exporter` (API do Proxmox) e `nut-exporter` (Telemetria do Nobreak via RPi).
-      * `Ntfy` (Servidor de Notificações): Alternativa soberana ao Discord/Slack. Recebe webhooks do Alertmanager/Grafana e envia push notifications para o celular.
-      * `Actual Budget` (Organização financeira pessoal): [Implementado em 2026-02-15]
+        * `Ntfy` (Servidor de Notificações): Alternativa soberana ao Discord/Slack. Recebe webhooks do Alertmanager/Grafana e envia push notifications para o celular.
+        * `Actual Budget` (Organização financeira pessoal): [Implementado em 2026-02-15]
           - **Função:** Gestão de orçamento pessoal (Envelope Budgeting).
           - **Ingress:** `actualbudget.home`.
           - **Segurança:**
@@ -129,7 +126,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - **Criptografia:** E2E (Chave gerada no client-side).
               - **Nota:** Exceção à regra Zero Trust do Authentik para permitir sincronização mobile.
           - **Persistência:** SQLite em `/data`.
-      * `Syncthing` (Hub de Sincronização): [Implementado em 2026-02-15]
+        * `Syncthing` (Hub de Sincronização): [Implementado em 2026-02-15]
           - **Função:** Centralização de arquivos (Hub-and-Spoke) e preparação para ingestão de mídia (Immich).
           - **Armazenamento Híbrido:**
               - *Config:* SSD de Boot (`/opt/services/syncthing/config`) -> Backup Restic Diário.
@@ -138,7 +135,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Portas de Dados:** 22000/TCP+UDP expostas para a LAN/WAN.
           - **Política de Sync (Atualizada em 2026-03-07):**
               - **Servidor e Clientes:** Send & Receive + Staggered File Versioning.
-              - **Motivo:** Permitir que alterações realizadas via interface Web (File Browser) sejam propagadas bidirecionalmente para todos os dispositivos (Arch Linux e Android M55).
+              - **Motivo:** Permitir que alterações realizadas via interface Web (File Browser) sejam propagadas bidirecionalmente para todos os dispositivos (NixOS (Acer Aspire) e Android M55).
           - **File Pull Order:** Definido globalmente como `Oldest First` em todos os nós. Impede o comportamento padrão (`Random`) de fragmentar arquivos na memória flash/ZFS durante sincronizações massivas.
           - **Segurança:** Autenticação Dupla (Authentik Middleware + Senha da App).
           - **Matriz de Configuração (Tuning):**
@@ -146,14 +143,14 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
                   - *Options:* `NAT Enabled=Off` (Isolado no Docker), `Global Announce=On`, `Relays=On`.
                   - *Defaults:* `Ignore Perms=On` (Crucial para evitar erros de chmod), `Compression=Metadata Only` (Otimizado para LAN Gigabit).
                   - *GUI:* `Insecure Skip Hostcheck=On` (Evita erros 403 atrás do Traefik).
-              - **Arch Linux:**
+              - **NixOS (Acer Aspire):**
                   - *Options:* `NAT Enabled=On` (UPnP para Roaming), `Global/Local/Relay=On`.
                   - *Defaults:* `Ignore Perms=On`, `Compression=Metadata Only` (Economia de CPU/Bateria).
               - **Android (M55):**
                   - *Run Conditions:* Wi-Fi Only (Padrão), Battery or AC Power.
                   - *Network:* `NAT Traversal=On` (Bypass CGNAT), `Global/Local/Relay=On`.
                   - *System:* Bateria do Android definida como **"Sem Restrições" (Unrestricted)**.
-      * `File Browser` (Web Drive para Syncthing): [Implementado em 2026-03-07]
+        * `File Browser` (Web Drive para Syncthing): [Implementado em 2026-03-07]
           - **Função:** Interface Web minimalista para navegação, upload e gerenciamento dos arquivos sincronizados pelo Syncthing.
           - **Versão:** `v2.61.2` (Tag travada para evitar quebra por atualizações automáticas).
           - **Integração de Armazenamento:**
@@ -172,29 +169,14 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - **Chunked Upload:** Ativado (10MB chunks / 5 retries) para maior resiliência em conexões instáveis.
           - **Observação Arquitetural:**
               - A tentativa de autenticação via injeção de headers (`X-Authentik-*`) foi abandonada por fragilidade histórica dessa integração.
-      * `Tududi` (Gerenciador de Tarefas & Calendário): [Implementado em 2026-02-23]
+        * `Tududi` (Gerenciador de Tarefas & Calendário): [Implementado em 2026-02-23]
           - **Função:** "Life OS" minimalista para gestão de prazos da faculdade e anotações rápidas.
           - **Ingress:** `tududi.home` (Porta interna 3002).
           - **Segurança:**
               - **Nível 1 (Rede):** Protegido por Middleware Authentik (Zero Trust).
               - **Nível 2 (App):** Variáveis de ambiente (`TUDUDI_SESSION_SECRET`) injetadas via Ansible Prompt, sem persistência de senhas no Git.
           - **Persistência:** SQLite e Uploads mapeados em `/opt/services/tududi/data`, cobertos pelo backup diário do Restic.
-      * `Minecraft Server (PaperMC)`: [Implementado em 2026-03-28]
-          - **Função:** Servidor Survival focado em altíssima eficiência energética e resiliência (permanece online 24/7 de forma hibernada).
-          - **Local:** `/opt/services/minecraft`
-          - **Motor e Versão:** Imagem `itzg/minecraft-server`. Tipo PaperMC (`TYPE=PAPER`, `VERSION=LATEST`). Mantém a experiência de jogo Vanilla para os clientes, mas otimiza severamente o processamento no backend.
-          - **Segurança & Zero Trust:**
-              - Sem exposição à internet pública (Ausência de Port Forwarding no OPNsense).
-              - Protegido por Whitelist estrita (`ENABLE_WHITELIST=TRUE`).
-              - Acesso externo fornecido **exclusivamente via VPN (Tailscale)**, com grupo de ACL (no `acls.hujson`) dedicado, restringindo o roteamento apenas ao IP `10.10.30.10` na porta TCP `25565`.
-          - **Eficiência Energética (Auto-Pause):**
-              - Utiliza o recurso nativo da Mojang (`PAUSE_WHEN_EMPTY_SECONDS=60`) para congelar o *tick* do mundo após 1 minuto vazio, reduzindo o uso de CPU a ~0%.
-              - **Tuning Crítico:** Watchdogs desativados (`MAX_TICK_TIME=-1` e `JVM_DD_OPTS=disable.watchdog:true`) para evitar que o servidor sofra um "crash" falso forçado ao acordar do Auto-Pause.
-          - **Isolamento de Recursos (Cgroups) e Tuning:**
-              - **Java:** Limite de 3GB de Heap (`MEMORY=3G`) atrelado às Otimizações de Garbage Collector do Aikar (`USE_AIKAR_FLAGS=true`).
-              - **Docker:** Hard limit de 4GB de RAM e 1.5 vCores. O limite de 1.5 CPU é vital: como a VM possui apenas 2 núcleos, garante-se que o processo do Minecraft (intensivo em single-thread) não sufoque processos essenciais do host como o Traefik, Alloy e Authentik.
-          - **Persistência:** Volumes montados em `./data` (usuário nativo UID/GID 1000). Backup integral, consistente e diário coberto pela rotina padrão do Restic.
-      * `Speedtest Tracker`: [Implementado em 2026-05-01]
+        * `Speedtest Tracker`: [Implementado em 2026-05-01]
           - **Função:** Serviço essencial para auditar a entrega de banda da operadora. A configuração foi altamente customizada para otimização de recursos e integração total com o ecossistema do Homelab:
               - **Armazenamento (DB):** Utiliza `sqlite` local em `/opt/services/speedtest-tracker/data`. Não requer um container de DB dedicado (MariaDB/Postgres), tornando-o leve e facilmente backupeável pelo Restic.
               - **Agendamento (Cron):** A variável `SPEEDTEST_SCHEDULE=7 * * * *` foi definida para o **minuto 7 de cada hora**. Isso evita os minutos redondos (`:00`, `:30`), onde os servidores do Ookla sofrem picos de congestionamento global, garantindo resultados mais limpos.
@@ -210,10 +192,22 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
 * **Resiliência de Boot**: Todos os containers críticos devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
 
 ## Serviços Sob Demanda (Não vão estar sempre ligados)
-
-* **Aplicações Sob Demanda (Docker):** `[DockerHost]`
     * **Justificativa:** Podem rodar no mesmo DockerHost dos serviços "Sempre Ativos", basta ligar e desligar os contêineres conforme necessário (`docker-compose up -d` e `docker-compose down`).
-        * `Servidor de Minecraft`(Survival Vanilla para jogar com até 3 amigos)
+        * `Minecraft Server (PaperMC)`: [Implementado em 2026-03-28]
+          - **Função:** Servidor Survival focado em altíssima eficiência energética e resiliência (permanece online 24/7 de forma hibernada).
+          - **Local:** `/opt/services/minecraft`
+          - **Motor e Versão:** Imagem `itzg/minecraft-server`. Tipo PaperMC (`TYPE=PAPER`, `VERSION=LATEST`). Mantém a experiência de jogo Vanilla para os clientes, mas otimiza severamente o processamento no backend.
+          - **Segurança & Zero Trust:**
+              - Sem exposição à internet pública (Ausência de Port Forwarding no OPNsense).
+              - Protegido por Whitelist estrita (`ENABLE_WHITELIST=TRUE`).
+              - Acesso externo fornecido **exclusivamente via VPN (Tailscale)**, com grupo de ACL (no `acls.hujson`) dedicado, restringindo o roteamento apenas ao IP `10.10.30.10` na porta TCP `25565`.
+          - **Eficiência Energética (Auto-Pause):**
+              - Utiliza o recurso nativo da Mojang (`PAUSE_WHEN_EMPTY_SECONDS=60`) para congelar o *tick* do mundo após 1 minuto vazio, reduzindo o uso de CPU a ~0%.
+              - **Tuning Crítico:** Watchdogs desativados (`MAX_TICK_TIME=-1` e `JVM_DD_OPTS=disable.watchdog:true`) para evitar que o servidor sofra um "crash" falso forçado ao acordar do Auto-Pause.
+          - **Isolamento de Recursos (Cgroups) e Tuning:**
+              - **Java:** Limite de 3GB de Heap (`MEMORY=3G`) atrelado às Otimizações de Garbage Collector do Aikar (`USE_AIKAR_FLAGS=true`).
+              - **Docker:** Hard limit de 4GB de RAM e 1.5 vCores. O limite de 1.5 CPU é vital: como a VM possui apenas 2 núcleos, garante-se que o processo do Minecraft (intensivo em single-thread) não sufoque processos essenciais do host como o Traefik, Alloy e Authentik.
+          - **Persistência:** Volumes montados em `./data` (usuário nativo UID/GID 1000). Backup integral, consistente e diário coberto pela rotina padrão do Restic.
 
 ## CrowdSec Agent (LAPI)
 Implementação realizada em: 2026-01-24.

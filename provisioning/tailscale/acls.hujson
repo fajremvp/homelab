@@ -16,7 +16,7 @@
   // ACLs: O que é permitido?
   "acls": [
     // --- REGRAS DO ADMIN (EU) ---
-    // Origem: SÓ EU (Celular/Arch logado na minha conta)
+    // Origem: SÓ EU (Celular/NixOS (Acer Aspire) logado na minha conta)
     {
       "action": "accept",
       "src": ["group:admin"],

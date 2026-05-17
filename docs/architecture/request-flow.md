@@ -15,7 +15,7 @@
 
 ```
 graph TD
-    Client[Client (Arch/Mobile)]
+    Client[Client (NixOS/Mobile)]
 
     %% Fluxo DNS com Alta Disponibilidade e Soberania
     Client -->|1. DNS Query| PrimaryDNS[AdGuard LXC 10.10.30.5]

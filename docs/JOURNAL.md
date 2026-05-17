@@ -4,6 +4,53 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-05-16
+**Status:** ✅ Sucesso (Ergonomia Física e Documentação)
+
+**Foco:** Redução de poluição visual e atualização arquitetural do Client (NixOS).
+
+- **Ergonomia e Ambiente:** As luzes (LEDs) das ventoinhas do gabinete do servidor e do Nobreak foram completamente desligadas. O objetivo é reduzir a poluição luminosa no ambiente, tornando a presença do homelab mais discreta.
+- **Manutenção de Documentação:** Toda a documentação do repositório foi revisada e ajustada. Como migrei meu notebook pessoal do Arch Linux para o **NixOS**, as referências arquiteturais aos clientes da infraestrutura precisavam refletir essa nova realidade de forma precisa.
+
+## 2026-05-10
+**Status:** ✅ Sucesso (Integração de Novo Client OS)
+
+**Foco:** Restabelecimento de comunicação P2P (Syncthing) após migração para NixOS.
+
+- **Migração para NixOS:** Com a substituição do Arch Linux pelo NixOS no meu notebook, o node precisou ser reajustado.
+- **Reajuste do Syncthing:** Realizei a reconfiguração do Syncthing no novo sistema operacional, sincronizando novamente com o DockerHost para garantir o fluxo de arquivos.
+
+## 2026-05-07
+**Status:** ✅ Sucesso (Controle de Ciclo de Vida)
+
+**Foco:** Alteração da política de reinício do servidor de Minecraft.
+
+- **Controle Manual Absoluto:** Removi a política `restart: unless-stopped` do `docker-compose.yml` e defini explicitamente `restart: "no"`.
+- **Motivação e Resultado:** O container do PaperMC subia automaticamente após reboots do host, restarts do Docker daemon ou em execuções automáticas do Ansible/Compose. Agora, o servidor só sobe quando eu executo manualmente `docker compose up -d`. Isso me dá controle total sobre quando ele fica online, evitando reinicializações inesperadas e updates automáticos da imagem em momentos indesejados.
+
+## 2026-05-05
+**Status:** ✅ Sucesso (Auditoria de Produção e Tuning de Observabilidade)
+
+**Foco:** Comprovação da estabilidade do nó financeiro (Fase 4) e ajuste fino do Dead Man's Switch.
+
+- **Auditoria OrangeShadow (Fase 4 em Produção):** Entre os dias 04/05 e 05/05, executei uma auditoria profunda na VM OrangeShadow para validar a sua operação contínua 24/7.
+    - **Logs & Sincronia:** Ao rodar `tail` nos logs, vi o Monero cravar a mensagem "You are now synchronized with the network". O Bitcoin atualizou o *tip* da blockchain conectando-se a peers da Darknet (`block-relay-only v2`).
+    - **Consumo Físico:** O comando `free -h` comprovou que a memória está sob controle: 3.3Gi de RAM em uso real e o Swap absorvendo 1.8Gi.
+    - **Colete de Força (Cgroups):** O `systemctl status bitcoind electrs monerod tor@default` confirmou todos como `active (running)`. O Kernel respeitou magistralmente os limites do Systemd: Bitcoin cravado em 2.9G de 3G, Monero em 2.9G de 3G e Electrs em 771.9M de 1G. A máquina opera firme, blindada, sem vazar dados e sem sufocar os recursos do host.
+- **Tuning do Healthchecks.io (Redução de Ruído):**
+    - Ajustei o monitoramento do DockerHost para reduzir falsos positivos de indisponibilidade.
+    - **Ação:** O heartbeat continua enviando pings a cada 5 minutos, mas aumentei o `Grace Time` de 2 para **10 minutos**.
+    - **Resultado:** O sistema agora só considera o host como DOWN após ~15 minutos sem resposta. Essa janela torna o monitoramento tolerante a oscilações momentâneas de rede, atrasos do Docker, falhas transitórias de DNS ou pequenas interrupções da internet.
+
+## 2026-05-03
+**Status:** ✅ Sucesso
+
+**Foco:** Implementação de Redundância e Espelhamento Git (Multi-Remote).
+
+- **Descentralização do Repositório:** Consolidei a redundância da infraestrutura configurando um fluxo de *Multi-Remote* no Git.
+- **Mecanismo:** Todo o código (junto das assinaturas GPG) agora é enviado simultaneamente para o GitHub e para o **Codeberg** (`https://codeberg.org/fajre/homelab`) a cada execução de `git push`.
+- **Resultado:** Um backup espelhado, descentralizado e à prova de falhas/censura de uma única plataforma.
+
 ## 2026-05-02
 **Status:** ✅ Sucesso (Validação Operacional do DNS Secundário - RPi)
 

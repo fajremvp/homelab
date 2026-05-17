@@ -2,7 +2,7 @@ services:
   minecraft:
     image: itzg/minecraft-server:latest
     container_name: minecraft-survival
-    restart: unless-stopped
+    restart: "no"
     ports:
       # Exposto apenas na rede do DockerHost.
       - "25565:25565"
