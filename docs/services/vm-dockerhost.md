@@ -191,6 +191,20 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
 
 * **Resiliência de Boot**: Todos os containers críticos devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
 
+## CI/CD e Deploy Contínuo
+Implementado em: 2026-05-26.
+
+Para serviços estáticos e aplicações web como o portfólio `shellfolio-onion`, o DockerHost atua como seu próprio runner de CI/CD, replicando a experiência de um "Cloudflare Pages" local, eliminando dependências externas (como GitHub Actions).
+
+* **Mecanismo:** Git Bare Repository + Git Hooks (`post-receive`).
+* **Autenticação:** O código é recebido via conexão SSH padrão (Porta 22) na VLAN 20 (TRUSTED). A chave pública do usuário `fajre` garante a autorização.
+* **Fluxo de Build (Zero-Root):**
+    1. O Hook extrai a branch `main`.
+    2. Instancia um container efêmero (`node:22.12.0-alpine`).
+    3. Injeta as permissões corretas (`--user $(id -u):$(id -g)`) para impedir que o Docker crie arquivos compilados como `root`.
+    4. Roda o build estático (`npm ci && npm run build`).
+* **Hospedagem e Isolamento:** O artefato gerado (`dist/`) é servido via Nginx e roteado exclusivamente através de um sidecar Tor (`osminogin/tor-simple`), isolado em uma bridge `tor-net`. Ambos os containers possuem limites rígidos de Cgroups (`cpus: 0.25`, `memory: 100M`) para conter o *Blast Radius* em caso de DDoS via Darknet.
+
 ## Serviços Sob Demanda (Não vão estar sempre ligados)
     * **Justificativa:** Podem rodar no mesmo DockerHost dos serviços "Sempre Ativos", basta ligar e desligar os contêineres conforme necessário (`docker-compose up -d` e `docker-compose down`).
         * `Minecraft Server (PaperMC)`: [Implementado em 2026-03-28]

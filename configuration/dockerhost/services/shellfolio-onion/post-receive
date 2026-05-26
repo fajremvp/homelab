@@ -1,0 +1,25 @@
+#!/bin/bash
+echo "=> [Homelab] Recebendo nova versao do Shellfolio..."
+
+# Caminhos absolutos no servidor
+WORK_TREE="/opt/services/shellfolio-onion/app"
+GIT_DIR="/opt/services/shellfolio-onion/repo.git"
+COMPOSE_DIR="/opt/services/shellfolio-onion"
+
+# Extrai o código mais recente que acabou de chegar no push
+git --work-tree=$WORK_TREE --git-dir=$GIT_DIR checkout -f main
+
+echo "=> [Homelab] Subindo container efemero do Node para compilar..."
+# Usa a versão cravada. Roda como usuário fajre (evita arquivos root)
+docker run --rm \
+  --user $(id -u):$(id -g) \
+  -v $WORK_TREE:/app \
+  -w /app \
+  node:22.12.0-alpine sh -c "npm ci && npm run build"
+
+echo "=> [Homelab] Aplicando novos assets no Nginx..."
+# Reinicia o Nginx para limpar qualquer cache e servir os arquivos novos
+cd $COMPOSE_DIR
+docker compose restart web
+
+echo "=> [Homelab] 🟢 Deploy Onion concluido com sucesso!"

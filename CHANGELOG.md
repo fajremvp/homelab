@@ -11,6 +11,11 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-05-26] - Portfólio na Darknet com CI/CD
+### Adicionado (Added)
+- **Shellfolio (Tor):** Deploy do portfólio pessoal (Astro) como um Hidden Service (`.onion`) totalmente isolado na rede Tor.
+- **GitOps Local (Soberania Total):** Implementação de um fluxo de CI/CD autônomo e 100% local (sem dependência de GitHub Actions ou GHCR) via Git Bare Repository e Git Hooks (`post-receive`). O servidor compila e publica o próprio código via push SSH.
+
 ## [2026-05-16] - Migração de SO do Client (NixOS) e Ergonomia
 ### Alterado (Changed)
 - **Ergonomia Física:** Luzes (LEDs) das ventoinhas do gabinete do servidor e do nobreak desligadas para reduzir a poluição visual do ambiente.

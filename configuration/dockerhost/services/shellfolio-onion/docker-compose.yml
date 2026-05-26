@@ -1,0 +1,37 @@
+services:
+  web:
+    image: nginx:alpine
+    container_name: shellfolio-web
+    restart: unless-stopped
+    volumes:
+      # Monta exatamente a pasta gerada pelo Astro
+      - ./app/dist:/usr/share/nginx/html:ro
+    networks:
+      - tor-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 100M
+
+  tor:
+    image: osminogin/tor-simple:latest
+    container_name: shellfolio-tor
+    restart: unless-stopped
+    user: root
+    volumes:
+      - ./config/torrc:/etc/tor/torrc:ro
+      - ./tor-keys:/var/lib/tor/hidden_service/
+    networks:
+      - tor-net
+    depends_on:
+      - web
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 100M
+
+networks:
+  tor-net:
+    driver: bridge

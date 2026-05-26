@@ -4,6 +4,22 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-05-26
+**Status:** ✅ Sucesso
+
+**Foco:** Hospedagem do Portfólio (Shellfolio/Astro) na rede Tor e implementação de CI/CD.
+
+- **Desafio:** Como espelhar a experiência mágica e ágil de deploy do Cloudflare Pages no meu próprio Homelab, rodando o site na rede Tor, sem abrir mão da segurança Zero Trust?
+- **Evolução Arquitetural:**
+    - *Ideia Inicial:* Construir a imagem via GitHub Actions, jogar no GHCR (GitHub Registry) e usar o Watchtower no DockerHost para baixar a imagem nova e reiniciar.
+    - *O Refinamento:* Apesar de prático, depender do ecossistema da Microsoft/GitHub para compilar o site feria o princípio fundamental da Soberania Total. A infraestrutura deveria funcionar perfeitamente mesmo se a internet comercial caísse.
+    - *Decisão Final:* Utilizar a funcionalidade nativa e clássica do Git: **Bare Repository + Git Hooks**. O próprio DockerHost recebe o push via SSH, executa a compilação localmente num container efêmero e joga os arquivos (`dist/`) pro Nginx servir.
+- **Troubleshooting e Lições Aprendidas:**
+    - **Root no Docker:** Se o container temporário do Node.js rodasse a compilação por padrão, a pasta gerada pertenceria ao usuário `root`. No push seguinte, o Git (rodando como `fajre`) retornaria falha de "Permission Denied". A solução foi injetar o UID/GID do host no comando de execução (`--user $(id -u):$(id -g)`).
+    - **Linter vs Realidade:** Ao codificar a automação no Ansible (`services.yml`), o `ansible-lint` barrou o commit local, apontando o erro `command-instead-of-module` por eu ter rodado `git init --bare` via shell no lugar do módulo git nativo do Ansible. Como o módulo nativo foca em clonar e não em criar repositórios crus, adicionei a tag de exceção `# noqa command-instead-of-module`, mantendo a cultura de *Shift-Left Security* rigorosa, mas inteligente.
+    - **Hardening de Borda:** A versão do compilador foi estritamente cravada (`node:22.12.0-alpine`) para garantir builds determinísticos, e os contêineres do Nginx e Tor sofreram restrição severa de Cgroups.
+- **Resultado:** Um simples `git push homelab main` disparado do meu NixOS constrói e atualiza meu domínio `.onion` localmente em 5 segundos. Nenhuma porta exposta para a WAN. Automação impecável.
+
 ## 2026-05-16
 **Status:** ✅ Sucesso (Ergonomia Física e Documentação)
 

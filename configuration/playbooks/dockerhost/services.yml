@@ -291,6 +291,57 @@
         project_src: "{{ base_dir }}/speedtest-tracker"
         state: present
 
+    # --- SHELLFOLIO (TOR PORTFOLIO) ---
+    - name: Sync Shellfolio
+      synchronize:
+        src: "../../dockerhost/services/shellfolio-onion/"
+        dest: "{{ base_dir }}/shellfolio-onion/"
+        recursive: true
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--chown={{ ansible_user }}:{{ ansible_user }}"
+          - "--exclude=tor-keys/**"
+          - "--exclude=app/**"
+          - "--exclude=repo.git/**"
+
+    - name: Inicializar repositorio Git Bare (shellfolio-onion) # noqa command-instead-of-module
+      command: git init --bare repo.git
+      args:
+        chdir: "{{ base_dir }}/shellfolio-onion/"
+        creates: "{{ base_dir }}/shellfolio-onion/repo.git/HEAD"
+      become: true
+      become_user: "{{ ansible_user }}"
+
+    - name: Instalar Git Hook (post-receive)
+      copy:
+        src: "{{ base_dir }}/shellfolio-onion/post-receive"
+        dest: "{{ base_dir }}/shellfolio-onion/repo.git/hooks/post-receive"
+        remote_src: true
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Garantir pasta app/dist pre-criada (Evita root via Docker)
+      file:
+        path: "{{ base_dir }}/shellfolio-onion/app/dist"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Corrigir permissoes da pasta Tor Keys (Shellfolio)
+      file:
+        path: "{{ base_dir }}/shellfolio-onion/tor-keys"
+        state: directory
+        owner: "root"
+        group: "root"
+        mode: '0700'
+
+    - name: Start Shellfolio Stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/shellfolio-onion"
+        state: present
+
   handlers:
     - name: Reload Systemd
       systemd:
