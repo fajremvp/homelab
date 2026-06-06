@@ -121,10 +121,6 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
         * `Actual Budget` (Organização financeira pessoal): [Implementado em 2026-02-15]
           - **Função:** Gestão de orçamento pessoal (Envelope Budgeting).
           - **Ingress:** `actualbudget.home`.
-          - **Segurança:**
-              - **Autenticação:** Interna do App (Senha do Servidor).
-              - **Criptografia:** E2E (Chave gerada no client-side).
-              - **Nota:** Exceção à regra Zero Trust do Authentik para permitir sincronização mobile.
           - **Persistência:** SQLite em `/data`.
         * `Syncthing` (Hub de Sincronização): [Implementado em 2026-02-15]
           - **Função:** Centralização de arquivos (Hub-and-Spoke) e preparação para ingestão de mídia (Immich).

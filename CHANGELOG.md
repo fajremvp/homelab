@@ -17,6 +17,7 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - **Script de DR (`dr-checkpoint.sh`):** Novo script de automação *pull-based* via SSH e `rsync` para extração sob demanda. Ele gera Dumps atômicos (Vault/Authentik), VZDumps de todas as VMs, espelho do Syncthing e extrai a "Casca" do Hypervisor (configs core do Proxmox) para acelerar o *Bare Metal Restore*.
 
 ### Alterado (Changed)
+- **Camada Zero Trust (Actual Budget):** Ativação do middleware `authentik@docker` (ForwardAuth) na rota do `actualbudget.home`. A interface web do serviço financeiro foi completamente removida de exposição direta na rede L7, mitigando superfícies de ataque contra possíveis Zero-Days e unificando o fluxo global de MFA na borda do Traefik.
 - **Estratégia 3-2-1-1-0:** O modelo de backup atingiu o padrão ouro da indústria. Restic + Backblaze B2 atuam como proteção off-site (RPO longo), enquanto o HD local (Air-Gapped) atua como "Mochila de Emergência" focada na redução drástica de RTO. Validações de integridade e testes de DR garantem a regra de "Zero Erros".
 
 ## [2026-05-26] - Portfólio na Darknet com CI/CD

@@ -4,6 +4,15 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-06-06 (Parte 2)
+**Status:** ✅ Sucesso
+
+**Foco:** Expansão da Camada Zero Trust (ForwardAuth no Actual Budget)
+
+- **Desafio:** O `Actual Budget` estava operando com a interface de web totalmente exposta na rede local sem o filtro de MFA da borda, para facilitar o uso no celular. Isso feria parcialmente a política de "Defense in Depth" (onde nenhuma interface administrativa ou de app deve estar acessível sem token válido).
+- **Solução:** Como o serviço opera de forma consistente via navegador (PWA) e lida corretamente com redirecionamentos HTTP, a blindagem do Authentik pôde ser ativada sem quebrar a experiência mobile.
+- **Implementação:** Injetada a label `traefik.http.routers.actualbudget.middlewares=authentik@docker` no arquivo `docker-compose.yml` e criada a App/Provider/Outpost correspondente na UI do Authentik. O tráfego não autenticado agora é bloqueado com sucesso na camada L7 pelo Traefik antes de chegar no container do software financeiro.
+
 ## 2026-06-06
 **Status:** ✅ Sucesso
 
