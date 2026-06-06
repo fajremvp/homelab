@@ -2,13 +2,21 @@
 
 * **Backups com estratégia 3-2-1:**
     * **(3) Três Cópias:** Dados de produção no ZFS + 2 cópias de backup.
-    * **(2) Duas Mídias:** Cópia 1 no pool ZFS (produção) e Cópia 2 (backup local, ex: HD externo ou outro pool).
-    * **(1) Uma Cópia Off-site:** A cópia de backup será automatizada pelo **Restic** (rodando no `LXC de Gerenciamento`) e enviada de forma criptografada para um *bucket* **Backblaze B2** (S3-compatível).
-    * **Exceção de Economia:** A pasta de dados da Blockchain do Bitcoin (`blocks/chainstate`) será **excluída** do backup off-site para economizar custos de armazenamento e banda, pois pode ser baixada novamente da rede P2P. Apenas arquivos de configuração e carteiras (`wallet.dat`) serão backupeados.
-    * Backup de Configuração do Host ("Casca"): O PBS faz backup das VMs, mas não do Host Proxmox.
-		- Script Semanal: Exporta arquivos críticos de texto (/etc/network/interfaces, /etc/pve/user.cfg, /etc/hosts, regras de firewall do cluster) para o repositório Git privado (Forgejo).
-		- Objetivo: Permitir a reconstrução de um "Bare Metal" em minutos caso o SSD de boot queime, sem precisar redescobrir quais VLANs estavam em quais bridges.
-* **Docs-as-Code/Living Documentation (Runbooks):** A documentação da infraestrutura, procedimentos de recuperação e diagramas viverão em repositório Git, sendo mantidos em **sincronia automática** entre o **GitHub** (Visibilidade/Portfólio) e o **Forgejo** (Cópia Local/Soberania), junto com os scripts Terraform/Ansible.
+    * **(2) Duas Mídias:** Cópia 1 no pool NVMe ZFS (produção) e Cópia 2 no HD SATA Magnético (WD Blue de 1TB no NixOS, criptografado com LUKS2, atuando como mídia de checkpoint discreto local).
+    * **(1) Uma Cópia Off-site:** A cópia de backup contínua automatizada pelo **Restic** (rodando no `LXC de Gerenciamento`) enviada de forma criptografada para o **Backblaze B2**.
+    * **Kit de Bootstrap (Redução de RTO vs RPO):** O Restic (B2) atua como fonte primária, versionada e imutável da infraestrutura na nuvem (RPO longo). Em paralelo, o script manual `scripts/dr-checkpoint.sh` extrai a "Casca" do Hypervisor (configs core do Proxmox) e as imagens VZDump das VMs para o HD local. O objetivo é acelerar a fase de *Bare Metal Restore* em um cenário de destruição física, operando sob demanda e 100% Air-Gapped.
+    * **Exceção de Economia:** A pasta de dados da Blockchain do Bitcoin (`blocks/chainstate`) será **excluída** da nuvem para economizar custos. Ela fica restrita ao disco em passthrough e pode ser baixada novamente da rede P2P. Apenas arquivos de configuração (`bitcoin.conf`, `torrc`) são backupeados.
+
+* **Backups com estratégia 3-2-1-1-0:**
+    * **(3) Três Cópias:** Dados de produção no ZFS + 2 cópias de backup.
+    * **(2) Duas Mídias:** Cópia 1 no pool NVMe ZFS (produção) e Cópia 2 no HD SATA Magnético (WD Blue de 1TB no NixOS, criptografado com LUKS2).
+    * **(1) Uma Cópia Off-site:** A cópia de backup contínua automatizada pelo **Restic** (rodando no `LXC de Gerenciamento`) enviada de forma criptografada para o **Backblaze B2**.
+    * **(1) Uma Cópia Offline/Air-Gapped:** A cópia local atua como checkpoint discreto extraído via script manual (`scripts/dr-checkpoint.sh`), permanecendo isolada de forma lógica/física do servidor principal.
+    * **(0) Zero Erros (Testado):** Integridade de dados garantida matematicamente (`restic check` e ZFS scrubs) e testes periódicos de Bare Metal Restore documentados em Runbook.
+    * **Kit de Bootstrap (Redução de RTO vs RPO):** O Restic (B2) atua como fonte primária, versionada e imutável da infraestrutura na nuvem (RPO longo). Em paralelo, o script manual extrai a "Casca" do Hypervisor (configs core do Proxmox) e as imagens VZDump das VMs para o HD local. O objetivo é acelerar a fase de *Bare Metal Restore* em um cenário de destruição física, operando sob demanda e 100% Air-Gapped.
+    * **Exceção de Economia:** A pasta de dados da Blockchain do Bitcoin (`blocks/chainstate`) será **excluída** da nuvem para economizar custos. Ela fica restrita ao disco em passthrough e pode ser baixada novamente da rede P2P. Apenas arquivos de configuração (`bitcoin.conf`, `torrc`) são backupeados.
+
+* **Docs-as-Code/Living Documentation (Runbooks):** A documentação da infraestrutura, procedimentos de recuperação e diagramas viverão em repositório Git, sendo mantidos em **sincronia automática** entre o **GitHub** (Visibilidade/Portfólio) e o **Codeberg** (Backup), junto com os scripts Terraform/Ansible.
 * **Snapshots de VM (Proteção contra Updates):** A VM `DockerHost` (que centraliza serviços críticos) terá snapshots automáticos configurados no Proxmox (retenção: últimos 3 dias) para permitir rollback instantâneo em caso de falha catastrófica após atualizações do Debian ou Docker.
 
 * **Regra Crítica Bitcoin (Backup Atômico):**

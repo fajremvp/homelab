@@ -51,7 +51,10 @@ homelab/
 │   ├── security/           # Governança (Threat Model, Zero Trust, Key Management).
 │   └── services/           # Documentação Técnica dos Serviços (VMs e LXCs).
 │
-└── provisioning/           # Infraestrutura como Código (IaC).
-    ├── proxmox-host/       # Configs Críticas (Network Interfaces, LUKS Encryption).
-    └── tailscale/          # ACLs de Rede Mesh (HuJSON).
+├── provisioning/           # Infraestrutura como Código (IaC).
+│   ├── proxmox-host/       # Configs Críticas (Network Interfaces, LUKS Encryption).
+│   └── tailscale/          # ACLs de Rede Mesh (HuJSON).
+│
+└── scripts/                # Automações operacionais e ferramentas CLI.
+    └── dr-checkpoint.sh    # Script de pull manual para Disaster Recovery (Air-Gapped).
 ```

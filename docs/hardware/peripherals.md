@@ -175,6 +175,16 @@ A infraestrutura de rede física utiliza exclusivamente cabos CAT6 100% cobre pa
   - **Link Negociado:** 1000Mb/s (1 Gbps) Full-Duplex.
 
 ---
+
+## Armazenamento Offline (Disaster Recovery)
+
+### HD Externo / Client Storage
+- **Modelo:** Western Digital Blue 1TB (WD10SPZX).
+- **Especificações:** 2.5", 5400 RPM, SATA 3.
+- **Criptografia:** LUKS2 (Gerenciado pelo NixOS).
+- **Função:** Mídia dedicada (Air-Gapped) conectada ao notebook cliente. Armazena os checkpoints discretos gerados pelo script `dr-checkpoint.sh`. Não atua como storage ativo da rede, garantindo isolamento contra falhas de hardware do servidor, corrupção de dados, exclusão acidental, ransomware, indisponibilidade do provedor de backup, erros operacionais, roubo de equipamentos, acesso físico não autorizado, incêndios e outros eventos que afetem a infraestrutura principal.
+
+---
 ## Hardware Legado / Descartado
 ### Placa de Rede PCIe - HP NC364T (Quad-Port)
 - **Status:** Removida do sistema em 2025-12-22.

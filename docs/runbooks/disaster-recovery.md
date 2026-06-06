@@ -210,5 +210,29 @@ sudo ls -la /opt/AdGuardHome/data/
 # Esperado: stats.db = 16384 bytes (vazio/zerado), timestamps recriados
 # Confirma que nenhum histórico de queries sobreviveu ao reboot
 ```
-
 > **Nota arquitetural:** O restart do serviço (`systemctl restart AdGuardHome`) **não** apaga o tmpfs - apenas o reboot físico do hardware o faz. Isso é comportamento correto e esperado. A amnésia só é total com a perda de energia ou reboot do RPi.
+
+## Recuperação Bare Metal via Bootstrap Kit (Perda Total)
+
+Em caso de falha catastrófica (incêndio, surto elétrico ou queima dos discos root e dados simultaneamente), a infraestrutura pode ser rapidamente restabelecida através do HD Local de DR. O foco desta etapa é reconstituir o hypervisor para que o Ansible e o Restic possam ser acionados para finalizar o trabalho.
+
+**Pré-requisitos:** Hardware novo/consertado, PenDrive com ISO do Proxmox VE e o HD externo do NixOS contendo a pasta `dr-checkpoint-YYYY-MM-DD`.
+
+### Passo a Passo da Reconstrução
+1. **Instalação Base:** Instalar o Proxmox no novo hardware. Criar o pool ZFS (`rpool`) e aplicar o LUKS manualmente conforme o runbook `setup-luks-zfs.md`.
+2. **Reconstituição do Hypervisor (Acelerador):**
+   * Plugar o HD local no notebook.
+   * Acessar os arquivos em `configs/proxmox-host/core/`.
+   * Substituir o `/etc/network/interfaces` do Proxmox novo pelo salvo no HD, garantindo que as pontes (`vmbr0`) e o VLAN Aware voltem a existir exatamente como antes.
+   * Restaurar o `/etc/pve/storage.cfg` para que o Proxmox saiba onde o VZDump e os discos ZFS devem ser alocados.
+3. **Restauro do Workload:**
+   * Enviar os arquivos da pasta `vms-baremetal/` do HD para o Proxmox (via `scp` ou disco externo montado).
+   * Restaurar a VM 100 (OPNsense) e iniciar. A rede local, roteamento e DHCP voltarão à vida.
+   * Restaurar o LXC 101 (AdGuard). A resolução interna de nomes (`.home`) volta a funcionar.
+4. **Desbloqueio do Cofre:**
+   * Restaurar a VM 106 (Vault).
+   * Acessar o IP do Vault e inserir manualmente as **3 Chaves do Shamir** para dar o Unseal inicial.
+5. **Automação Final e Cargas Pesadas:**
+   * Restaurar a VM 105 (DockerHost) e LXC 102 (Management).
+   * Restaurar a VM 107 (OrangeShadow). **Atenção:** Como o disco de 2TB da Blockchain está em *PCIe/SCSI Passthrough*, o VZDump restaurará apenas o disco de boot (SO base). Após o restore, será necessário plugar o SSD de 2TB novo e remapeá-lo nas opções de Hardware da VM no Proxmox.
+   * Dentro do Management, disparar os playbooks do Ansible para garantir que qualquer configuração pendente seja alinhada e executar o *pull* final dos dados do Backblaze B2 via Restic.

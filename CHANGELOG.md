@@ -11,6 +11,14 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-06-06] - Estratégia de Disaster Recovery (Air-Gapped)
+### Adicionado (Added)
+- **Backup Local (Air-Gapped):** Introdução de um HD de 1TB (WD Blue, SATA, 5400RPM) gerenciado via NixOS (com LUKS2) para armazenamento de checkpoints manuais de Disaster Recovery.
+- **Script de DR (`dr-checkpoint.sh`):** Novo script de automação *pull-based* via SSH e `rsync` para extração sob demanda. Ele gera Dumps atômicos (Vault/Authentik), VZDumps de todas as VMs, espelho do Syncthing e extrai a "Casca" do Hypervisor (configs core do Proxmox) para acelerar o *Bare Metal Restore*.
+
+### Alterado (Changed)
+- **Estratégia 3-2-1-1-0:** O modelo de backup atingiu o padrão ouro da indústria. Restic + Backblaze B2 atuam como proteção off-site (RPO longo), enquanto o HD local (Air-Gapped) atua como "Mochila de Emergência" focada na redução drástica de RTO. Validações de integridade e testes de DR garantem a regra de "Zero Erros".
+
 ## [2026-05-26] - Portfólio na Darknet com CI/CD
 ### Adicionado (Added)
 - **Shellfolio (Tor):** Deploy do portfólio pessoal (Astro) como um Hidden Service (`.onion`) totalmente isolado na rede Tor.

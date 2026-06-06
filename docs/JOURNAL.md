@@ -4,6 +4,22 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-06-06
+**Status:** ✅ Sucesso
+
+**Foco:** Refatoração da Estratégia de Disaster Recovery (Local Air-Gapped)
+
+- **Desafio:** A estratégia de DR dependia significativamente de recuperação através da internet (Restic via B2). Isso resolvia a disponibilidade dos dados, mas o RTO (Tempo de Recuperação) em um Bare Metal Restore seria alto devido ao download, e faltava uma camada de resiliência física local contra interrupções de ISP. Outro fator considerado foi a proteção contra eventos físicos e operacionais, como falha catastrófica de hardware, corrupção de dados, exclusão acidental, ransomware, roubo de equipamentos, acesso físico não autorizado, raios e até incêndios. Embora o Backblaze B2 forneça uma cópia geograficamente separada, a ausência de uma mídia local dedicada dificultava recuperações rápidas e aumentava a dependência de um único caminho de restauração.
+- **Solução:** Implementei um HD de 1TB (WD Blue) no meu notebook NixOS para atuar como checkpoint discreto. Não é um storage contínuo ou síncrono, mas sim uma mídia dedicada para execução de scripts de *pull* isolados.
+- **Desenvolvimento do Script (`dr-checkpoint.sh`):** - O script conecta no Proxmox e nos nós, gera dumps locais (Vault/PG) e dispara o `vzdump` englobando as VMs e LXCs.
+    - Ele captura o `/etc/pve/storage.cfg`, `interfaces` e `/etc/fstab` do Proxmox. Sem isso, o restore de VMs em um hardware novo vira um pesadelo de alocação de discos.
+    - Puxa os dados do Syncthing, mantendo a pasta `.stversions` preservada para proteção local contra ransomware.
+- **Troubleshooting e Lições Aprendidas:**
+    - *Sudo sem TTY:* Tentar rodar comandos via SSH com pipe (`|`) e `sudo` falhava silenciosamente porque o sudo não tinha um terminal para pedir senha. Resolvi executando em subshell (`sudo bash -c`).
+    - *Eval e Rsync:* O uso do comando `eval` engolia as aspas do `--rsync-path="sudo rsync"`, quebrando a sintaxe no receptor. Removi o `eval` e confiei no parser nativo do bash.
+    - *Lixo de LXC:* O VZDump gera `.tar.zst` para containers e `.vma.zst` para VMs. O script original só limpava as extensões de VM do Host, causando acúmulo de ISOs pesadas a cada cancelamento.
+- **Resultado:** O checkpoint levou 29 minutos e pesou 46GB. Com a criptografia LUKS em todas as camadas (Hypervisor, Nuvem e HD Local NixOS), a soberania está garantida contra quebra física, ataques cibernéticos e roubo de hardware.
+
 ## 2026-05-26
 **Status:** ✅ Sucesso
 
