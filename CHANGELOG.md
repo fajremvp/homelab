@@ -11,6 +11,18 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-06-07] - Security Funnel L7 e OPNsense Bouncer
+### Adicionado (Added)
+- **Traefik Access Logs:** Ativação de logs de acesso estruturados em formato JSON (`--accesslog=true`) para permitir a inspeção ativa (L7) do CrowdSec.
+- **Checklist de Auditoria:** Adicionado script mental de validação *end-to-end* do CrowdSec e PF (Packet Filter) no runbook de manutenção.
+
+### Alterado (Changed)
+- **CrowdSec Acquisition:** Refatoração do `acquis.yaml` para utilizar a integração nativa de *Discovery* da API do Docker (`source: docker`), eliminando caminhos estáticos de logs.
+- **Socket Proxy:** Injeção da permissão `INFO=1` para liberar a leitura de metadados pelo CrowdSec sem comprometer o isolamento root do Host.
+
+### Corrigido (Fixed)
+- **OPNsense Bouncer:** Restabelecida a comunicação entre a LAPI do DockerHost e o firewall físico via inserção manual da `api_key` no arquivo `.yaml` do FreeBSD. As regras `crowdsec_blocklists` voltaram a ser populadas dinamicamente no L3.
+
 ## [2026-06-06] - Estratégia de Disaster Recovery (Air-Gapped)
 ### Adicionado (Added)
 - **Backup Local (Air-Gapped):** Introdução de um HD de 1TB (WD Blue, SATA, 5400RPM) gerenciado via NixOS (com LUKS2) para armazenamento de checkpoints manuais de Disaster Recovery.

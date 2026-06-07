@@ -9,6 +9,7 @@ services:
       - CONTAINERS=1
       - SERVICES=1
       - NETWORKS=1
+      - INFO=1
     networks:
       - proxy
 
@@ -40,6 +41,8 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.websecure.http.tls=true"
       - "--log.level=DEBUG"
+      - "--accesslog=true"
+      - "--accesslog.format=json"
     ports:
       - "80:80"
       - "443:443"

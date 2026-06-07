@@ -97,3 +97,22 @@ https://github.com/mr-manuel/proxmox/blob/main/zfs-replace-root-disk/README.md
 - SMART acusa falha iminente
 - Substituição preventiva de SSD/NVMe
 - Erro de boot após perda de um dos discos do mirror
+
+## Auditoria de Segurança Crítica (CrowdSec & OPNsense)
+
+Se houver suspeita de falha na proteção perimetral, execute este checklist de 6 passos no `DockerHost` para validar o fluxo *End-to-End*:
+
+1. **Ingestão (Olhos):** `docker exec -t crowdsec cscli metrics | grep docker:`
+   * (Deve listar os parsers `docker:traefik` e `docker:authentik-server` não-zerados).
+2. **Inteligência (Cérebro):** `docker exec -t crowdsec cscli metrics | grep traefik-logs`
+   * (A coluna `Parsed` não pode estar vazia. Se estiver, o Traefik parou de gerar JSON).
+3. **Whitelist (Proteção Interna):** `docker exec -t crowdsec cscli metrics | grep whitelists`
+   * (Verifique se acessos da rede local `10.10.x.x` recebem "Hits" para evitar auto-banimento).
+4. **Comunicação L3 (Nervos):** `docker exec -t crowdsec cscli bouncers list`
+   * (O `opnsense-firewall` deve aparecer como `✔️ Valid`).
+5. **Execução L3 (Músculo - No OPNsense via SSH):** `pfctl -t crowdsec_blocklists -T show | wc -l`
+   * (Espera-se o retorno de milhares de IPs banidos em tempo real).
+6. **Teste de Botão de Pânico (Simulação):**
+   * Banir manual: `docker exec -t crowdsec cscli decisions add -i 1.1.1.1 -d 1h -R "Auditoria"`
+   * Validar: O `Ntfy` deve apitar e o comando `pfctl -t crowdsec_blocklists -T show | grep 1.1.1.1` deve acusar bloqueio no OPNsense.
+   * Rollback: `docker exec -t crowdsec cscli decisions delete -i 1.1.1.1`

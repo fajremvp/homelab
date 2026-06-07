@@ -4,6 +4,19 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-06-07
+**Status:** ✅ Sucesso
+
+**Foco:** Homologação do Security Funnel (CrowdSec + Traefik + OPNsense)
+
+- **Desafio 1 (Músculo Desconectado):** O Bouncer do OPNsense não estava recebendo os IPs banidos pois a interface web (plugin `os-crowdsec`) falha ao validar configurações sem a LAPI local ligada.
+- **Solução 1:** Utilizado o *workaround* de gerar um botão de Apply falso na UI e inserida a chave manualmente em `/usr/local/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml`. As tabelas nativas `crowdsec_blocklists` do kernel foram alimentadas com >5500 IPs maliciosos.
+- **Desafio 2 (Cérebro Cego - HTTP):** O CrowdSec analisava erros SSH, mas estava cego para ataques web. Motivo: O Traefik emite apenas logs do aplicativo (DEBUG) por padrão, e não logs de quem acessa o quê.
+- **Solução 2:** Injetadas as flags `--accesslog=true` e `--accesslog.format=json` na configuração do Traefik.
+- **Desafio 3 (Docker Socket Proxy 403):** Ao refatorar a aquisição de logs do CrowdSec para buscar dados nativos do Docker (evitando IDs hardcoded no `.yaml`), o Socket Proxy rejeitou o comando `GET /info` com `403 Forbidden`.
+- **Solução 3:** Habilitada a variável `INFO=1` no Socket Proxy, restabelecendo a confiança entre os containers e permitindo a descoberta dinâmica.
+- **Resultado Final:** Ataques HTTP agora são "parseados" em tempo real. Se um script tentar invadir o portal, o Traefik avisa o CrowdSec, que emite um push via Ntfy e o OPNsense derruba o IP na mesma hora.
+
 ## 2026-06-06 (Parte 2)
 **Status:** ✅ Sucesso
 

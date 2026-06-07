@@ -61,7 +61,7 @@
         3. **Aplicação:** Protegido por Authentik (Forward Auth) na borda HTTP.
         4. **Dados:** Banco de dados criptografado (Sealed (3/5)) em repouso.
 * **CrowdSec (Defesa Ativa):** Implementado em 24/01/2026
-    * **Agente ("Cérebro"):** `[DockerHost]` - Centraliza a inteligência. Recebe logs do Traefik e Authentik.
+    * **Agente ("Cérebro"):** `[DockerHost]` - Centraliza a inteligência. Lê estruturadamente os JSON Access Logs do Traefik e do Authentik de forma dinâmica, utilizando a permissão de metadados (`INFO=1`) do Docker Socket Proxy.
     * **Bouncer ("Músculo"):** `[VM - OPNsense]` - Utiliza o plugin `os-crowdsec` configurado para consultar a LAPI remota. Aplica bloqueios em nível de kernel (pf) via Regras Flutuantes.
     * **Fluxo de Bloqueio:** Tentativa de ataque -> DockerHost detecta -> LAPI gera decisão -> Bouncer lê decisão -> IP bloqueado no Firewall.
     * **Limitação Atual:**
