@@ -4,6 +4,18 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-06-12
+**Status:** ✅ Sucesso
+
+**Foco:** Migração de Paradigma (Do Tududi para o Obsidian) e Risco no Storage Efêmero
+
+- **A Filosofia do Segundo Cérebro:** Percebi que o Tududi nunca funcionaria como a "wiki pessoal" que eu buscava. Eu precisava de uma base de conhecimento que crescesse comigo ao longo do tempo, não presa a bancos de dados proprietários, mas sim em arquivos abertos e locais (Markdown). O objetivo é centralizar e correlacionar diferentes áreas em um sistema interconectado que futuramente possa alimentar uma IA. O **Obsidian** atende a tudo isso magistralmente.
+- **Topologia de Sincronização:** Aproveitei a VM `DockerHost` que já rodava o Syncthing e implementei uma topologia Hub-and-Spoke. O servidor atua como nó central "Always-On", enquanto meu NixOS e o Galaxy M55 atuam como satélites. Configurei o *Staggered File Versioning* no lado do servidor para garantir histórico de alterações e rollbacks.
+- **O Quase Desastre (Storage Efêmero):** Ao configurar a pasta na GUI do Syncthing, apontei o *Folder Path* para `/var/syncthing/Mirror` esquecendo o subdiretório `/data/` que estava mapeado no `docker-compose.yml`. Resultado: O cofre estava sendo gravado na camada efêmera do Docker e seria aniquilado no próximo `docker compose down`.
+    - *Resolução:* Extraí os dados via `docker cp`, corrigi o `chown` para PUID 1000, parei o container e alterei o `config.xml` na mão para `/var/syncthing/data/Mirror`.
+- **Fechando a Falha de Backup:** O disco secundário (`/mnt/syncthing/`) estava fora da política de backup do Restic por design. Ajustei o playbook do Ansible e o script do servidor para fazer a ingestão cirúrgica de `/mnt/syncthing/Mirror`. Backup testado e validado com sucesso pro Backblaze B2.
+- **Limpeza:** O stack inteiro do Tududi (pastas, rede, Compose e variáveis Ansible) foi dizimado do código e do host. Infraestrutura limpa.
+
 ## 2026-06-07
 **Status:** ✅ Sucesso
 

@@ -7,7 +7,7 @@ Focado em aprendizado, soberania de dados e segurança.
 
 **Diagrama/Mapa atual:**
 
-![Homelab Diagram/Map](diagram/diagram.png)
+![Homelab Diagram/Map](docs/diagram/diagram.png)
 
 ---
 

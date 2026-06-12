@@ -11,6 +11,18 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-06-12] - Segundo Cérebro (Obsidian) e Depreciação do Tududi
+### Adicionado (Added)
+- **Segundo Cérebro (Wiki Pessoal):** Adoção do Obsidian como ferramenta oficial de gestão de conhecimento ("Local-first", Markdown puro). Focado a longo prazo e futura integração com IA (RAG).
+- **Syncthing Hub-and-Spoke:** Estabelecido o DockerHost como nó central (Hub) para sincronização do cofre do Obsidian (`obsidian-mirror`) entre o desktop (NixOS) e o mobile (Galaxy M55).
+- **Versionamento:** Ativado *Staggered File Versioning* diretamente no nó central do Syncthing, provendo histórico e rollbacks locais sem depender de assinaturas de terceiros.
+
+### Alterado (Changed)
+- **Escopo do Restic:** Modificado o `setup_backup.yml` e o script `backup-daily.sh` do DockerHost para englobar cirurgicamente o caminho `/mnt/syncthing/Mirror`. O cofre do Obsidian agora faz parte do backup para a nuvem B2, isolado dos demais dados brutos do disco de 100GB do Syncthing.
+
+### Removido (Removed)
+- **Tududi:** Serviço completamente removido da infraestrutura física e dos playbooks declarativos (Ansible). Motivo: Arquitetura não escalável para atuar como uma rede interconectada de conhecimento pessoal.
+
 ## [2026-06-07] - Security Funnel L7 e OPNsense Bouncer
 ### Adicionado (Added)
 - **Traefik Access Logs:** Ativação de logs de acesso estruturados em formato JSON (`--accesslog=true`) para permitir a inspeção ativa (L7) do CrowdSec.

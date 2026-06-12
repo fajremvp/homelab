@@ -123,7 +123,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Ingress:** `actualbudget.home`.
           - **Persistência:** SQLite em `/data`.
         * `Syncthing` (Hub de Sincronização): [Implementado em 2026-02-15]
-          - **Função:** Centralização de arquivos (Hub-and-Spoke) e preparação para ingestão de mídia (Immich).
+          - **Função:** Centralização de arquivos (Hub-and-Spoke).
           - **Armazenamento Híbrido:**
               - *Config:* SSD de Boot (`/opt/services/syncthing/config`) -> Backup Restic Diário.
               - *Dados:* Disco Virtual 100GB (`/mnt/syncthing`) -> Sem Backup Offsite (Dados Brutos).
@@ -252,7 +252,8 @@ O DockerHost realiza backups diários, criptografados e incrementais para o Back
 * **Ferramenta:** Restic (via script `/usr/local/bin/backup-daily.sh`).
 * **Agendamento:** Todo dia às 04:00 (Cron).
 * **Escopo de Backup:**
-    * `/opt/services, /opt/auth, /opt/monitoring, /opt/security, /opt/utils, /etc/vault`.
+    * `/opt/services, /opt/auth, /opt/monitoring, /opt/security, /opt/utils, /etc/vault, /mnt/syncthing/Mirror`.
+    * *Nota:* O diretório `/mnt/syncthing/Mirror` foi explicitamente incluído para garantir o off-site backup (B2) da base de conhecimento (Obsidian), enquanto o resto de `/mnt/syncthing` permanece intencionalmente ignorado.
 * **Exclusões:** Logs (`*.log`), arquivos temporários de banco (`*.sqlite3-wal`) e caches.
 * **Retenção:** 7 dias, 4 semanas, 6 meses.
 
