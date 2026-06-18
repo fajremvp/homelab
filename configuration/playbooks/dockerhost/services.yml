@@ -16,6 +16,12 @@
     - name: speedtest_app_key
       prompt: "Speedtest Tracker APP_KEY (base64:...)"
       private: true
+    - name: miniflux_db_password
+      prompt: "Miniflux DB Password"
+      private: true
+    - name: miniflux_admin_password
+      prompt: "Miniflux Admin Password"
+      private: true
 
   tasks:
     # --- WHOAMI ---
@@ -293,6 +299,46 @@
     - name: Start Shellfolio Stack
       community.docker.docker_compose_v2:
         project_src: "{{ base_dir }}/shellfolio-onion"
+        state: present
+
+    # --- MINIFLUX ---
+    - name: Sync Miniflux
+      synchronize:
+        src: "../../dockerhost/services/miniflux/"
+        dest: "{{ base_dir }}/miniflux/"
+        recursive: true
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--chown={{ ansible_user }}:{{ ansible_user }}"
+          - "--exclude=.env"
+          - "--exclude=data/"
+
+    - name: Garantir diretório de dados do Miniflux DB
+      file:
+        path: "{{ base_dir }}/miniflux/data/postgres"
+        state: directory
+        owner: "1000" # Permissão segura para evitar que o Docker use root
+        group: "1000"
+        mode: '0700'
+
+    - name: Gerar .env do Miniflux (Injeção de Segredos)
+      copy:
+        dest: "{{ base_dir }}/miniflux/.env"
+        content: |
+          POSTGRES_USER=miniflux
+          POSTGRES_PASSWORD={{ miniflux_db_password }}
+          POSTGRES_DB=miniflux
+          DATABASE_URL=postgres://miniflux:{{ miniflux_db_password }}@db/miniflux?sslmode=disable
+          ADMIN_USERNAME=admin
+          ADMIN_PASSWORD={{ miniflux_admin_password }}
+        owner: "1000"
+        group: "1000"
+        mode: '0600' # Lockdown total, apenas o dono lê
+        force: true
+
+    - name: Start Miniflux
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/miniflux"
         state: present
 
   handlers:

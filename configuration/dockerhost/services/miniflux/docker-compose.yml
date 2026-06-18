@@ -1,0 +1,58 @@
+services:
+  miniflux:
+    image: miniflux/miniflux:latest
+    container_name: miniflux
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      - RUN_MIGRATIONS=1
+      - CREATE_ADMIN=1
+      - BASE_URL=https://miniflux.home
+      - POLLING_SCHEDULER=entry_frequency
+      # Ativa métricas para o Prometheus coletar depois
+      - METRICS_COLLECTOR=1
+    networks:
+      - proxy
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.miniflux.rule=Host(`miniflux.home`)"
+      - "traefik.http.routers.miniflux.entrypoints=websecure"
+      - "traefik.http.routers.miniflux.tls=true"
+      - "traefik.http.routers.miniflux.middlewares=authentik@docker"
+      - "traefik.http.services.miniflux.loadbalancer.server.port=8080"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  db:
+    image: postgres:16-alpine
+    container_name: miniflux-db
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U miniflux"]
+      interval: 10s
+      start_period: 30s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+networks:
+  proxy:
+    external: true
+  internal:
+    internal: true

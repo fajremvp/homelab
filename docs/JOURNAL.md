@@ -4,6 +4,19 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-06-18
+**Status:** ✅ Sucesso
+
+**Foco:** Mitigação de Ruído Algorítmico e Depuração de Estado de Banco
+
+- **Soberania de Informação:** Decisão de centralizar o consumo de dados e notícias via RSS para mitigar o cansaço com redes sociais e manipulação algorítmica da web moderna. O **Miniflux** foi escolhido devido ao seu consumo de recursos insignificante e filosofia minimalista focada estritamente no texto.
+- **Troubleshooting - Parser de URL do Go:** Na primeira tentativa de deploy, o container do Miniflux entrou em *CrashLoop* intermitente. Os logs revelaram: `parse "postgres://miniflux:...": invalid port after host`.
+    - *Causa:* A senha gerada interativamente continha o caractere especial `%`, o que quebrou o interpretador de string de conexão do Miniflux (que espera uma URL RFC padrão).
+    - *Solução:* Para manter a simplicidade e consistência da stack sem recorrer ao `urlencode` no Ansible, a senha do banco de dados foi sanitizada para uma variante complexa, porém sem delimitadores de string de URL.
+- **Troubleshooting - Estado Residual no Postgres:** Após alterar a senha no `.env`, o erro mudou para `FATAL: password authentication failed for user "miniflux"`.
+    - *Causa:* O diretório persistente `/opt/services/miniflux/data/postgres` já havia sido inicializado na primeira execução falha. O entrypoint do Postgres ignora mudanças na variável `POSTGRES_PASSWORD` se encontrar uma pasta de dados estruturada (`Skipping initialization`).
+    - *Solução:* Parou-se a stack, limpou-se o diretório de dados na força bruta (`sudo rm -rf data/postgres/*`) e reiniciou-se os containers. O banco inicializou com sucesso utilizando a nova credencial limpa.
+
 ## 2026-06-12
 **Status:** ✅ Sucesso
 

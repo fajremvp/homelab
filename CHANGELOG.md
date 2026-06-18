@@ -11,6 +11,13 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-06-18] - Agregador RSS
+### Adicionado (Added)
+- **Miniflux (RSS Reader):** Implementação do leitor de feeds minimalista compilado em Go, rodando sobre uma stack isolada com banco de dados PostgreSQL 16-Alpine no DockerHost.
+- **Injeção de Segredos Efêmera:** Configuração automatizada via Ansible Playbook (`services.yml`) utilizando `vars_prompt` para gerar o arquivo `.env` em RAM/Disco e evitar credenciais *hardcoded* no repositório.
+- **Zero Trust Ingress:** Roteamento HTTP/HTTPS via Traefik sob o domínio `https://miniflux.home` acoplado ao middleware de ForwardAuth do Authentik, exigindo autenticação multifator (MFA) antes de atingir o serviço.
+- **Persistência e Backup:** Mapeamento do diretório de dados em `/opt/services/miniflux/data/postgres` garantindo que o banco de dados seja incluído nas rotinas incrementais diárias do Restic para o Backblaze B2.
+
 ## [2026-06-12] - Segundo Cérebro (Obsidian) e Depreciação do Tududi
 ### Adicionado (Added)
 - **Segundo Cérebro (Wiki Pessoal):** Adoção do Obsidian como ferramenta oficial de gestão de conhecimento ("Local-first", Markdown puro). Focado a longo prazo e futura integração com IA (RAG).

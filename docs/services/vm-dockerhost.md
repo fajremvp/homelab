@@ -86,7 +86,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
 * **Max Files:** `3` (Total 30MB de retenção por container).
 
 ## Aplicações e Serviços (Sempre ativos)
-    * **Justificativa:** Um "servidor" centralizado para rodar todos os aplicativos em contêineres Docker. Isso mantém o Host Proxmox limpo. (Uma VM oferece melhor isolamento; um LXC é mais leve).
+   * **Justificativa:** Um "servidor" centralizado para rodar todos os aplicativos em contêineres Docker. Isso mantém o Host Proxmox limpo. (Uma VM oferece melhor isolamento; um LXC é mais leve).
         * `Tailscale` (VPN Gateway):
             - **Modo:** Container Docker rodando em `network_mode: host` para evitar duplo encapsulamento e perda de performance.
             - **Função:** Subnet Router para as VLANs de serviço (10, 30, 40).
@@ -165,13 +165,6 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - **Chunked Upload:** Ativado (10MB chunks / 5 retries) para maior resiliência em conexões instáveis.
           - **Observação Arquitetural:**
               - A tentativa de autenticação via injeção de headers (`X-Authentik-*`) foi abandonada por fragilidade histórica dessa integração.
-        * `Tududi` (Gerenciador de Tarefas & Calendário): [Implementado em 2026-02-23]
-          - **Função:** "Life OS" minimalista para gestão de prazos da faculdade e anotações rápidas.
-          - **Ingress:** `tududi.home` (Porta interna 3002).
-          - **Segurança:**
-              - **Nível 1 (Rede):** Protegido por Middleware Authentik (Zero Trust).
-              - **Nível 2 (App):** Variáveis de ambiente (`TUDUDI_SESSION_SECRET`) injetadas via Ansible Prompt, sem persistência de senhas no Git.
-          - **Persistência:** SQLite e Uploads mapeados em `/opt/services/tududi/data`, cobertos pelo backup diário do Restic.
         * `Speedtest Tracker`: [Implementado em 2026-05-01]
           - **Função:** Serviço essencial para auditar a entrega de banda da operadora. A configuração foi altamente customizada para otimização de recursos e integração total com o ecossistema do Homelab:
               - **Armazenamento (DB):** Utiliza `sqlite` local em `/opt/services/speedtest-tracker/data`. Não requer um container de DB dedicado (MariaDB/Postgres), tornando-o leve e facilmente backupeável pelo Restic.
@@ -184,6 +177,13 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - * **Retenção de Dados:** `PRUNE_RESULTS_OLDER_THAN=90`. Dados mais velhos que 3 meses são expurgados automaticamente para evitar inchaço do SQLite.
               - **Healthcheck:** Container possui verificação ativa (`curl /api/healthcheck`), permitindo que o daemon do Docker saiba o real estado de saúde da aplicação.
               - **Notificações:** Desabilitadas intencionalmente. As integrações nativas com Ntfy e Webhooks foram marcadas como *deprecated* pelos desenvolvedores do app.
+        * `Miniflux` (RSS Reader): [Implementado em 2026-06-17]
+          - **Objetivo:** Consumo de notícias, blogs técnicos, notificações e atualizações de repositórios Git de forma previsível.
+          - **Componentes:**
+              - `miniflux`: Aplicação Go rodando em porta interna 8080.
+              - `miniflux-db`: Banco de dados relacional PostgreSQL 16 sobre Alpine Linux.
+          - **Armazenamento:** Os dados de transição e configurações ficam em `./data/postgres` mapeados para `/opt/services/miniflux/data/postgres`, integrados de forma transparente ao escopo de varredura do script de backup diário do Restic (`backup-daily.sh`).
+          - **Segurança Específica:** O container do banco e da aplicação compartilham uma rede isolada do Docker (`internal`), impedindo qualquer varredura de portas externa ou comunicação lateral desautorizada vinda de outras stacks da mesma VM.
 
 * **Resiliência de Boot**: Todos os containers críticos devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
 
@@ -202,7 +202,7 @@ Para serviços estáticos e aplicações web como o portfólio `shellfolio-onion
 * **Hospedagem e Isolamento:** O artefato gerado (`dist/`) é servido via Nginx e roteado exclusivamente através de um sidecar Tor (`osminogin/tor-simple`), isolado em uma bridge `tor-net`. Ambos os containers possuem limites rígidos de Cgroups (`cpus: 0.25`, `memory: 100M`) para conter o *Blast Radius* em caso de DDoS via Darknet.
 
 ## Serviços Sob Demanda (Não vão estar sempre ligados)
-    * **Justificativa:** Podem rodar no mesmo DockerHost dos serviços "Sempre Ativos", basta ligar e desligar os contêineres conforme necessário (`docker-compose up -d` e `docker-compose down`).
+   * **Justificativa:** Podem rodar no mesmo DockerHost dos serviços "Sempre Ativos", basta ligar e desligar os contêineres conforme necessário (`docker-compose up -d` e `docker-compose down`).
         * `Minecraft Server (PaperMC)`: [Implementado em 2026-03-28]
           - **Função:** Servidor Survival focado em altíssima eficiência energética e resiliência (permanece online 24/7 de forma hibernada).
           - **Local:** `/opt/services/minecraft`
