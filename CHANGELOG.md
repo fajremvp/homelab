@@ -11,7 +11,12 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
-## [2026-06-19] - Aposentadoria do HashiCorp Vault
+## [2026-07-03] - Correção de Parser e Credenciais do Miniflux
+### Corrigido (Fixed)
+- **Miniflux (Database Ingress):** Resolvido o *CrashLoop* do container causado por caracteres especiais (especificamente `%`) na string de conexão do banco de dados, que violavam o parser de URL rigoroso do Golang.
+- **Sincronização de Estado (Postgres):** Corrigido o descasque de credenciais (*Password Drift*) entre o arquivo de ambiente e o volume persistente do PostgreSQL 16. A alteração foi injetada de forma atômica no banco ativo via `ALTER USER`, preservando o histórico de feeds e dados existentes sem a necessidade de reconstrução ou perda de volumes.
+
+## [2026-07-02] - Aposentadoria do HashiCorp Vault
 ### Removido (Removed)
 - **HashiCorp Vault:** Infraestrutura de gerenciamento de segredos completamente descomissionada. VM 106 destruída no Hypervisor (`qm destroy --purge`). Todas as regras de firewall, agendamentos, NAT e Port Forwarding relacionados foram removidos do OPNsense.
 - **Integração AppRole:** Eliminados os serviços systemd `authentik-vault.service` e `vaultwarden-vault.service`, juntamente com os scripts de encapsulamento `start-with-vault.sh`. O diretório de credenciais `/etc/vault` foi apagado do DockerHost.

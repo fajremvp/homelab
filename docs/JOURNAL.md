@@ -4,7 +4,21 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
-## 2026-06-19
+## 2026-07-03
+**Status:** ✅ Sucesso
+
+**Foco:** Resolução de erro de parse de string de conexão (URL RFC) no Miniflux e persistência de senhas no PostgreSQL.
+
+- **Problema:** Após a reestruturação da infraestrutura, o container do Miniflux entrou em *CrashLoop* constante, exibindo repetidamente nos logs: `parse "postgres://miniflux:zjP%": invalid port ":zjP%" after host`.
+- **Causa Raiz 1 (Parser do Go):** O Miniflux é escrito em Golang e seu interpretador de URLs de conexão de banco de dados segue estritamente a especificação RFC. Como a senha gerada aleatoriamente continha o caractere especial `%`, o parser interpretou o símbolo como o início de um *URL Encoding* inválido, quebrando a montagem da string de conexão do driver.
+- **Causa Raiz 2 (Estado Persistente):** Para solucionar o parser, a senha no arquivo `.env` foi alterada para uma variante sem caracteres especiais de URL. No entanto, o container do Miniflux passou a responder com `FATAL: password authentication failed for user "miniflux"`. A imagem oficial do PostgreSQL só processa a inicialização da senha root interna na primeira execução do volume. Como os feeds e os dados já existiam em `/opt/services/miniflux/data/postgres`, o banco de dados ignorou o `.env` atualizado e permaneceu preso à credencial antiga.
+- **Mitigação Aplicada:** Para não comprometer a integridade dos feeds já configurados no banco existente, acessei via SSH a DockerHost VM e forcei a sincronização de credenciais de dentro para fora:
+    ```bash
+    docker exec -it miniflux-db psql -U miniflux -d miniflux -c "ALTER USER miniflux WITH PASSWORD 'Nova_Senha_Sanitizada';"
+    ```
+    Após atualizar o `.env` correspondente com a mesma senha higienizada (letras e números apenas) e disparar um `docker compose up -d`, a stack estabilizou e a conectividade foi totalmente reestabelecida sem perda de dados.
+
+## 2026-07-02
 **Status:** ✅ Sucesso (com incidente contornado)
 
 **Foco:** Decommission definitivo do HashiCorp Vault - migração de Authentik e Vaultwarden para Ansible puro, destruição da VM e limpeza de rede.
