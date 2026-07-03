@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Baseado no tempo de shutdown real do Proxmox (77s) + 63s de margem de segurança.
-# Garante que o OPNsense, Vault, AdGuard, DockerHost e OrangeShadow sejam desligados e o ZFS seja exportado com segurança.
+# Garante que o OPNsense AdGuard, DockerHost e OrangeShadow sejam desligados e o ZFS seja exportado com segurança.
 sleep 140
 
 # Mata o driver na força bruta para liberar o cabo USB (Fugindo da árvore do Systemd)

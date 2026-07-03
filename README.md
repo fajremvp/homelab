@@ -33,8 +33,7 @@ homelab/
 │   │   └── services/       # Aplicações e Infraestrutura (Traefik, VPNs, Vaultwarden, Nostr).
 │   ├── inventory/          # Inventário de Hosts (hosts.ini).
 │   ├── playbooks/          # Automação (Hardening, Backups, Setup de Stacks).
-│   ├── roles/              # Roles reutilizáveis do Ansible.
-│   └── vault/              # Políticas ACL (HCL) e configurações do HashiCorp Vault.
+│   └── roles/              # Roles reutilizáveis do Ansible.
 │
 ├── diagram/                # Topologia Visual.
 │   ├── diagram.drawio      # Fonte editável (Diagrama como Código).

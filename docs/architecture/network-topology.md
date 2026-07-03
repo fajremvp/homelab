@@ -34,7 +34,7 @@
 | 10 | MGMT (Management) | 10.10.10.0/24 | "A Torre de Controle". Acesso restrito. Regra de Ouro: IPs Estáticos obrigatórios. Não dependem de DHCP. Porta de Emergência: Uma porta física do switch será configurada como "Untagged VLAN 10". Etiqueta Física (Protocolo de Crise): Colar uma etiqueta no switch contendo: "IP Emergência: 10.10.10.99 / GW: 10.10.10.1". Garante acesso rápido via notebook. Nota: O Proxmox migrará para cá apenas quando houver acesso Out-of-Band (Pi). Habitantes: LXC Management. |
 | 20 | TRUSTED (Home) | 10.10.20.0/24 | "Dispositivos Pessoais". Rede de confiança média-alta. Habitantes: Notebook NixOS, Celular (via AP Porta 2). Acesso permitido à Internet e a serviços na VLAN SERVER. |
 | 30 | SERVER (Services) | 10.10.30.0/24 | "Produção". Onde rodam os serviços estáveis. Habitantes: VM DockerHost (Stalwart, Nostr, Vaultwarden, Forgejo), LXC AdGuard-Primary e futura VM do Bitcoin Node. Isolados, acessíveis apenas via portas específicas (ex: 443 via Traefik). |
-| 40 | SECURE (Vault) | 10.10.40.0/24 | "O Cofre". Isolamento máximo. Sem acesso direto à internet (exceto update controlado e backups diários). Habitantes: VM Vault. Fisicamente separada na interface vtnet0. |
+| 40 | SECURE | 10.10.40.0/24 | "O Cofre". Isolamento máximo. Sem acesso direto à internet (exceto update controlado e backups diários). Fisicamente separada na interface vtnet0. |
 | 50 | IOT (Guest) | 10.10.50.0/24 | "A Selva". Dispositivos que não controlo e não confio. Sem acesso à VLAN de gerenciamento ou servidores. Habitantes: TV Smart, Lâmpadas, Visitantes (via AP Porta 2). |
 | 60 | LAB (K8s/Dev) | 10.10.60.0/24 | "O Caos Controlado". [Futuro] Ambiente efêmero para testes e quebras. Habitantes: Cluster Kubernetes, VMs de teste. Se for comprometido, não afeta a Produção. |
 | 99 | DMZ/DANGER | 10.10.99.0/24 | "Zona de Guerra". [Futuro] Isolamento total (Air-gapped via Firewall). Habitantes: VM de Pentest (Kali), Targets vulneráveis. Bloqueio total de saída para a LAN. |
@@ -49,22 +49,18 @@
 | TRUSTED (20) | ANY | SSH (22) | Acesso a todos os servidores (Notebook NixOS). |
 | TRUSTED (20) | SERVER (30) | HTTPS (443) | Acessar serviços e painéis (Vaultwarden, Grafana, Traefik...). |
 | TRUSTED (20) | SERVER (30) | UDP 53 (DNS) | Clientes usam o AdGuard (10.10.30.5) para resolver nomes. |
-| TRUSTED (20) | SECURE (40) | SSH (22) | Desbloquear o Vault. |
-| SERVER (30) | SECURE (40) | TCP 8200 | DockerHost busca segredos no Vault. |
 | SERVER (30) | WAN | HTTPS/DNS | Updates e serviços. |
-| SECURE (40) | WAN | - | BLOQUEADO (Exceto janela de backup e atualizações manuais). |
 | IOT (50) | LOCAL | - | BLOQUEADO (Acesso somente à Internet). Dispositivos IoT usam AdGuard (10.10.30.5). |
 | Raspberry Pi | Proxmox (Dropbear) | TCP/SSH 2222 | Acesso de emergência para desbloqueio de disco (Via VPN). |
 | Proxmox | Raspberry Pi | TCP 3493 (NUT) | Leitura de status de bateria. |
 | TRUSTED (20) | ISP LAN | UDP 53 (DNS) | Failover: Clientes acessam AdGuard Secundário (192.168.1.5) se o Primário cair. |
 | VPN (Tailscale) | SERVER (30) | HTTPS/SSH | Acesso remoto via Gateway DockerHost (com NAT). |
-| VPN (Tailscale) | SECURE (40) | SSH (22) | Acesso ao Vault via DockerHost como **Jump Server** (`ssh -J dockerhost vault`). |
 
 ## Estrutura de Interfaces (OPNsense)
    - Para referência de manutenção (Drivers VirtIO).
       - `vtnet0` (LAN Física Virtual):
          - Dedica-se a redes de alta segurança.
-         - Carrega: VLAN 40 (Vault).
+         - Carrega: VLAN 40.
       - `vtnet1` (WAN Física Virtual):
          - Atua como "Trunk" principal.
          - Carrega: Tráfego Nativo (WAN) + VLANs 10, 20, 30, 50.

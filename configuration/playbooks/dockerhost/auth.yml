@@ -7,11 +7,15 @@
     - _vars_common.yml
 
   vars_prompt:
-    - name: authentik_role_id
-      prompt: "AUTHENTIK RoleID"
-      private: false
-    - name: authentik_secret_id
-      prompt: "AUTHENTIK SecretID"
+    - name: authentik_secret_key
+      prompt: "AUTHENTIK_SECRET_KEY"
+      private: true
+
+    - name: authentik_db_password
+      prompt: >
+        Senha do Postgres do Authentik
+        (ATENÇÃO: se o volume do Postgres já existe, isso NÃO altera a senha do banco,
+        apenas sincroniza o valor usado pelo container)
       private: true
 
   tasks:
@@ -25,50 +29,30 @@
           - "--exclude=media/"
           - "--exclude=custom-templates/"
 
-    - name: Tornar script start-with-vault executável
-      file:
-        path: "{{ auth_dir }}/authentik/start-with-vault.sh"
-        mode: '0755'
-
-    # --- VAULT SECRETS ---
-    - name: Criar diretório de segredos Vault
-      file:
-        path: "/etc/vault"
-        state: directory
-        owner: root
-        group: root
-        mode: '0700'
-
-    - name: Gravar Authentik RoleID
+    - name: Gerar .env do Authentik
       copy:
-        content: "{{ authentik_role_id }}"
-        dest: "/etc/vault/authentik.roleid"
-        owner: root
-        group: root
-        mode: '0600'
-    - name: Gravar Authentik SecretID
-      copy:
-        content: "{{ authentik_secret_id }}"
-        dest: "/etc/vault/authentik.secretid"
-        owner: root
-        group: root
-        mode: '0600'
+        dest: "{{ auth_dir }}/authentik/.env"
+        content: |
+          AUTHENTIK_SECRET_KEY={{ authentik_secret_key }}
+          POSTGRES_PASSWORD={{ authentik_db_password }}
+          AUTHENTIK_REDIS__HOST=redis
+          AUTHENTIK_POSTGRESQL__HOST=postgresql
+          AUTHENTIK_POSTGRESQL__USER=authentik
+          AUTHENTIK_POSTGRESQL__NAME=authentik
+        owner: fajre
+        group: docker
+        mode: "0600"
+        force: true
+      notify: Recreate Authentik
 
-    # --- SERVICE ---
-    - name: Instalar Authentik Systemd Service
-      copy:
-        src: "../../dockerhost/auth/authentik/authentik-vault.service"
-        dest: "/etc/systemd/system/authentik-vault.service"
-        mode: '0644'
-      notify: Reload Systemd
-
-    - name: Habilitar e Iniciar Authentik com Vault
-      service:
-        name: authentik-vault
-        state: started
-        enabled: true
+    - name: Start Authentik
+      community.docker.docker_compose_v2:
+        project_src: "{{ auth_dir }}/authentik"
+        state: present
 
   handlers:
-    - name: Reload Systemd
-      systemd:
-        daemon_reload: true
+    - name: Recreate Authentik
+      community.docker.docker_compose_v2:
+        project_src: "{{ auth_dir }}/authentik"
+        state: present
+        recreate: always

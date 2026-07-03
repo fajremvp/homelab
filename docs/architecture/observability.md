@@ -86,7 +86,6 @@ Esta implementação assume um modelo de ameaça específico para ambiente domé
 
 - [x] **Proxmox (Host):** Node Exporter (Métricas de OS via apt) + PVE Exporter (Métricas de Cluster via API).
 - [ ] **Proxmox (Logs):** Promtail/Alloy (Coleta de syslogs do Hypervisor) - *Adiado para manter o host limpo*.
-- [x] **Vault (VM):** Node Exporter (Binário standalone) com firewall restrito (Allow 9100 from DockerHost only).
 - [x] **Raspberry Pi (Management):** Monitoramento de recursos (CPU/RAM/Temp) via Node Exporter.
 - [x] **Alertas:** Pipeline de alertas críticos (Instance Down, Resource Exhaustion) via Alertmanager -> Ntfy.
 - [x] **OrangeShadow (VM):** Node Exporter.

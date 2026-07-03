@@ -53,13 +53,6 @@
     * **Split-Horizon:** O DNS público não terá registros apontando para seus IPs. A resolução de nomes (`*.home.seudominio.net` -> IP Local) será feita exclusivamente dentro da rede pelo **AdGuard Home**, garantindo invisibilidade externa.
 * **Authentik (Provedor de Identidade - SSO/IAM):** `[DockerHost]`
 	* **Justificativa:** Centraliza o gerenciamento de usuários (SSO) e o IAM para todos os serviços. Integra-se nativamente ao Traefik (via Forward Auth) para proteger aplicações que não possuem autenticação própria. Fornece OIDC, SAML, LDAP virtual e gerenciamento de MFA (WebAuthn/Passkeys), alinhando-se às práticas de mercado e "Zero Trust".
-* **HashiCorp Vault (Gerenciador de Segredos):** `[VM Dedicada - VLAN 40]`
-    * **Justificativa:** Servidor central de segredos. Isolamento total (Kernel e Rede) do DockerHost para impedir vazamento lateral.
-    * **Segurança:** Protegido por autenticação quádrupla:
-        1. **Firewall de Rede (OPNsense):** Isola a VLAN 40 e bloqueia saída para internet.
-        2. **Firewall de Host (UFW):** Rejeita conexões na porta 8200 que não venham do IP exato do DockerHost.
-        3. **Aplicação:** Protegido por Authentik (Forward Auth) na borda HTTP.
-        4. **Dados:** Banco de dados criptografado (Sealed (3/5)) em repouso.
 * **CrowdSec (Defesa Ativa):** Implementado em 24/01/2026
     * **Agente ("Cérebro"):** `[DockerHost]` - Centraliza a inteligência. Lê estruturadamente os JSON Access Logs do Traefik e do Authentik de forma dinâmica, utilizando a permissão de metadados (`INFO=1`) do Docker Socket Proxy.
     * **Bouncer ("Músculo"):** `[VM - OPNsense]` - Utiliza o plugin `os-crowdsec` configurado para consultar a LAPI remota. Aplica bloqueios em nível de kernel (pf) via Regras Flutuantes.

@@ -3,7 +3,7 @@ services:
     image: vaultwarden/server:latest
     container_name: vaultwarden
     restart: unless-stopped
-    env_file: .env.injected
+    env_file: .env
     environment:
       - DOMAIN=https://vaultwarden.home
       - SIGNUPS_ALLOWED=false

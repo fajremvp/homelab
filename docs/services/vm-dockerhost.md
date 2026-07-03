@@ -110,7 +110,6 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
         * `Vaultwarden` (Gerenciador de senhas):
           - **Local:** `/opt/services/vaultwarden`
           - **Banco de Dados:** SQLite (Arquivo único em `./data`, foco em facilidade de backup).
-          - **Integração Vault:** Usa AppRole dedicado para injetar o `ADMIN_TOKEN` na inicialização.
           - **Ingress:**
               - `/`: Acesso direto (necessário para Apps Mobile/Desktop).
               - `/admin`: Protegido via Authentik Middleware (Apenas `infra-admins`).
@@ -185,8 +184,6 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Armazenamento:** Os dados de transição e configurações ficam em `./data/postgres` mapeados para `/opt/services/miniflux/data/postgres`, integrados de forma transparente ao escopo de varredura do script de backup diário do Restic (`backup-daily.sh`).
           - **Segurança Específica:** O container do banco e da aplicação compartilham uma rede isolada do Docker (`internal`), impedindo qualquer varredura de portas externa ou comunicação lateral desautorizada vinda de outras stacks da mesma VM.
 
-* **Resiliência de Boot**: Todos os containers críticos devem ser configurados com restart: always ou restart: on-failure:10. Isso garante que, se tentarem subir antes do Vault estar pronto, eles continuarão tentando até conseguirem a senha.
-
 ## CI/CD e Deploy Contínuo
 Implementado em: 2026-05-26.
 
@@ -232,17 +229,13 @@ O CrowdSec atua como o sistema de detecção de intrusão (IDS) baseado em logs.
     - **Atenção:** Em caso de `docker compose up` que gere novo ID, o `acquis.yaml` deve ser revisado.
 * **Coleções:** `crowdsecurity/traefik`, `crowdsecurity/http-cve`, `firix/authentik`.
 
-## Gestão de Segredos (Vault Integration)
-O DockerHost não armazena senhas de banco de dados em arquivos de texto (`.env` ou `docker-compose.yml`).
+## Gestão de Segredos (Ansible-Managed .env)
+Implementado em: 2026-06-19 (substituindo a integração anterior via Vault/AppRole).
 
-* **Mecanismo:** Script de Boot (`start-with-vault.sh`) localizado agora em `/opt/auth/authentik` e `/opt/services/vaultwarden`.
-* **Trigger:** Serviço Systemd `authentik-vault.service` e `vaultwarden-vault.service`.
-* **Fluxo:**
-    1. Lê `SecretID` protegido em `/etc/vault/`.
-    2. Autentica no Vault (`vault.home`).
-    3. Exporta variáveis de ambiente (ex: `POSTGRES_PASSWORD`) para a RAM.
-    4. Executa `docker compose up`.
-* **Resiliência:** Se o Vault estiver selado (pós-reboot), o serviço entra em loop de reinício até que o cofre esteja disponível.
+O DockerHost não comita segredos em texto no Git. Os arquivos `.env` de cada serviço crítico (Authentik, Vaultwarden) são gerados em runtime pelo próprio Ansible via `vars_prompt`, e ficam excluídos do `rsync` (`--exclude=.env`) para nunca serem sobrescritos por sincronizações de código.
+* **Mecanismo:** Tasks `copy` nos playbooks `auth.yml` e `services.yml` escrevem o `.env` diretamente no diretório do serviço com permissão `0600`.
+* **Limitação conhecida:** o container oficial do PostgreSQL só lê `POSTGRES_PASSWORD` na *primeira* inicialização do volume de dados. Trocar a senha no `vars_prompt` sem também trocá-la no banco (via `ALTER USER`) causa `FATAL: password authentication failed` e crash loop em cascata.
+* **Próximo passo:** esta etapa é transitória — o objetivo é migrar para SOPS, eliminando o `vars_prompt` interativo.
 
 ## Estratégia de Backup (Restic)
 Implementado em: 2026-01-09.
@@ -252,7 +245,7 @@ O DockerHost realiza backups diários, criptografados e incrementais para o Back
 * **Ferramenta:** Restic (via script `/usr/local/bin/backup-daily.sh`).
 * **Agendamento:** Todo dia às 04:00 (Cron).
 * **Escopo de Backup:**
-    * `/opt/services, /opt/auth, /opt/monitoring, /opt/security, /opt/utils, /etc/vault, /mnt/syncthing/Mirror`.
+    * `/opt/services, /opt/auth, /opt/monitoring, /opt/security, /opt/utils e /mnt/syncthing/Mirror`.
     * *Nota:* O diretório `/mnt/syncthing/Mirror` foi explicitamente incluído para garantir o off-site backup (B2) da base de conhecimento (Obsidian), enquanto o resto de `/mnt/syncthing` permanece intencionalmente ignorado.
 * **Exclusões:** Logs (`*.log`), arquivos temporários de banco (`*.sqlite3-wal`) e caches.
 * **Retenção:** 7 dias, 4 semanas, 6 meses.

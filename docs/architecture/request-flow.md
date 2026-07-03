@@ -9,7 +9,7 @@
 | **3. Inteligência** | **CrowdSec (Bouncer)** | Lê logs L7 via API Docker e atualiza o OPNsense. | Se alguém ataca o site, o parser entende o Access Log JSON do Traefik, bane o IP remotamente no OPNsense e impede o acesso. Protege a rede L3 a partir do reconhecimento web L7. |
 | **4. Ingresso (App)** | **Traefik** | Entende HTTP/HTTPS. | Roteamento por domínio (`app.home`), terminação SSL, Headers de segurança e **Rate Limiting** (evita flood em rotas específicas). |
 | **5. Identidade** | **Authentik** | Valida QUEM está entrando. | **Zero Trust:** Nenhuma requisição chega ao app sem um token válido. Gerencia MFA e SSO. |
-| **6. Host (Micro-seg)** | **nftables (Host)** | Firewall interno do Linux. | Impede que um container hackeado acesse outros serviços lateralmente (Ex: Container do Site não pode acessar o banco do Vault). |
+| **6. Host (Micro-seg)** | **nftables (Host)** | Firewall interno do Linux. | Impede que um container hackeado acesse outros serviços lateralmente. |
 
 ### Diagrama do Fluxo (Request Lifecycle)
 

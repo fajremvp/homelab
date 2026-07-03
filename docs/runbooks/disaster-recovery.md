@@ -21,7 +21,7 @@
 ## Recuperação de Dados (Backup Restore)
 Implementado em: 2026-01-09.
 
-Utilizar **Restic** com backend **Backblaze B2**. Cada host (DockerHost, Vault, etc.) deve possuir seu próprio repositório isolado e criptografado.
+Utilizar **Restic** com backend **Backblaze B2**. Cada host (DockerHost, OrangeShadow, etc.) deve possuir seu próprio repositório isolado e criptografado.
 
 ### Procedimento de Restore (Arquivo Único)
 Utilizar quando um arquivo de configuração for deletado acidentalmente.
@@ -229,10 +229,7 @@ Em caso de falha catastrófica (incêndio, surto elétrico ou queima dos discos 
    * Enviar os arquivos da pasta `vms-baremetal/` do HD para o Proxmox (via `scp` ou disco externo montado).
    * Restaurar a VM 100 (OPNsense) e iniciar. A rede local, roteamento e DHCP voltarão à vida.
    * Restaurar o LXC 101 (AdGuard). A resolução interna de nomes (`.home`) volta a funcionar.
-4. **Desbloqueio do Cofre:**
-   * Restaurar a VM 106 (Vault).
-   * Acessar o IP do Vault e inserir manualmente as **3 Chaves do Shamir** para dar o Unseal inicial.
-5. **Automação Final e Cargas Pesadas:**
+4. **Automação Final e Cargas Pesadas:**
    * Restaurar a VM 105 (DockerHost) e LXC 102 (Management).
    * Restaurar a VM 107 (OrangeShadow). **Atenção:** Como o disco de 2TB da Blockchain está em *PCIe/SCSI Passthrough*, o VZDump restaurará apenas o disco de boot (SO base). Após o restore, será necessário plugar o SSD de 2TB novo e remapeá-lo nas opções de Hardware da VM no Proxmox.
    * Dentro do Management, disparar os playbooks do Ansible para garantir que qualquer configuração pendente seja alinhada e executar o *pull* final dos dados do Backblaze B2 via Restic.

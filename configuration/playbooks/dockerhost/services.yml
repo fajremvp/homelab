@@ -7,11 +7,8 @@
     - _vars_common.yml
 
   vars_prompt:
-    - name: vaultwarden_role_id
-      prompt: "VAULTWARDEN RoleID"
-      private: true
-    - name: vaultwarden_secret_id
-      prompt: "VAULTWARDEN SecretID"
+    - name: vaultwarden_admin_token
+      prompt: "Vaultwarden ADMIN_TOKEN"
       private: true
     - name: speedtest_app_key
       prompt: "Speedtest Tracker APP_KEY (base64:...)"
@@ -71,38 +68,20 @@
           - "--exclude=.env"
           - "--exclude=data/"
 
-    - name: Tornar script start-with-vault executável
-      file:
-        path: "{{ base_dir }}/vaultwarden/start-with-vault.sh"
-        mode: '0755'
-
-    - name: Gravar Vaultwarden RoleID
+    - name: Gerar .env do Vaultwarden
       copy:
-        content: "{{ vaultwarden_role_id }}"
-        dest: "/etc/vault/vaultwarden.roleid"
-        owner: root
-        group: root
+        dest: "{{ base_dir }}/vaultwarden/.env"
+        content: |
+          ADMIN_TOKEN={{ vaultwarden_admin_token }}
+        owner: fajre
+        group: docker
         mode: '0600'
-    - name: Gravar Vaultwarden SecretID
-      copy:
-        content: "{{ vaultwarden_secret_id }}"
-        dest: "/etc/vault/vaultwarden.secretid"
-        owner: root
-        group: root
-        mode: '0600'
+        force: true
 
-    - name: Instalar Vaultwarden Systemd Service
-      copy:
-        src: "../../dockerhost/services/vaultwarden/vaultwarden-vault.service"
-        dest: "/etc/systemd/system/vaultwarden-vault.service"
-        mode: '0644'
-      notify: Reload Systemd
-
-    - name: Habilitar e Iniciar Vaultwarden com Vault
-      service:
-        name: vaultwarden-vault
-        state: started
-        enabled: true
+    - name: Start Vaultwarden
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/vaultwarden"
+        state: present
 
     # --- ACTUAL BUDGET ---
     - name: Sync Actual Budget
@@ -340,8 +319,3 @@
       community.docker.docker_compose_v2:
         project_src: "{{ base_dir }}/miniflux"
         state: present
-
-  handlers:
-    - name: Reload Systemd
-      systemd:
-        daemon_reload: true

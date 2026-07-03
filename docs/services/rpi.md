@@ -65,7 +65,7 @@ O `SHUTDOWNCMD` no `upsmon.conf` do RPi foi alterado para executar um script cus
 ### Cenário: Roubo Físico ou Clonagem do SSD
 * **Impacto:** O atacante obtém o hardware e o sistema operacional.
 * **Mitigação:**
-    1. **Sem Segredos:** Não há chaves SSH privadas, senhas de banco de dados ou tokens de API do Vault no disco.
+    1. **Sem Segredos:** Não há chaves SSH privadas, senhas de banco de dados ou tokens de API no disco.
     2. **Sem Acesso Lateral:** O Pi reside na rede "suja" do modem. O Firewall (OPNsense) trata o Pi como uma rede externa/hostil.
     3. **DoS de Energia:** O pior cenário é o atacante falsificar um sinal de "Bateria Crítica" no NUT, forçando o desligamento dos servidores. Risco aceito em troca da simplicidade de gerenciamento.
 

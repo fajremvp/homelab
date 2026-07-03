@@ -4,6 +4,35 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-06-19
+**Status:** ✅ Sucesso (com incidente contornado)
+
+**Foco:** Decommission definitivo do HashiCorp Vault - migração de Authentik e Vaultwarden para Ansible puro, destruição da VM e limpeza de rede.
+
+- **Motivação:** Após reavaliar o uso real do Vault, ficou claro que eu nunca usei os recursos que justificam a complexidade de operá-lo (dynamic secrets, leasing, Real PKI, Transit). O único uso real era AppRole estático para injetar duas senhas (Authentik e Vaultwarden), pagando o preço de manter uma VM dedicada, uma VLAN isolada, fricção de unseal manual pós-reboot e um cron de renovação de token. Decidido: migrar para segredos gerenciados via Ansible `vars_prompt` agora, servindo de ponte para uma futura transição para SOPS + age.
+
+- **Migração de Authentik e Vaultwarden:**
+    - Removidos `authentik-vault.service`, `vaultwarden-vault.service` e os scripts `start-with-vault.sh` de ambos os serviços.
+    - Playbooks `auth.yml` e `services.yml` reescritos: em vez de gravar `RoleID`/`SecretID` em `/etc/vault/` e autenticar via AppRole, o Ansible agora gera o `.env` de cada serviço diretamente via `vars_prompt`, aplicando a permissão estrita `0600` no arquivo do host.
+    - `vaultwarden/docker-compose.yml` ajustado de `env_file: .env.injected` para `env_file: .env`.
+    - Removida a rota dinâmica `vault.yml` do Traefik e o job `vault-node` de raspagem do Prometheus.
+
+- **Falha por Variáveis Ausentes e Password Drift:**
+    - Ao rodar o `auth.yml`, a primeira tentativa de deploy derrubou o acesso a toda a infraestrutura (`miniflux.home`, `vaultwarden.home`, `auth.home` começaram a responder `404 page not found`). Como o ping respondia, a camada L3 e o DNS estavam saudáveis.
+    - **Causa Raiz 1 (Omissão de Variáveis):** O primeiro deploy do Ansible omitiu as variáveis estáticas `AUTHENTIK_POSTGRESQL__NAME` e `AUTHENTIK_POSTGRESQL__USER` no `.env`, fazendo o container do banco quebrar na inicialização por falta de parâmetros de ambiente.
+    - **Causa Raiz 2 (Password Drift no Volume):** Após corrigir o Ansible, informei uma senha nova no prompt para o Postgres do Authentik. No entanto, a imagem oficial do PostgreSQL só lê a variável `POSTGRES_PASSWORD` na *primeira* inicialização do volume. Como a pasta `/var/lib/postgresql/data` já existia no disco persistente (inicializada há meses com a senha antiga gerada pelo Vault), o container ignorou silenciosamente a senha nova do `.env`.
+    - **Efeito Cascata:** O Postgres rejeitou a conexão com erro de credenciais (`FATAL: password authentication failed`) -> O `authentik-server` entrou em CrashLoop -> O Traefik detectou o Outpost fora do ar e removeu o middleware `authentik@docker` -> Como os roteadores do Miniflux, Vaultwarden, etc. exigem esse middleware nas labels, o Traefik invalidou todas as rotas de ingresso, gerando 404 global.
+    - **Correção:** Copiei a senha nova do `.env`, acessei o banco via console de container (`docker exec -it authentik-postgres psql -U authentik -d authentik`) e forcei a alteração interna com `ALTER USER authentik WITH PASSWORD 'minha_senha_nova';`. Dei um restart na stack e tudo voltou instantaneamente. O playbook `auth.yml` foi corrigido para fixar o usuário/banco e incluir um aviso sobre a persistência de volumes do Postgres.
+
+- **Decisão de Design (Fase de Limpeza):** Optei conscientemente por *não* criar um playbook Ansible descartável para apagar arquivos legados. Código morto para rodar uma única vez é desperdício de IaC. Acessei o DockerHost via SSH e fiz a limpeza cirúrgica manualmente: removi os unit files do systemd, deletei o diretório `/etc/vault` e o arquivo dinâmico do Traefik.
+
+- **Decommission Físico (Proxmox/OPNsense):**
+    - Destruída a VM 106 (`Vault`) de forma permanente via `qm destroy 106 --purge` no Proxmox, liberando RAM e IOPS do pool ZFS.
+    - Removidas manualmente todas as regras de firewall (IN/OUT), objetos de NAT e Port Forwarding no OPNsense que envolviam o host do Vault.
+    - **Decisão de Rede:** A VLAN 40 (SECURE) foi mantida provisionada no OPNsense (porém completamente limpa e sem regras ativas). Ela ficará reservada para um tier seguro de projetos futuros.
+
+- **Resultado Final:** HashiCorp Vault oficialmente erradicado do homelab. Ambiente simplificado, acoplamento reduzido e inicialização limpa. Pronto para a próxima fase: SOPS + age.
+
 ## 2026-06-18
 **Status:** ✅ Sucesso
 

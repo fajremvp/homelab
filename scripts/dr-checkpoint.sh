@@ -16,7 +16,6 @@ MANAGEMENT="root@10.10.10.10"
 ADGUARD="root@10.10.30.5"
 DOCKERHOST="fajre@10.10.30.10"
 ORANGESHADOW="fajre@10.10.30.20"
-VAULT="root@10.10.40.10"
 
 echo "Iniciando DR Checkpoint - $DATE"
 echo "Destino: $CHECKPOINT_DIR"
@@ -29,13 +28,6 @@ mkdir -p "$CHECKPOINT_DIR"/{vms-baremetal,configs}
 # ==========================================
 echo "=> [1/3] Garantindo consistência de bancos de dados locais..."
 ssh $DOCKERHOST "sudo bash -c 'docker exec authentik-postgres pg_dump -U authentik authentik > /opt/auth/authentik/authentik_dump.sql'"
-ssh $VAULT "export VAULT_ADDR='http://127.0.0.1:8200'
-if ! vault token lookup >/dev/null 2>&1; then
-    echo 'ERRO: O token do Vault expirou. Entre na VM do Vault e rode \"vault login\".' >&2
-    exit 1
-fi
-vault token renew >/dev/null 2>&1 || true
-vault operator raft snapshot save /opt/vault/snapshots/raft-dr-checkpoint.snap"
 
 # ==========================================
 # PROXMOX: VZDUMP (WORKLOAD COMPLETO)
@@ -81,7 +73,7 @@ echo "   - Extraindo DockerHost..."
 mkdir -p "$CHECKPOINT_DIR/configs/dockerhost"
 rsync -avh --rsync-path="sudo rsync" --exclude="*.log" --exclude="*.sqlite3-wal" \
     $DOCKERHOST:/opt/services $DOCKERHOST:/opt/auth $DOCKERHOST:/opt/monitoring \
-    $DOCKERHOST:/opt/security $DOCKERHOST:/opt/utils $DOCKERHOST:/etc/vault \
+    $DOCKERHOST:/opt/security $DOCKERHOST:/opt/utils \
     "$CHECKPOINT_DIR/configs/dockerhost/"
 
 # SYNCTHING
@@ -91,13 +83,6 @@ mkdir -p "$CHECKPOINT_DIR/syncthing"
 rsync -avh --progress --rsync-path="sudo rsync" \
     $DOCKERHOST:/mnt/syncthing/ \
     "$CHECKPOINT_DIR/syncthing/"
-
-# VAULT (106)
-echo "   - Extraindo Vault..."
-mkdir -p "$CHECKPOINT_DIR/configs/vault"
-rsync -avh --rsync-path="sudo rsync" \
-    $VAULT:/opt/vault/tls $VAULT:/etc/vault.d $VAULT:/opt/vault/snapshots/raft-dr-checkpoint.snap \
-    "$CHECKPOINT_DIR/configs/vault/"
 
 # ADGUARD (101)
 echo "   - Extraindo AdGuard..."

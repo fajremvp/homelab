@@ -11,6 +11,27 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-06-19] - Aposentadoria do HashiCorp Vault
+### Removido (Removed)
+- **HashiCorp Vault:** Infraestrutura de gerenciamento de segredos completamente descomissionada. VM 106 destruída no Hypervisor (`qm destroy --purge`). Todas as regras de firewall, agendamentos, NAT e Port Forwarding relacionados foram removidos do OPNsense.
+- **Integração AppRole:** Eliminados os serviços systemd `authentik-vault.service` e `vaultwarden-vault.service`, juntamente com os scripts de encapsulamento `start-with-vault.sh`. O diretório de credenciais `/etc/vault` foi apagado do DockerHost.
+- **Roteamento e Observabilidade:** Removido o arquivo dinâmico de rotas `vault.yml` do Traefik e o alvo de monitoramento `vault-node` do Prometheus.
+- **Configuração:** Deletados os arquivos de configuração locais `configuration/vault/` (`vault.hcl`, `policies/vaultwarden-ro.hcl`) e o grupo de inventário `[vault]` do arquivo `hosts.ini`.
+- **Backup e DR:** Removidas as tarefas de snapshot Raft do playbook `setup_backup.yml` e as rotinas de extração de metadados do Vault no script `dr-checkpoint.sh`.
+- **Arquivos de Documentação:** Remoção física dos arquivos desatualizados `docs/services/vm-vault.md` e `docs/security/key-management.md`.
+
+### Alterado (Changed)
+- **Authentik e Vaultwarden:** Migrados de forma nativa para gerenciamento de segredos via Ansible `vars_prompt` temporário. Os playbooks `auth.yml` e `services.yml` agora geram os arquivos `.env` locais diretamente na pasta da aplicação com permissão restrita (`0600`), quebrando a dependência de rede no caminho crítico de boot da infraestrutura.
+- **`vaultwarden/docker-compose.yml`:** Diretiva `env_file` alterada de `.env.injected` para `.env`.
+- **Rede:** A VLAN 40 (SECURE) foi mantida provisionada de forma passiva no roteador OPNsense, isolada e sem regras associadas, reservada para uso em arquiteturas futuras.
+- **Documentação do Repositório:** Revisão e atualização em massa dos arquivos `network-topology.md`, `observability.md`, `os-standardization.md`, `cold-boot.md`, `disaster-recovery.md`, `iam-zero-trust.md`, `network-stack.md`, `vm-opnsense.md` e `README.md` para expurgar referências ao Vault.
+
+### Corrigido (Fixed)
+- **Incidente de Produção (Password Drift & Omissão de Env):** Correção de indisponibilidade global dos serviços causada por falha na inicialização do Authentik após a migração. O problema foi mitigado corrigindo a ausência de parâmetros estáticos de banco no Ansible e resolvendo um descasque de credenciais gerado pelo volume do PostgreSQL (que não atualiza a senha de root interna se a pasta de dados já estiver inicializada). Corrigido via `ALTER USER` em terminal de container. Detalhes completos registrados no `JOURNAL.md`.
+
+### Dívida Técnica (Known Issues)
+- O uso de `vars_prompt` exige digitação manual de credenciais durante a execução dos deploys do Ansible. Esta arquitetura é uma solução de transição intencional antes da implementação definitiva de criptografia de segredos em arquivos via **SOPS + age**.
+
 ## [2026-06-18] - Agregador RSS
 ### Adicionado (Added)
 - **Miniflux (RSS Reader):** Implementação do leitor de feeds minimalista compilado em Go, rodando sobre uma stack isolada com banco de dados PostgreSQL 16-Alpine no DockerHost.
