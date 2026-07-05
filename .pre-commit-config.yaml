@@ -44,3 +44,12 @@ repos:
         args: ["--profile", "basic"]
         additional_dependencies: ['ansible']
         language_version: python3
+
+  # Validação Local do SOPS
+  - repo: local
+    hooks:
+      - id: sops-encryption-check
+        name: Valida Criptografia do SOPS
+        entry: scripts/check-sops-encrypted.sh
+        language: script
+        files: '^configuration/inventory/group_vars/.*\.sops\.yaml$'

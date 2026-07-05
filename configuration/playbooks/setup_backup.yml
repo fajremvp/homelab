@@ -3,7 +3,20 @@
   hosts: all
   become: true
 
+  # --- 0. CREDENCIAIS ---
   tasks:
+    - name: Provisionar credenciais isoladas do Restic
+      copy:
+        dest: /etc/restic-env.sh
+        owner: root
+        group: root
+        mode: '0600'
+        content: |
+          export RESTIC_REPOSITORY="{{ restic_repo_base }}:/{{ inventory_hostname }}"
+          export RESTIC_PASSWORD="{{ restic_password }}"
+          export B2_ACCOUNT_ID="{{ b2_account_id }}"
+          export B2_ACCOUNT_KEY="{{ b2_account_key }}"
+
     # --- 1. INSTALAÇÃO ---
     - name: Instalar Restic (Debian)
       apt:
@@ -76,8 +89,8 @@
           . /etc/restic-env.sh
           echo "--> [Management] Backup iniciado..."
 
-          # Backup do repositório Git central e chaves SSH
-          restic backup /opt/homelab /root/.ssh \
+          # Backup do repositório Git central, chaves SSH e chave privada Age (SOPS)
+          restic backup /opt/homelab /root/.ssh /root/.config/sops/age \
             --exclude=".git" \
             --tag "management"
 

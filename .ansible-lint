@@ -1,0 +1,2 @@
+exclude_paths:
+  - configuration/inventory/group_vars/**/*.sops.yaml

@@ -212,6 +212,42 @@ sudo ls -la /opt/AdGuardHome/data/
 ```
 > **Nota arquitetural:** O restart do serviço (`systemctl restart AdGuardHome`) **não** apaga o tmpfs - apenas o reboot físico do hardware o faz. Isso é comportamento correto e esperado. A amnésia só é total com a perda de energia ou reboot do RPi.
 
+## Recuperação da Chave Age (SOPS)
+
+Em caso de perda total do LXC Management:
+
+1. Recuperar a chave de emergência (Vaultwarden ou HD air-gapped).
+2. No LXC Management reconstruído: `mkdir -p /root/.config/sops/age`, colar o conteúdo, `chmod 600`.
+3. `cd /opt/homelab && git pull`.
+4. Validar: `ansible-inventory --host 10.10.30.10 | grep authentik_secret_key`.
+5. Se a chave de emergência também for perdida (cenário duplo de falha): **todos os segredos em `group_vars/*.sops.yaml` são irrecuperáveis matematicamente.** Não há bypass — restaurar cada segredo manualmente nos serviços e regerar os arquivos `.sops.yaml` do zero.
+
+## Teste da Chave de Emergência SOPS
+
+**Objetivo:** provar que a chave de emergência decripta os segredos de produção de verdade, sem tocar na chave primária nem em nenhum host real.
+
+**Frequência:** Semestral, junto do Chaos Monkey Day.
+
+**Procedimento (não-destrutivo):**
+
+1. VM temporária no Proxmox, **sem** a chave primária instalada:
+```bash
+   apk add sops age
+```
+2. Recuperar o conteúdo da chave de emergência do Vaultwarden.
+3. ```bash
+   mkdir -p /tmp/sops-drill && cd /tmp/sops-drill
+   nano emergency.key && chmod 600 emergency.key
+   git clone https://github.com/fajremvp/homelab.git
+   SOPS_AGE_KEY_FILE=/tmp/sops-drill/emergency.key \
+     sops -d homelab/configuration/inventory/group_vars/dockerhost/secrets.sops.yaml
+4. **Critério de sucesso**: o comando imprime o YAML em texto plano; comparar `authentik_secret_key` contra o `.env` ativo em produção (via SSH).
+5. Confirmar legibilidade física da cópia no HD air-gapped (sem repetir a decriptação, já validada no passo 4).
+6. **Limpeza obrigatória**: destruir a VM temporária, apagar `/tmp/sops-drill`.
+7. Registrar resultado (data, sucesso/falha, tempo) no `JOURNAL.md`, seguindo o padrão dos demais DR Drills.
+
+**Critério de Falha**: chave corrompida ou ilegível → prioridade máxima, gerar nova chave de emergência imediatamente.
+
 ## Recuperação Bare Metal via Bootstrap Kit (Perda Total)
 
 Em caso de falha catastrófica (incêndio, surto elétrico ou queima dos discos root e dados simultaneamente), a infraestrutura pode ser rapidamente restabelecida através do HD Local de DR. O foco desta etapa é reconstituir o hypervisor para que o Ansible e o Restic possam ser acionados para finalizar o trabalho.

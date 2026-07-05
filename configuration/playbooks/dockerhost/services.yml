@@ -6,20 +6,6 @@
   vars_files:
     - _vars_common.yml
 
-  vars_prompt:
-    - name: vaultwarden_admin_token
-      prompt: "Vaultwarden ADMIN_TOKEN"
-      private: true
-    - name: speedtest_app_key
-      prompt: "Speedtest Tracker APP_KEY (base64:...)"
-      private: true
-    - name: miniflux_db_password
-      prompt: "Miniflux DB Password"
-      private: true
-    - name: miniflux_admin_password
-      prompt: "Miniflux Admin Password"
-      private: true
-
   tasks:
     # --- WHOAMI ---
     - name: Sync Whoami

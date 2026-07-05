@@ -4,6 +4,19 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-07-04
+**Status:** ✅ Sucesso
+
+**Foco:** Migração de vars_prompt e Restic para SOPS + age.
+
+- **Motivação:** Fechamento da dívida técnica registrada em 2026-07-02 (decommission do Vault), onde `vars_prompt` foi assumido desde o início como solução transitória.
+- **Decisão de Escopo:** Optei por migrar apenas o que sofre rotação/deploy frequente (os 5 playbooks do DockerHost) e o Restic (reutilizável em qualquer VM futura), deixando NUT e Tailscale do RPi em `vars_prompt`. Justificativa: são segredos "configure uma vez e esqueça" em hardware descartável — migrar teria custo de complexidade sem retorno real.
+- **Bug 1 (ansible-lint):** O commit falhou com `exit code 2` por violações `yaml[line-length]` nos próprios arquivos `.sops.yaml` — o valor cifrado de cada chave é uma string base64 longa por natureza do formato SOPS, não um erro de formatação. Corrigido criando `.ansible-lint` com `exclude_paths` apontando para `group_vars/**/*.sops.yaml`, em vez dedesabilitar a regra globalmente (preservando o lint real do resto do projeto).
+- **Bug 2 (hook local sops-encryption-check):** O hook falhou apontando o `.sops.yaml` da raiz como "sem metadados sops" — correto, pois esse arquivo é a *configuração* do SOPS (chaves age + regras), não um segredo, e nunca deve ser cifrado. A regex do hook (`\.sops\.yaml$`) casava qualquer caminho terminado nessa string, incluindo o arquivo de config. Corrigida para `^configuration/inventory/group_vars/.*\.sops\.yaml$`.
+- **Validação:** Antes de rodar qualquer playbook de produção, comparei `ansible-inventory --host 10.10.30.10 | grep authentik_secret_key` contra o `.env` ativo via SSH.
+- **Resultado:** Todos os playbooks (`core`, `auth`, `monitoring`, `security`, `services`, `setup_backup`) executados sem erro, handlers reportando `ok`/`changed` de forma limpa, sem CrashLoop.
+- **Fechamento do ponto único de falha:** Identifiquei que nem `setup_backup.yml` nem `dr-checkpoint.sh` cobriam a nova chave privada age (`/root/.config/sops/age`). Sem isso, a perda do LXC Management tornaria todos os segredos migrados irrecuperáveis mesmo com o Git intacto — violação direta do princípio 3-2-1-1-0. Corrigido incluindo o caminho em ambos.
+
 ## 2026-07-03
 **Status:** ✅ Sucesso
 

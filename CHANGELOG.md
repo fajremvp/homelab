@@ -11,6 +11,22 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-07-04] - Migração de Segredos para SOPS + age
+### Adicionado (Added)
+- **SOPS + age:** Implementado gerenciamento de segredos criptografado e versionado no Git, substituindo `vars_prompt` interativo nos playbooks `auth.yml`, `core.yml`, `monitoring.yml`, `security.yml` e `services.yml` do DockerHost.
+- **Restic/B2 via IaC:** `/etc/restic-env.sh` passou a ser gerado automaticamente pelo Ansible a partir de `group_vars/all/secrets_backup.sops.yaml`, com `RESTIC_REPOSITORY` isolado por `{{ inventory_hostname }}`, eliminando a última etapa manual do processo de backup.
+- **Ferramental de proteção:** `.sops.yaml` (regras de criptografia), `.gitleaks.toml` (allowlist para metadados SOPS), `.ansible-lint` (exclusão de `*.sops.yaml` da regra `yaml[line-length]`) e hook local de pre-commit (`scripts/check-sops-encrypted.sh`).
+- **Chave de emergência:** Segunda chave age gerada e armazenada isolada (Vaultwarden + HD air-gapped), nunca presente em host ligado.
+- **Documentação:** Recriado `docs/security/key-management.md`.
+
+### Alterado (Changed)
+- **Backup do Management:** `setup_backup.yml` e `dr-checkpoint.sh` passaram a incluir `/root/.config/sops/age` no escopo de backup/DR, fechando o ponto único de falha introduzido pela nova chave privada.
+- **Escopo Deliberadamente Excluído:** NUT (RPi/Proxmox) e `tailscale_auth_key` do RPi permanecem em `vars_prompt` por decisão consciente - segredos configurados uma única vez, sem escalonamento e em hardware descartável (Cattle).
+
+### Corrigido (Fixed)
+- **ansible-lint (`exit code 2`):** Regra `yaml[line-length]` disparava indevidamente sobre valores cifrados (strings base64 longas por design). Corrigido via `.ansible-lint` com `exclude_paths`.
+- **Hook de pre-commit (falso positivo):** A regex `\.sops\.yaml$` casava também o `.sops.yaml` de configuração na raiz (que é sempre texto plano por design). Restringida para `^configuration/inventory/group_vars/.*\.sops\.yaml$`.
+
 ## [2026-07-03] - Correção de Parser e Credenciais do Miniflux
 ### Corrigido (Fixed)
 - **Miniflux (Database Ingress):** Resolvido o *CrashLoop* do container causado por caracteres especiais (especificamente `%`) na string de conexão do banco de dados, que violavam o parser de URL rigoroso do Golang.

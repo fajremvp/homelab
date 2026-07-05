@@ -6,20 +6,6 @@
   vars_files:
     - _vars_common.yml
 
-  vars_prompt:
-    - name: grafana_password
-      prompt: "Digite a senha de Admin do Grafana"
-      private: true
-    - name: healthchecks_uuid
-      prompt: "Digite o UUID do Healthchecks.io"
-      private: true
-    - name: pve_password
-      prompt: "Digite a SENHA do usuário monitoring@pve"
-      private: true
-    - name: ntfy_token
-      prompt: "Digite o Token do Ntfy (Para Alertas)"
-      private: true
-
   tasks:
     - name: Criar diretórios de Monitoring
       file:

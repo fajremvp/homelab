@@ -95,7 +95,7 @@ rsync -avh --rsync-path="sudo rsync" --exclude="*.log" \
 echo "   - Extraindo Management..."
 mkdir -p "$CHECKPOINT_DIR/configs/management"
 rsync -avh --rsync-path="sudo rsync" --exclude=".git" \
-    $MANAGEMENT:/opt/homelab $MANAGEMENT:/root/.ssh \
+    $MANAGEMENT:/opt/homelab $MANAGEMENT:/root/.ssh $MANAGEMENT:/root/.config/sops/age \
     "$CHECKPOINT_DIR/configs/management/"
 
 # ORANGESHADOW (107)

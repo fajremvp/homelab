@@ -1,0 +1,10 @@
+keys:
+  - &admin_primary age1vdye4f7xpwan2nl7a3ne7nxyt0xx96ksvvy8gtlluxjpmpz7fp0spf2j6d
+  - &admin_backup  age10cwjzcr4x42qnumwlwh4k7kdvunaef9a6qdhpqrmaq2nz8mr0qss8t4syd
+
+creation_rules:
+  - path_regex: configuration/inventory/group_vars/.*\.sops\.yaml$
+    key_groups:
+      - age:
+          - *admin_primary
+          - *admin_backup

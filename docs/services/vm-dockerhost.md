@@ -229,13 +229,12 @@ O CrowdSec atua como o sistema de detecção de intrusão (IDS) baseado em logs.
     - **Atenção:** Em caso de `docker compose up` que gere novo ID, o `acquis.yaml` deve ser revisado.
 * **Coleções:** `crowdsecurity/traefik`, `crowdsecurity/http-cve`, `firix/authentik`.
 
-## Gestão de Segredos (Ansible-Managed .env)
-Implementado em: 2026-06-19 (substituindo a integração anterior via Vault/AppRole).
+## Gestão de Segredos (SOPS + age)
+Implementado em 2026-07-04, encerrando a etapa transitória via `vars_prompt` iniciada em 2026-06-19. Detalhes completos da arquitetura em `docs/security/key-management.md`.
 
-O DockerHost não comita segredos em texto no Git. Os arquivos `.env` de cada serviço crítico (Authentik, Vaultwarden) são gerados em runtime pelo próprio Ansible via `vars_prompt`, e ficam excluídos do `rsync` (`--exclude=.env`) para nunca serem sobrescritos por sincronizações de código.
-* **Mecanismo:** Tasks `copy` nos playbooks `auth.yml` e `services.yml` escrevem o `.env` diretamente no diretório do serviço com permissão `0600`.
-* **Limitação conhecida:** o container oficial do PostgreSQL só lê `POSTGRES_PASSWORD` na *primeira* inicialização do volume de dados. Trocar a senha no `vars_prompt` sem também trocá-la no banco (via `ALTER USER`) causa `FATAL: password authentication failed` e crash loop em cascata.
-* **Próximo passo:** esta etapa é transitória — o objetivo é migrar para SOPS, eliminando o `vars_prompt` interativo.
+O DockerHost não comita segredos em texto no Git. Os arquivos `.env` de cada serviço crítico continuam gerados em runtime pelo Ansible, mas a origem do valor agora é `configuration/inventory/group_vars/dockerhost/secrets.sops.yaml`, decifrado em memória pelo vars plugin `community.sops.sops` — sem prompt interativo, sem digitação manual.
+* **Mecanismo:** Tasks `copy` inalteradas nos playbooks `auth.yml` e `services.yml`; só a resolução da variável mudou.
+* **Limitação conhecida (ainda válida):** o container oficial do PostgreSQL só lê `POSTGRES_PASSWORD` na *primeira* inicialização do volume. Trocar a senha no SOPS sem também trocá-la no banco (via `ALTER USER`) ainda causa `FATAL: password authentication failed`. Validar sempre via `ansible-inventory --host <ip> | grep <variavel>` contra o `.env` ativo antes de aplicar.
 
 ## Estratégia de Backup (Restic)
 Implementado em: 2026-01-09.

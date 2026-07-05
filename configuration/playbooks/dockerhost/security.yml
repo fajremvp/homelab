@@ -6,11 +6,6 @@
   vars_files:
     - _vars_common.yml
 
-  vars_prompt:
-    - name: ntfy_token
-      prompt: "Digite o Token do CrowdSec (Ntfy)"
-      private: true
-
   tasks:
     - name: Sync CrowdSec
       synchronize:

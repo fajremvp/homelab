@@ -6,18 +6,6 @@
   vars_files:
     - _vars_common.yml
 
-  vars_prompt:
-    - name: authentik_secret_key
-      prompt: "AUTHENTIK_SECRET_KEY"
-      private: true
-
-    - name: authentik_db_password
-      prompt: >
-        Senha do Postgres do Authentik
-        (ATENÇÃO: se o volume do Postgres já existe, isso NÃO altera a senha do banco,
-        apenas sincroniza o valor usado pelo container)
-      private: true
-
   tasks:
     - name: Sync Authentik
       synchronize:

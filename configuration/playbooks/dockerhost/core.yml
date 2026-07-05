@@ -6,11 +6,6 @@
   vars_files:
     - _vars_common.yml
 
-  vars_prompt:
-    - name: tailscale_authkey
-      prompt: "Cole a Tailscale Auth Key (tskey-auth-...)"
-      private: true
-
   tasks:
     - name: Garantir dependências python do Docker
       apt:
