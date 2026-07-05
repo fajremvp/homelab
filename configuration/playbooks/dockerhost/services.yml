@@ -282,8 +282,8 @@
       file:
         path: "{{ base_dir }}/miniflux/data/postgres"
         state: directory
-        owner: "1000" # Permissão segura para evitar que o Docker use root
-        group: "1000"
+        owner: "70" # UID correto do Postgres na imagem Alpine
+        group: "70" # GID correto do Postgres na imagem Alpine
         mode: '0700'
 
     - name: Gerar .env do Miniflux (Injeção de Segredos)

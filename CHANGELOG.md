@@ -11,6 +11,12 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-07-05] - Correção de Permissões do Miniflux DB
+### Corrigido (Fixed)
+- **Miniflux (Database Volume):** Resolvido erro crítico de `Permission denied (42501)` no acesso ao arquivo `global/pg_filenode.map` do PostgreSQL.
+  - *Causa:* A task do Ansible no playbook `services.yml` forçava a permissão do volume do banco de dados para UID/GID `1000`. No entanto, a imagem `postgres:16-alpine` utiliza nativamente o UID/GID `70` para o processo interno, o que revogava o acesso do container aos próprios arquivos.
+  - *Solução:* O diretório foi corrigido em produção via `chown -R 70:70` e o playbook foi refatorado para espelhar o UID/GID correto, restaurando a idempotência da automação sem quebrar o banco de dados nas execuções subsequentes.
+
 ## [2026-07-04] - Migração de Segredos para SOPS + age
 ### Adicionado (Added)
 - **SOPS + age:** Implementado gerenciamento de segredos criptografado e versionado no Git, substituindo `vars_prompt` interativo nos playbooks `auth.yml`, `core.yml`, `monitoring.yml`, `security.yml` e `services.yml` do DockerHost.

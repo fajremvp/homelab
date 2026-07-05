@@ -4,6 +4,23 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-07-05
+**Status:** ✅ Sucesso
+
+**Foco:** Resolução de Permission Denied no banco de dados do Miniflux (PostgreSQL Alpine).
+
+- **Incidente:** Ao tentar acessar o Miniflux (`https://miniflux.home`), a interface retornou `Internal Server Error` (HTTP 500). Os logs do container exibiam a falha crítica: `FATAL: could not open file "global/pg_filenode.map": Permission denied (42501)`.
+- **Investigação:** - O problema surgiu imediatamente após a execução do playbook `services.yml` (durante a bateria de testes de validação da migração do SOPS do dia anterior).
+    - O playbook continha uma task de segurança (`Garantir diretório de dados do Miniflux DB`) que aplicava `owner: "1000"`, `group: "1000"` e `mode: '0700'` ao diretório `/opt/services/miniflux/data/postgres`.
+    - Ao executar `docker run --rm postgres:16-alpine id postgres` no DockerHost, constatei que, diferente das imagens baseadas em Debian (que usam UID 999), a imagem oficial baseada em Alpine cria o usuário `postgres` com **UID/GID 70**.
+- **A Causa Raiz:** O Ansible executou sua função de garantir o estado desejado, sobrescrevendo a posse da pasta para o UID `1000`. Como a pasta estava em `0700` (rwx------), o processo interno do Postgres (UID `70`) foi trancado para fora do próprio banco de dados, resultando em CrashLoop do serviço.
+- **Correção Imediata (Servidor):**
+    1. Paralisação da stack: `docker compose stop`
+    2. Correção de permissão recursiva no volume: `sudo chown -R 70:70 /opt/services/miniflux/data/postgres`
+    3. Restauração do bloqueio: `sudo chmod 700 /opt/services/miniflux/data/postgres`
+    4. Reactivação da stack: `docker compose up -d`
+- **Correção Definitiva (IaC):** O playbook `configuration/playbooks/dockerhost/services.yml` foi atualizado para que a task determine o `owner: "70"` e `group: "70"`. Após reexecutar o Ansible, o status retornou `ok` e não `changed`, provando que a idempotência foi restaurada sem corromper o funcionamento do sistema.
+
 ## 2026-07-04
 **Status:** ✅ Sucesso
 
