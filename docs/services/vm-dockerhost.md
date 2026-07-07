@@ -199,7 +199,7 @@ Para serviços estáticos e aplicações web como o portfólio `shellfolio-onion
 * **Hospedagem e Isolamento:** O artefato gerado (`dist/`) é servido via Nginx e roteado exclusivamente através de um sidecar Tor (`osminogin/tor-simple`), isolado em uma bridge `tor-net`. Ambos os containers possuem limites rígidos de Cgroups (`cpus: 0.25`, `memory: 100M`) para conter o *Blast Radius* em caso de DDoS via Darknet.
 
 ## Serviços Sob Demanda (Não vão estar sempre ligados)
-   * **Justificativa:** Podem rodar no mesmo DockerHost dos serviços "Sempre Ativos", basta ligar e desligar os contêineres conforme necessário (`docker-compose up -d` e `docker-compose down`).
+   * **Justificativa:** Podem rodar no mesmo DockerHost dos serviços "Sempre Ativos", basta ligar e desligar os contêineres conforme necessário (`docker compose up -d` e `docker compose down`).
         * `Minecraft Server (PaperMC)`: [Implementado em 2026-03-28]
           - **Função:** Servidor Survival focado em altíssima eficiência energética e resiliência (permanece online 24/7 de forma hibernada).
           - **Local:** `/opt/services/minecraft`
