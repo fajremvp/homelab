@@ -11,6 +11,12 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-07-06] - Higienização do Escopo de Backup de DR
+### Corrigido (Fixed)
+- **Disaster Recovery (`dr-checkpoint.sh`):** Removido o ID estático da VM 106 (Vault, descomissionada em 2026-07-02) da matriz de alvos do comando `vzdump` executado remotamente via SSH no Proxmox.
+  - *Impacto:* Sanado o falso positivo que encerrava a tarefa com status de falha.
+- **Auditoria IaC:** Concluída a varredura completa por strings remanescentes do ID 106 em scripts, playbooks e arquivos de inventário (`.ini`), garantindo 100% de consistência entre o repositório Git e o estado real do hypervisor.
+
 ## [2026-07-05] - Correção de Permissões do Miniflux DB
 ### Corrigido (Fixed)
 - **Miniflux (Database Volume):** Resolvido erro crítico de `Permission denied (42501)` no acesso ao arquivo `global/pg_filenode.map` do PostgreSQL.

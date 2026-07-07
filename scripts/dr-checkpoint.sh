@@ -33,7 +33,7 @@ ssh $DOCKERHOST "sudo bash -c 'docker exec authentik-postgres pg_dump -U authent
 # PROXMOX: VZDUMP (WORKLOAD COMPLETO)
 # ==========================================
 echo "=> [2/3] Extraindo imagem de todas as VMs para qmrestore/pct restore..."
-ssh $PROXMOX "vzdump 100 101 102 105 106 107 --mode snapshot --compress zstd --dumpdir /var/lib/vz/dump"
+ssh $PROXMOX "vzdump 100 101 102 105 107 --mode snapshot --compress zstd --dumpdir /var/lib/vz/dump"
 
 echo "   - Copiando dumps (.vma.zst) para o disco local..."
 rsync -avh --progress $PROXMOX:/var/lib/vz/dump/ "$CHECKPOINT_DIR/vms-baremetal/"

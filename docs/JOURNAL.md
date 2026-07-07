@@ -4,6 +4,19 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-07-06
+**Status:** ✅ Sucesso
+
+**Foco:** Expulsão de referências órfãs da VM 106 (Vault) no script de backup off-site.
+
+- **Incidente:** A execução manual da rotina de backup off-site (`dr-checkpoint.sh`) retornou o status final `Backup job finished with errors`, disparando uma notificação indesejada via `mail-to-root`, mesmo com o empacotamento das demais VMs saudáveis concluído com sucesso.
+- **Investigação:** A análise detalhada das linhas de log do `vzdump` expôs a falha: `ERROR: Backup of VM 106 failed - unable to find VM '106'`. O Proxmox interrompia a sequência linear do job ao tentar congelar um alvo inexistente, pulando em seguida para a VM 107 (OrangeShadow).
+- **Causa Raiz:** Dívida técnica residual do dia 2026-07-02 (decommission formal do HashiCorp Vault). A VM 106 foi destruída fisicamente no hypervisor via `qm destroy 106 --purge`, porém o script *pull-based* de DR continuava a invocar o ID 106 estaticamente na matriz de argumentos de snapshot enviados via SSH.
+- **Correção:**
+    1. Atualização do script `scripts/dr-checkpoint.sh` para remover o ID `106` da linha de comando do `vzdump`.
+    2. Execução de uma varredura rigorosa em todo o repositório utilizando `grep -rn "\b106\b" --include="*.sh" --include="*.yml" --include="*.ini" .` para garantir o expurgo completo de referências mortas. O retorno do comando foi limpo (nada encontrado).
+- **Validação:** Nova execução do checkpoint de Disaster Recovery concluída com sucesso absoluto e sem erros (`✅ DR Checkpoint concluído. Tamanho: 69G | Tempo decorrido: 0h 49m 24s`), restaurando o encerramento limpo da tarefa.
+
 ## 2026-07-05
 **Status:** ✅ Sucesso
 
