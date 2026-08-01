@@ -11,6 +11,13 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-08-01] - Atualização do Vaultwarden e Incompatibilidade de API
+### Alterado (Changed)
+- **Vaultwarden:** Atualizada a imagem do serviço no DockerHost para a versão `1.37.1` via `docker compose pull`, garantindo paridade com os novos requisitos de API do ecossistema Bitwarden.
+
+### Corrigido (Fixed)
+- **Extensão Bitwarden (Pre-login Endpoint):** Resolvido o erro `404 Not Found` na requisição `POST /identity/accounts/prelogin/password` disparada pela extensão atualizada do navegador. A elevação para a versão v1.37.1 disponibilizou a rota necessária, reestabelecendo a funcionalidade de login.
+
 ## [2026-07-06] - Higienização do Escopo de Backup de DR
 ### Corrigido (Fixed)
 - **Disaster Recovery (`dr-checkpoint.sh`):** Removido o ID estático da VM 106 (Vault, descomissionada em 2026-07-02) da matriz de alvos do comando `vzdump` executado remotamente via SSH no Proxmox.

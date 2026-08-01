@@ -4,6 +4,18 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-08-01
+**Status:** ✅ Sucesso
+
+**Foco:** Atualização do Vaultwarden (v1.37.1) e resolução de incompatibilidade da extensão Bitwarden.
+
+- **Incidente:** A extensão oficial do Bitwarden no Firefox interrompeu a autenticação repentinamente. A tentativa de login falhava imediatamente no cliente, enquanto o acesso via Web Vault (`https://vaultwarden.home`) permanecia 100% funcional.
+- **Investigação:** A verificação dos logs do container do Vaultwarden revelou respostas `POST /identity/accounts/prelogin/password 404 Not Found`. Outros endpoints como `/identity/connect/token` e `/api/config` continuavam a responder com status `200 OK`.
+- **Causa Raiz:** A extensão do Bitwarden foi atualizada automaticamente pelo navegador e passou a exigir o endpoint de pré-login `/identity/accounts/prelogin/password` (preparatório para novos métodos de autenticação). A versão em execução do Vaultwarden era anterior a essa implementação e não possuía a rota.
+- **Correção:** Atualização da stack do Vaultwarden no DockerHost via `docker compose pull && docker compose up -d`, elevando a aplicação para a versão `1.37.1`.
+- **Validação:** A extensão voltou a autenticar normalmente. Os logs do container confirmaram o sucesso no novo endpoint: `(prelogin_password) POST /identity/accounts/prelogin/password => 200 OK` e `User fajre logged in successfully.`.
+- **Nota sobre Overrides (`config.json`):** Após o restart, os logs registraram o aviso: `The following environment variables are being overridden by the config.json file: DOMAIN, SIGNUPS_ALLOWED, ADMIN_TOKEN`. Identificou-se que o arquivo `data/config.json` foi gerado anteriormente por salvamento acidental no painel Admin. Como os valores em `config.json` são idênticos aos definidos nas variáveis de ambiente (`.env`) e não há uso de recursos avançados (como SMTP), o estado atual foi auditado como seguro, sem riscos à operação, e devidamente coberto pelas rotinas existentes de backup.
+
 ## 2026-07-06
 **Status:** ✅ Sucesso
 
