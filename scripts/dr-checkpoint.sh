@@ -27,7 +27,10 @@ mkdir -p "$CHECKPOINT_DIR"/{vms-baremetal,configs}
 # PREPARAÇÃO DE DUMPS CONSISTENTES
 # ==========================================
 echo "=> [1/3] Garantindo consistência de bancos de dados locais..."
-ssh $DOCKERHOST "sudo bash -c 'docker exec authentik-postgres pg_dump -U authentik authentik > /opt/auth/authentik/authentik_dump.sql'"
+ssh $DOCKERHOST "sudo bash -c '
+    docker exec authentik-postgres pg_dump -U authentik authentik > /opt/auth/authentik/authentik_dump.sql &&
+    docker exec miniflux-db pg_dump -U miniflux miniflux > /opt/services/miniflux/miniflux_dump.sql
+'"
 
 # ==========================================
 # PROXMOX: VZDUMP (WORKLOAD COMPLETO)
