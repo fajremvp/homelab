@@ -293,7 +293,7 @@
 - Alta eficiência reduz consumo e calor dissipado.
 - Conjunto completo de proteções para estabilidade e longevidade do servidor.
 
-  ## Gabinete — DeepCool CC560 (Branco)
+## Gabinete — DeepCool CC560 (Branco)
 
 ### Identificação
 - Fabricante: DeepCool
@@ -344,13 +344,13 @@
 
 #### Teste de Instalação e Rede (Dry Run)
 
-* **Data:** 20/12/2025
-* **Objetivo:** Validar detecção de hardware (NICs HP e Realtek), estabilidade do ZFS Mirror e VT-x antes da criptografia.
-* **Resultado:** **SUCESSO**.
-    * **Rede:** Interface Onboard (`eno1`/`r8169`) identificada corretamente como `nic1` no Proxmox. Placa HP Quad-Port (`e1000e`) identificada como `nic0, 2, 3, 4`.
-    * **Conectividade:** Latência de `0.2ms` em link direto Gigabit.
-    * **Discos:** ZFS Mirror (`rpool`) montado e ativo.
-    * **Bloqueios Superados:** Ajuste de regra de saída/entrada no Firewall do cliente (Arch Linux) necessário para pingar o servidor na sub-rede `10.10.10.x` sem roteador.
+- **Data:** 20/12/2025
+- **Objetivo:** Validar detecção de hardware (NICs HP e Realtek), estabilidade do ZFS Mirror e VT-x antes da criptografia.
+- **Resultado:** **SUCESSO**.
+    - **Rede:** Interface Onboard (`eno1`/`r8169`) identificada corretamente como `nic1` no Proxmox. Placa HP Quad-Port (`e1000e`) identificada como `nic0, 2, 3, 4`.
+    - **Conectividade:** Latência de `0.2ms` em link direto Gigabit.
+    - **Discos:** ZFS Mirror (`rpool`) montado e ativo.
+    - **Bloqueios Superados:** Ajuste de regra de saída/entrada no Firewall do cliente (Arch Linux) necessário para pingar o servidor na sub-rede `10.10.10.x` sem roteador.
 
 ## [LEGADO] Placa de Rede Extra (NIC) — HP NC364T (Removida)
 

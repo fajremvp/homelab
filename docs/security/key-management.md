@@ -30,7 +30,7 @@ Esta migração (2026-07-04) fecha essa dívida técnica.
 
 **Deliberadamente fora do escopo:**
 - `tailscale_auth_key` do Raspberry Pi (`hardening_rpi.yml`) e as senhas do NUT (`configuration/rpi/nut/`, `configuration/proxmox/nut/`).
-- **Motivo:** são segredos configurados uma única vez e nunca mais tocados. O RPi é um nó de borda descartável (Cattle, não Pet — ver `os-standardization.md`). O ganho de SOPS está em segredos que sofrem rotação/deploy repetido; aplicar aqui seria complexidade sem retorno.
+- **Motivo:** são segredos configurados uma única vez e nunca mais tocados. O RPi é um nó de borda descartável (Cattle, não Pet — ver `os-standardization.md`). O ganho de SOPS está em segredos que sofrem rotação/deploy repetido; aplicar aqui seria complexidade sem retorno real.
 
 ## Arquitetura
 
@@ -40,6 +40,7 @@ NixOS (edição)  --git push-->  GitHub  --git pull-->  LXC Management (execuç�
       │  ~/.config/sops/age/keys.txt          /root/.config/sops/age/keys.txt
       │  (chave primária, uso manual)          (chave primária, uso automatizado)
 ```
+
 Chave Age primária (~/.config/sops/age/keys.txt) (/root/.config/sops/age/keys.txt))
 
 A chave privada **nunca** toca DockerHost, RPi, Proxmox ou OrangeShadow. Esses hosts só recebem os arquivos finais renderizados (`.env`, `/etc/restic-env.sh`) via `copy`/`template`, exatamente como já ocorria antes com `vars_prompt` — a única mudança é a *origem* do valor, não o destino.

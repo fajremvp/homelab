@@ -19,7 +19,7 @@ Verificar se as VLANs estão permitidas na interface da VM ou CT (`tapXXXiY` ou 
 
 ```bash
 bridge vlan show
-````
+```
 
 Saída esperada para a interface da VM (ex: `tap100i1`):
 
@@ -47,24 +47,24 @@ tcpdump -i vtnet1 -n -e vlan
 tcpdump -i vtnet1 port 67 or port 68 -n -e
 ```
 
-* **Não aparece nada:** problema no switch físico ou na bridge do Proxmox.
-* **Aparece Request mas não Reply:** problema no serviço DHCP do OPNsense ou em regras de firewall.
+- **Não aparece nada:** problema no switch físico ou na bridge do Proxmox.
+- **Aparece Request mas não Reply:** problema no serviço DHCP do OPNsense ou em regras de firewall.
 
 #### Validar Roteamento e Saída
 
 Se conecta mas não navega (“Connected without internet”):
 
-* Verificar IP do cliente (`ip a` ou detalhes do Wi-Fi).
-* Testar ping a partir do OPNsense:
+- Verificar IP do cliente (`ip a` ou detalhes do Wi-Fi).
+- Testar ping a partir do OPNsense:
   **Interfaces → Diagnostics → Ping**
 
-  * **Source Address:** interface da VLAN (ex: `VLAN_50_IOT`)
-  * **Target:** `8.8.8.8`
+  - **Source Address:** interface da VLAN (ex: `VLAN_50_IOT`)
+  - **Target:** `8.8.8.8`
 
 Erro **“Provide a valid source address”** indica:
 
-* Interface sem IP atribuído, ou
-* Conflito de rotas (WAN e LAN na mesma subnet).
+- Interface sem IP atribuído, ou
+- Conflito de rotas (WAN e LAN na mesma subnet).
 
 ## Verificações Pós-Manutenção (Obrigatórias)
 
@@ -103,16 +103,16 @@ https://github.com/mr-manuel/proxmox/blob/main/zfs-replace-root-disk/README.md
 Se houver suspeita de falha na proteção perimetral, execute este checklist de 6 passos no `DockerHost` para validar o fluxo *End-to-End*:
 
 1. **Ingestão (Olhos):** `docker exec -t crowdsec cscli metrics | grep docker:`
-   * (Deve listar os parsers `docker:traefik` e `docker:authentik-server` não-zerados).
+   - (Deve listar os parsers `docker:traefik` e `docker:authentik-server` não-zerados).
 2. **Inteligência (Cérebro):** `docker exec -t crowdsec cscli metrics | grep traefik-logs`
-   * (A coluna `Parsed` não pode estar vazia. Se estiver, o Traefik parou de gerar JSON).
+   - (A coluna `Parsed` não pode estar vazia. Se estiver, o Traefik parou de gerar JSON).
 3. **Whitelist (Proteção Interna):** `docker exec -t crowdsec cscli metrics | grep whitelists`
-   * (Verifique se acessos da rede local `10.10.x.x` recebem "Hits" para evitar auto-banimento).
+   - (Verifique se acessos da rede local `10.10.x.x` recebem "Hits" para evitar auto-banimento).
 4. **Comunicação L3 (Nervos):** `docker exec -t crowdsec cscli bouncers list`
-   * (O `opnsense-firewall` deve aparecer como `✔️ Valid`).
+   - (O `opnsense-firewall` deve aparecer como `✔️ Valid`).
 5. **Execução L3 (Músculo - No OPNsense via SSH):** `pfctl -t crowdsec_blocklists -T show | wc -l`
-   * (Espera-se o retorno de milhares de IPs banidos em tempo real).
+   - (Espera-se o retorno de milhares de IPs banidos em tempo real).
 6. **Teste de Botão de Pânico (Simulação):**
-   * Banir manual: `docker exec -t crowdsec cscli decisions add -i 1.1.1.1 -d 1h -R "Auditoria"`
-   * Validar: O `Ntfy` deve apitar e o comando `pfctl -t crowdsec_blocklists -T show | grep 1.1.1.1` deve acusar bloqueio no OPNsense.
-   * Rollback: `docker exec -t crowdsec cscli decisions delete -i 1.1.1.1`
+   - Banir manual: `docker exec -t crowdsec cscli decisions add -i 1.1.1.1 -d 1h -R "Auditoria"`
+   - Validar: O `Ntfy` deve apitar e o comando `pfctl -t crowdsec_blocklists -T show | grep 1.1.1.1` deve acusar bloqueio no OPNsense.
+   - Rollback: `docker exec -t crowdsec cscli decisions delete -i 1.1.1.1`

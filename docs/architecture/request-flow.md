@@ -1,6 +1,6 @@
 ## Fluxo de Requisição e Responsabilidades (Defense in Depth)
 
-* **Conceito:** Cada camada filtra um tipo específico de ameaça, afunilando o tráfego até chegar limpo à aplicação ("Security Funnel").
+- **Conceito:** Cada camada filtra um tipo específico de ameaça, afunilando o tráfego até chegar limpo à aplicação ("Security Funnel").
 
 | Camada | Ferramenta | Responsabilidade (O que ela faz) | Tipo de Bloqueio |
 | :--- | :--- | :--- | :--- |
@@ -13,7 +13,7 @@
 
 ### Diagrama do Fluxo (Request Lifecycle)
 
-```
+```mermaid
 graph TD
     Client[Client (NixOS/Mobile)]
 
