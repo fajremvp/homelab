@@ -94,7 +94,7 @@ Esta implementação assume um modelo de ameaça específico para ambiente domé
 **Objetivo:** Visibilidade de rede e energia.
 
 - [x] **Disponibilidade Global:** Dead Man's Switch (Healthchecks.io) monitorando o DockerHost.
-- [ ] **Switch/AP:** Coleta via SNMP Exporter.
++ [ ] **Switch/AP:** Coleta via SNMP Exporter. *(Tentativa em 17/08/2026 revertida - overengineering para o escopo atual. Ver JOURNAL.md.)*
 - [x] **Energia:** Monitoramento ativo de UPS (NUT Exporter, Dashboards e Alertas Ntfy).
 - [X] **Segurança de Rede:** CrowdSec (Logs de firewall e banimentos).
 

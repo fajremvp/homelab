@@ -4,6 +4,16 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-08-17
+**Status:** ❌ Cancelado (Decisão de Escopo)
+
+**Foco:** Implementação de SNMP Exporter para o Switch TP-Link TL-SG2008 e o AP Omada EAP610 - pesquisada, testada e revertida no mesmo dia.
+
+- **Contexto:** Item pendente do roadmap de observabilidade (Fase 3: "Switch/AP: Coleta via SNMP Exporter"). A implementação avançou até o ponto de coleta funcional: SNMPv2c habilitado nos dois dispositivos, conectividade validada (`10.10.30.10 → 10.10.30.1 → 192.168.1.0/24`), `snmp_exporter` respondendo corretamente e targets `UP` no Prometheus.
+- **Motivo do abandono:** Overengineering para o estado atual do homelab. Manter essa stack corretamente exigiria curadoria manual recorrente do `snmp.yml` (o arquivo bruto extraído da imagem tem ~1,9MB/60 mil linhas — inviável de versionar sem corte manual), construção de dashboard próprio do zero (os dashboards comunitários testados eram incompatíveis com o módulo `if_mib` real), e ajuste fino de módulo/auth do exporter. O esforço total ficou desproporcional ao valor de monitorar dois dispositivos L2 simples e historicamente estáveis.
+- **Ação:** Toda a implementação (Docker Compose, template Ansible, scrape config do Prometheus, regras de alerta, dashboard, SNMP habilitado nos dispositivos, regras de firewall no OPNsense) foi revertida. Branch de trabalho descartado, sem merge com a `main`.
+- **Estado do roadmap:** Item de observabilidade de Switch/AP volta para pendente, sem prazo definido. Se retomado no futuro, vale considerar uma abordagem mais enxuta desde o início (ex: módulo `if_mib` escrito manualmente, sem depender do generator/imagem completa) antes de repetir o mesmo caminho.
+
 ## 2026-08-01
 **Status:** ✅ Sucesso
 
