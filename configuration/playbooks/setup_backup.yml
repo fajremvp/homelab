@@ -48,11 +48,11 @@
               echo "    ERRO: Falha no dump do Authentik."
           fi
 
-          echo "--> [DockerHost] 2. Dump do PostgreSQL do Miniflux..."
-          if docker exec miniflux-db pg_dump -U miniflux miniflux > /opt/services/miniflux/miniflux_dump.sql; then
-              echo "    Sucesso: Dump do Miniflux gerado."
+          echo "--> [DockerHost] 2. Dump do PostgreSQL do FreshRSS..."
+          if docker exec freshrss-db pg_dump -U freshrss freshrss > /opt/services/freshrss/freshrss_dump.sql; then
+              echo "    Sucesso: Dump do FreshRSS gerado."
           else
-              echo "    ERRO: Falha no dump do Miniflux."
+              echo "    ERRO: Falha no dump do FreshRSS."
           fi
 
           echo "--> [DockerHost] 3. Backup Restic iniciado..."

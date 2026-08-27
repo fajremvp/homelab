@@ -58,7 +58,7 @@ A chave privada **nunca** toca DockerHost, RPi, Proxmox ou OrangeShadow. Esses h
 
 | Arquivo | Escopo | Variáveis |
 |---|---|---|
-| `configuration/inventory/group_vars/dockerhost/secrets.sops.yaml` | Grupo `dockerhost` | `tailscale_authkey`, `authentik_secret_key`, `authentik_db_password`, `grafana_password`, `healthchecks_uuid`, `pve_password`, `ntfy_token`, `vaultwarden_admin_token`, `speedtest_app_key`, `miniflux_db_password`, `miniflux_admin_password` |
+| `configuration/inventory/group_vars/dockerhost/secrets.sops.yaml` | Grupo `dockerhost` | `tailscale_authkey`, `authentik_secret_key`, `authentik_db_password`, `grafana_password`, `healthchecks_uuid`, `pve_password`, `ntfy_token`, `vaultwarden_admin_token`, `speedtest_app_key`, `freshrss_db_password`, `freshrss_admin_password` |
 | `configuration/inventory/group_vars/all/secrets_backup.sops.yaml` | Todos os hosts | `b2_account_id`, `b2_account_key`, `restic_password`, `restic_repo_base` |
 
 Optei por um único arquivo `secrets.sops.yaml` por host (em vez de segmentarpor serviço) porque sou operador único — não há necessidade de segregar acesso por equipe. Se este arquivo crescer excessivamente no futuro, a fragmentação por domínio (auth/monitoring/services) pode ser feita a qualquer momento sem custo de migração, já que `sops` opera por arquivo.

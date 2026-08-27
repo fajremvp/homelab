@@ -11,6 +11,23 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-08-26] - Migração do Miniflux para FreshRSS
+
+### Adicionado (Added)
+- **FreshRSS:** Implantado FreshRSS 1.29.1 no DockerHost como novo agregador RSS/Atom, utilizando PostgreSQL 16 dedicado.
+- **Atualização Automática:** Configurado cron interno do FreshRSS duas vezes por hora (`CRON_MIN=7,37`), mantendo também a atualização manual completa pela interface.
+- **Extensões como Código:** Diretório de extensões passou a ser versionado no repositório e sincronizado pelo Ansible, evitando alterações manuais não reproduzíveis dentro do container.
+- **Healthcheck:** Ativado healthcheck nativo `cli/health.php`.
+- **Backup:** Adicionado dump consistente do PostgreSQL do FreshRSS às rotinas Restic e Disaster Recovery.
+
+### Alterado (Changed)
+- **RSS Reader:** FreshRSS substituiu o Miniflux como agregador RSS principal.
+- **Segredos:** `miniflux_db_password` e `miniflux_admin_password` foram substituídos por `freshrss_db_password` e `freshrss_admin_password` no SOPS.
+- **Ingress:** O serviço RSS passou de `https://miniflux.home` para `https://freshrss.home`.
+
+### Removido (Removed)
+- **Miniflux:** Removidos Docker Compose, tarefas Ansible, segredos e rotinas de backup específicas do Miniflux após validação do FreshRSS.
+
 ## [2026-08-01] - Atualização do Vaultwarden e Incompatibilidade de API
 ### Alterado (Changed)
 - **Vaultwarden:** Atualizada a imagem do serviço no DockerHost para a versão `1.37.1` via `docker compose pull`, garantindo paridade com os novos requisitos de API do ecossistema Bitwarden.

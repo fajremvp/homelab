@@ -4,6 +4,21 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-08-27
+**Status:** ✅ Sucesso
+
+**Foco:** Migração definitiva do agregador RSS Miniflux para FreshRSS 1.29.1.
+
+- **Motivação:** O Miniflux cumpria bem a função de leitor RSS minimalista, porém o FreshRSS oferece uma interface e um ecossistema de extensões mais adequados ao uso atual, mantendo suporte a atualização manual completa dos feeds e permitindo que extensões sejam incorporadas ao fluxo declarativo do Homelab.
+- **Arquitetura Adotada:** FreshRSS implantado no DockerHost utilizando a imagem `freshrss/freshrss:1.29.1`, PostgreSQL 16 Alpine dedicado, Traefik como reverse proxy e ForwardAuth do Authentik. O estado persistente foi separado em `/opt/services/freshrss/data/app` e `/opt/services/freshrss/data/postgres`, enquanto extensões ficam em `/opt/services/freshrss/extensions`.
+- **Atualização de Feeds:** Configurado o cron interno do FreshRSS para execução duas vezes por hora (`CRON_MIN=7,37`). A atualização manual completa pela interface permanece disponível para consultas sob demanda.
+- **Extensões como Código:** O diretório `configuration/dockerhost/services/freshrss/extensions/` passou a ser a fonte da verdade das extensões. O Ansible sincroniza esse estado para o DockerHost, evitando instalação ou alteração manual dentro do container.
+- **Segredos:** Criados `freshrss_db_password` e `freshrss_admin_password` no arquivo SOPS do DockerHost. Após a migração, os segredos `miniflux_db_password` e `miniflux_admin_password` foram removidos.
+- **Incidente de Bootstrap:** A primeira inicialização criou corretamente o usuário `admin`, porém a senha esperada não autenticava (`Password mismatch`). Como `FRESHRSS_USER` é aplicado somente durante o primeiro bootstrap, a senha do usuário existente foi corrigida diretamente pelo CLI com `cli/update-user.php`.
+- **Backup e DR:** As rotinas `setup_backup.yml` e `dr-checkpoint.sh` foram migradas de `miniflux-db` para `freshrss-db`, mantendo dump consistente via `pg_dump` antes da cópia pelo Restic ou checkpoint air-gapped.
+- **Descomissionamento:** Após importação dos feeds e validação do FreshRSS, foram removidos o Compose e as tasks Ansible do Miniflux, seus segredos SOPS e referências operacionais de backup. Os containers `miniflux` e `miniflux-db`, a network `miniflux_internal` e o diretório `/opt/services/miniflux` foram removidos manualmente do DockerHost.
+- **Resultado:** FreshRSS tornou-se o agregador RSS oficial do Homelab.
+
 ## 2026-08-17
 **Status:** ❌ Cancelado (Decisão de Escopo)
 

@@ -176,13 +176,20 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - * **Retenção de Dados:** `PRUNE_RESULTS_OLDER_THAN=90`. Dados mais velhos que 3 meses são expurgados automaticamente para evitar inchaço do SQLite.
               - **Healthcheck:** Container possui verificação ativa (`curl /api/healthcheck`), permitindo que o daemon do Docker saiba o real estado de saúde da aplicação.
               - **Notificações:** Desabilitadas intencionalmente. As integrações nativas com Ntfy e Webhooks foram marcadas como *deprecated* pelos desenvolvedores do app.
-        * `Miniflux` (RSS Reader): [Implementado em 2026-06-17]
-          - **Objetivo:** Consumo de notícias, blogs técnicos, notificações e atualizações de repositórios Git de forma previsível.
-          - **Componentes:**
-              - `miniflux`: Aplicação Go rodando em porta interna 8080.
-              - `miniflux-db`: Banco de dados relacional PostgreSQL 16 sobre Alpine Linux.
-          - **Armazenamento:** Os dados de transição e configurações ficam em `./data/postgres` mapeados para `/opt/services/miniflux/data/postgres`, integrados de forma transparente ao escopo de varredura do script de backup diário do Restic (`backup-daily.sh`).
-          - **Segurança Específica:** O container do banco e da aplicação compartilham uma rede isolada do Docker (`internal`), impedindo qualquer varredura de portas externa ou comunicação lateral desautorizada vinda de outras stacks da mesma VM.
+        * `FreshRSS` (Agregador RSS): [Implementado em 2026-08-26]
+          - **Função:** Agregador RSS/Atom pessoal, substituindo o Miniflux.
+          - **Local:** `/opt/services/freshrss`.
+          - **Imagem:** `freshrss/freshrss:1.29.1`.
+          - **Banco de Dados:** PostgreSQL 16 Alpine dedicado.
+          - **Persistência:**
+            - Aplicação/configuração: `/opt/services/freshrss/data/app`.
+            - PostgreSQL: `/opt/services/freshrss/data/postgres`.
+            - Extensões: `/opt/services/freshrss/extensions`.
+          - **Ingress:** `https://freshrss.home` via Traefik.
+          - **Autenticação:** ForwardAuth do Authentik + autenticação nativa do FreshRSS.
+          - **Atualização de Feeds:** Cron interno do container nos minutos `7,37`, além de atualização manual completa pela interface.
+          - **Extensões:** Versionadas em `configuration/dockerhost/services/freshrss/extensions/` e sincronizadas pelo Ansible; alterações manuais no host não são consideradas fonte da verdade.
+          - **Backup:** Dump consistente via `pg_dump` antes do Restic, além dos diretórios persistentes incluídos em `/opt/services`.
 
 ## CI/CD e Deploy Contínuo
 Implementado em: 2026-05-26.

@@ -29,7 +29,7 @@ mkdir -p "$CHECKPOINT_DIR"/{vms-baremetal,configs}
 echo "=> [1/3] Garantindo consistência de bancos de dados locais..."
 ssh $DOCKERHOST "sudo bash -c '
     docker exec authentik-postgres pg_dump -U authentik authentik > /opt/auth/authentik/authentik_dump.sql &&
-    docker exec miniflux-db pg_dump -U miniflux miniflux > /opt/services/miniflux/miniflux_dump.sql
+    docker exec freshrss-db pg_dump -U freshrss freshrss > /opt/services/freshrss/freshrss_dump.sql
 '"
 
 # ==========================================

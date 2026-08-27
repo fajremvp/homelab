@@ -1,0 +1,100 @@
+services:
+  freshrss:
+    image: freshrss/freshrss:1.29.1
+    container_name: freshrss
+    restart: unless-stopped
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    environment:
+      TZ: America/Sao_Paulo
+      FRESHRSS_ENV: production
+
+      # Atualiza automaticamente os feeds duas vezes por hora.
+      # Horários não-redondos evitam concentrar tarefas no mesmo minuto.
+      CRON_MIN: '7,37'
+
+      # Executado somente na PRIMEIRA inicialização com data/ vazio.
+      FRESHRSS_INSTALL: |-
+        --base-url ${BASE_URL}
+        --db-base ${DB_BASE}
+        --db-host ${DB_HOST}
+        --db-password ${DB_PASSWORD}
+        --db-type pgsql
+        --db-user ${DB_USER}
+        --default-user admin
+        --language en-US
+
+      # Também executado somente na primeira inicialização.
+      FRESHRSS_USER: |-
+        --language en-US
+        --password ${FRESHRSS_ADMIN_PASSWORD}
+        --user admin
+
+    volumes:
+      - ./data/app:/var/www/FreshRSS/data
+      - ./extensions:/var/www/FreshRSS/extensions
+
+    networks:
+      - proxy
+      - internal
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.freshrss.rule=Host(`freshrss.home`)"
+      - "traefik.http.routers.freshrss.entrypoints=websecure"
+      - "traefik.http.routers.freshrss.tls=true"
+      - "traefik.http.routers.freshrss.middlewares=authentik@docker"
+      - "traefik.http.services.freshrss.loadbalancer.server.port=80"
+
+    healthcheck:
+      test: ["CMD", "cli/health.php"]
+      timeout: 10s
+      start_period: 60s
+      interval: 75s
+      retries: 3
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 512M
+
+  db:
+    image: postgres:16-alpine
+    container_name: freshrss-db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_BASE}
+
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+
+    networks:
+      - internal
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U freshrss -d freshrss"]
+      interval: 10s
+      start_period: 30s
+      timeout: 5s
+      retries: 5
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+networks:
+  proxy:
+    external: true
+
+  internal:
+    internal: true
