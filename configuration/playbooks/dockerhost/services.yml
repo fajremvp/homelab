@@ -278,6 +278,7 @@
           - "--chown={{ ansible_user }}:{{ ansible_user }}"
           - "--exclude=.env"
           - "--exclude=data/"
+          - "--exclude=extensions/"
 
     - name: Garantir diretórios persistentes do FreshRSS
       file:
@@ -301,6 +302,76 @@
           owner: "{{ ansible_user }}"
           group: "{{ ansible_user }}"
           mode: "0755"
+
+    - name: Listar extensões instaladas do FreshRSS
+      ansible.builtin.find:
+        paths: "{{ base_dir }}/freshrss/extensions"
+        file_type: directory
+        recurse: false
+      register: freshrss_installed_extensions
+
+    - name: Remover extensões FreshRSS não declaradas
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ freshrss_installed_extensions.files }}"
+      when: (item.path | basename) not in (freshrss_extensions | map(attribute='name') | list)
+
+    - name: Instalar extensões FreshRSS com repositório próprio
+      ansible.builtin.git:
+        repo: "{{ item.repo }}"
+        dest: "{{ base_dir }}/freshrss/extensions/{{ item.name }}"
+        version: "{{ item.version }}"
+        force: true
+        update: true
+      loop: "{{ freshrss_extensions }}"
+      when: item.subdir is not defined
+      become: true
+      become_user: "{{ ansible_user }}"
+
+    - name: Garantir cache de fontes das extensões FreshRSS
+      ansible.builtin.file:
+        path: "/var/cache/freshrss-extensions"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Baixar repositórios de extensões FreshRSS com subdiretório
+      ansible.builtin.git:
+        repo: "{{ item.repo }}"
+        dest: "/var/cache/freshrss-extensions/{{ item.name }}"
+        version: "{{ item.version }}"
+        force: true
+        update: true
+      loop: "{{ freshrss_extensions }}"
+      when: item.subdir is defined
+      become: true
+      become_user: "{{ ansible_user }}"
+
+    - name: Sincronizar extensões FreshRSS vindas de subdiretórios
+      ansible.posix.synchronize:
+        src: "/var/cache/freshrss-extensions/{{ item.name }}/{{ item.subdir }}/"
+        dest: "{{ base_dir }}/freshrss/extensions/{{ item.name }}/"
+        delete: true
+        recursive: true
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--chown={{ ansible_user }}:{{ ansible_user }}"
+      loop: "{{ freshrss_extensions }}"
+      when:
+        - item.subdir is defined
+        - not ansible_check_mode
+      delegate_to: "{{ inventory_hostname }}"
+
+    - name: Garantir ownership das extensões FreshRSS
+      ansible.builtin.file:
+        path: "{{ base_dir }}/freshrss/extensions/{{ item.name }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        recurse: true
+      loop: "{{ freshrss_extensions }}"
 
     - name: Gerar .env do FreshRSS
       copy:

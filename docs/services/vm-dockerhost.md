@@ -188,7 +188,12 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Ingress:** `https://freshrss.home` via Traefik.
           - **Autenticação:** ForwardAuth do Authentik + autenticação nativa do FreshRSS.
           - **Atualização de Feeds:** Cron interno do container nos minutos `7,37`, além de atualização manual completa pela interface.
-          - **Extensões:** Versionadas em `configuration/dockerhost/services/freshrss/extensions/` e sincronizadas pelo Ansible; alterações manuais no host não são consideradas fonte da verdade.
+          - **Extensões:** Gerenciadas declarativamente pelo Ansible a partir de seus repositórios Git upstream, fixadas em commits específicos.
+            - **Extensões habilitadas:**
+              - AI Summary
+              - Date Format
+              - YouTube Duration
+              - YouTube Video Feed
           - **Backup:** Dump consistente via `pg_dump` antes do Restic, além dos diretórios persistentes incluídos em `/opt/services`.
 
 ## CI/CD e Deploy Contínuo

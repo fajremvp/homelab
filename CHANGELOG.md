@@ -11,6 +11,17 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-08-28] - Gerenciamento Declarativo das Extensões do FreshRSS
+
+### Adicionado (Added)
+
+- **Extensões:** Adicionado gerenciamento declarativo via Ansible das extensões AI Summary, Date Format, YouTube Duration e YouTube Video Feed, com commits fixados.
+
+### Alterado (Changed)
+
+- **Extensões:** Passaram a ser obtidas diretamente dos repositórios upstream em vez de armazenadas no repositório do homelab.
+
+
 ## [2026-08-26] - Migração do Miniflux para FreshRSS
 
 ### Adicionado (Added)
