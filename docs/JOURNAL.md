@@ -4,6 +4,19 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-08-29
+**Status:** ✅ Sucesso
+
+**Foco:** Implementação de resumos de vídeos do YouTube a partir de transcrições no FreshRSS.
+
+- **Motivação:** A extensão AI Summary utilizava o conteúdo disponível na entrada RSS como contexto para os resumos. Em feeds do YouTube, esse conteúdo normalmente contém apenas título e descrição, produzindo resumos pouco representativos do conteúdo real do vídeo.
+- **Implementação:** Criado um fork da extensão AI Summary com suporte opcional à detecção de entradas do YouTube e obtenção da transcrição do vídeo via `yt-dlp`. Quando disponível, a transcrição substitui a descrição RSS como contexto enviado ao provedor de IA. Caso a captura falhe ou não existam legendas, a extensão continua normalmente utilizando o conteúdo RSS.
+- **Dependências:** O `yt-dlp` utilizado é executado por Python e utiliza Deno como runtime JavaScript para auxiliar na extração de conteúdo do YouTube. Para eliminar instalações manuais dentro do container, foi criado um `Dockerfile` derivado da imagem oficial do FreshRSS contendo Python, `yt-dlp` e Deno.
+- **Infraestrutura como Código:** As versões do FreshRSS, `yt-dlp` e Deno passaram a ser declaradas no Ansible e fornecidas ao build pelo `.env`. O Docker Compose constrói a imagem `freshrss-custom`, enquanto o fork do AI Summary é obtido pelo Ansible em um commit fixado.
+- **Validação:** Antes do deploy declarativo, foram removidos do DockerHost o clone manual da extensão e os binários utilizados durante os testes. A execução do playbook recriou a extensão a partir do fork e construiu uma nova imagem contendo `yt-dlp 2026.08.19`, Deno 2.9.6 e Python 3.13.5. O container iniciou saudável e a extensão foi carregada no commit esperado.
+- **Teste Funcional:** Validado o fluxo completo `entrada do YouTube → transcrição → resumo por IA`, incluindo o estado intermediário `Fetching video transcript...`. Também foi validado o fallback ao remover temporariamente o `yt-dlp`, confirmando que a ausência da transcrição não interrompe a geração do resumo.
+- **Resultado:** Os resumos de vídeos do YouTube agora podem utilizar o conteúdo efetivamente falado no vídeo, mantendo fallback seguro e implantação totalmente controlada pelo fluxo Git → Ansible → Docker Compose.
+
 ## 2026-08-27
 **Status:** ✅ Sucesso
 

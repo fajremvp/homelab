@@ -1,6 +1,15 @@
 services:
   freshrss:
-    image: freshrss/freshrss:1.29.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        FRESHRSS_VERSION: ${FRESHRSS_VERSION}
+        YTDLP_VERSION: ${YTDLP_VERSION}
+        DENO_VERSION: ${DENO_VERSION}
+
+    image: freshrss-custom:${FRESHRSS_VERSION}
+
     container_name: freshrss
     restart: unless-stopped
 

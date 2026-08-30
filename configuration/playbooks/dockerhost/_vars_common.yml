@@ -5,10 +5,14 @@ sec_dir: "/opt/security"
 alertmanager_dir: "{{ mon_dir }}/alertmanager"
 pve_dir: "{{ mon_dir }}/pve"
 
+freshrss_version: "1.29.1"
+freshrss_ytdlp_version: "2026.08.19"
+freshrss_deno_version: "2.9.6"
+
 freshrss_extensions:
   - name: "xExtension-AiSummary"
-    repo: "https://github.com/deimosfr/xExtension-AiSummary.git"
-    version: "6f576f3a9ecbf9f6679d120524bb31d5614f1c4c"
+    repo: "https://github.com/fajremvp/xExtension-AiSummary.git"
+    version: "bb0a383b3ca64403d2679d7d63eab792b34907a6"
   - name: "xExtension-DateFormat"
     repo: "https://github.com/aledeg/xExtension-DateFormat.git"
     version: "594647768a83516d0c8ba05bc3616dcb5def08ea"

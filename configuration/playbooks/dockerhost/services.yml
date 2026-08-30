@@ -383,6 +383,9 @@
           DB_USER=freshrss
           DB_PASSWORD={{ freshrss_db_password }}
           FRESHRSS_ADMIN_PASSWORD={{ freshrss_admin_password }}
+          FRESHRSS_VERSION={{ freshrss_version }}
+          YTDLP_VERSION={{ freshrss_ytdlp_version }}
+          DENO_VERSION={{ freshrss_deno_version }}
         owner: "1000"
         group: "1000"
         mode: "0600"
@@ -393,3 +396,4 @@
       community.docker.docker_compose_v2:
         project_src: "{{ base_dir }}/freshrss"
         state: present
+        build: always
