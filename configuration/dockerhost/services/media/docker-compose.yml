@@ -217,6 +217,9 @@ services:
       - ./cache/jellyfin:/cache
       - /mnt/media/data/media:/media:ro
 
+    ports:
+      - "10.10.30.10:8096:8096"
+
     networks:
       - media_net
       - proxy
