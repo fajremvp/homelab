@@ -397,3 +397,73 @@
         project_src: "{{ base_dir }}/freshrss"
         state: present
         build: always
+
+    # --- MEDIA STACK ---
+    - name: Sync Media Stack
+      synchronize:
+        src: "../../dockerhost/services/media/"
+        dest: "{{ base_dir }}/media/"
+        delete: true
+        recursive: true
+        rsync_opts:
+          - "--chmod=D0755,F0644"
+          - "--chown={{ ansible_user }}:{{ ansible_user }}"
+          - "--exclude=.env"
+          - "--exclude=config/"
+          - "--exclude=cache/"
+
+    - name: Garantir diretórios persistentes da stack de mídia
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "1000"
+        group: "1000"
+        mode: "0775"
+      loop:
+        - "{{ base_dir }}/media/config"
+        - "{{ base_dir }}/media/config/qbittorrent"
+        - "{{ base_dir }}/media/config/prowlarr"
+        - "{{ base_dir }}/media/config/radarr"
+        - "{{ base_dir }}/media/config/sonarr"
+        - "{{ base_dir }}/media/config/bazarr"
+        - "{{ base_dir }}/media/config/jellyfin"
+        - "{{ base_dir }}/media/config/seerr"
+        - "{{ base_dir }}/media/config/flaresolverr"
+        - "{{ base_dir }}/media/cache"
+        - "{{ base_dir }}/media/cache/jellyfin"
+
+    - name: Verificar mountpoint da mídia
+      command: mountpoint -q /mnt/media
+      changed_when: false
+
+    - name: Garantir diretórios da biblioteca
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "1000"
+        group: "1000"
+        mode: "0775"
+      loop:
+        - "/mnt/media/data"
+        - "/mnt/media/data/torrents"
+        - "/mnt/media/data/torrents/movies"
+        - "/mnt/media/data/torrents/tv"
+        - "/mnt/media/data/media"
+        - "/mnt/media/data/media/movies"
+        - "/mnt/media/data/media/tv"
+
+    - name: Gerar .env da stack de mídia
+      copy:
+        dest: "{{ base_dir }}/media/.env"
+        content: |
+          VPN_WIREGUARD_PRIVATE_KEY={{ media_vpn_wireguard_private_key }}
+        owner: "1000"
+        group: "1000"
+        mode: "0600"
+        force: true
+      no_log: true
+
+    - name: Start Media Stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ base_dir }}/media"
+        state: present
