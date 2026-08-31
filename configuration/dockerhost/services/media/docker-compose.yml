@@ -278,7 +278,7 @@ services:
 
   # CLOUDFLARE CHALLENGE SOLVER
   flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:3.5.0
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.0
     container_name: flaresolverr
     restart: unless-stopped
 
