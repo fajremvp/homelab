@@ -6,12 +6,25 @@ route:
   group_wait: 30s
   group_interval: 5m
   repeat_interval: 4h
-  receiver: 'ntfy'
+  receiver: 'ntfy-infra'
+
+  routes:
+    - matchers:
+        - category="media"
+      receiver: 'ntfy-media'
 
 receivers:
-  - name: 'ntfy'
+  - name: 'ntfy-infra'
     webhook_configs:
       - url: 'http://ntfy:80/alertas_infra'
+        send_resolved: true
+        http_config:
+          bearer_token: "{{ ntfy_token }}"
+        max_alerts: 5
+
+  - name: 'ntfy-media'
+    webhook_configs:
+      - url: 'http://ntfy:80/alertas_media'
         send_resolved: true
         http_config:
           bearer_token: "{{ ntfy_token }}"
