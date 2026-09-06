@@ -4,6 +4,23 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-09-05
+**Status:** ✅ Sucesso
+
+**Foco:** Reimplementação, hardening e validação end-to-end da Media Stack no DockerHost.
+
+- **Motivação:** A stack de mídia implementada em fevereiro de 2026 havia sido removida durante a simplificação do DockerHost. A nova implantação foi reconstruída sobre o padrão atual do Homelab - Docker Compose versionado, Ansible, SOPS + age, Traefik/Authentik e observabilidade centralizada - em vez de restaurar cegamente o desenho antigo.
+- **Storage:** Adicionado disco virtual de 400GB ao DockerHost, formatado em `ext4` com `LABEL=media_disk` e montado em `/mnt/media`. O reboot trocou a ordem dos devices `/dev/sdX`, mas o mount permaneceu correto, validando novamente a decisão arquitetural de nunca persistir discos por nome de device. O playbook `services.yml` mantém `mountpoint -q /mnt/media` como fail-safe para impedir que a stack grave mídia no disco raiz caso o mount esteja ausente.
+- **Arquitetura Adotada:** Seerr atua como frontend de requests; Radarr/Sonarr gerenciam filmes e séries; Prowlarr centraliza indexers; qBittorrent compartilha o namespace de rede do Gluetun e sai exclusivamente pela ProtonVPN WireGuard; Bazarr gerencia legendas; Jellyfin consome somente a biblioteca final em modo read-only. O layout único `/mnt/media/data/{torrents,media}` preserva hardlinks e evita duplicação física durante o seeding.
+- **Privacidade e Rede:** Validado o binding do qBittorrent em `tun0`, Port Forwarding dinâmico da ProtonVPN e Kill Switch. A exposição direta da WebUI do qBittorrent em `8085` e `FIREWALL_OUTBOUND_SUBNETS=10.10.0.0/16` foram removidos após o bootstrap; o acesso administrativo permanece somente via Traefik/Authentik. Jellyfin permanece fora do ForwardAuth e utiliza autenticação nativa.
+- **Indexers:** 1337x e EZTV apresentaram bloqueio por Cloudflare e passaram a utilizar FlareSolverr por tag; LimeTorrents e Knaben permanecem diretos. O FlareSolverr foi fixado na tag válida `v3.5.0` após a primeira tentativa de deploy falhar por referência de imagem inexistente.
+- **Política de Mídia:** Quality Profiles limitados a 1080p com fallback em 720p, sem 2160p, Remux ou SD. Radarr/Sonarr rejeitam releases sem o idioma original da obra. Bazarr aplica legenda `en-US` para conteúdo originalmente em inglês, nenhuma legenda automática para conteúdo originalmente em português e `pt-BR` para obras em outros idiomas.
+- **Incidentes e Correções:** O Gluetun inicialmente não conseguia atualizar a porta do qBittorrent por autenticação da API local; corrigido habilitando bypass somente para localhost. Também foi identificado que reiniciar o Gluetun diretamente pelo Docker pode deixar o qBittorrent preso ao namespace antigo; o procedimento operacional passou a utilizar Docker Compose, com `depends_on.restart: true`. No qBittorrent, `Use Category paths in Manual Mode` foi habilitado após confirmar que torrents antigos com categoria `radarr` ainda eram gravados em `/data/torrents`.
+- **Observabilidade:** O Node Exporter do Debian ignorava `/mnt` por padrão; o override passou a ser gerenciado pelo `hardening_debian.yml`, permitindo métricas de `/mnt/media`. Foi criado o alerta `MediaDiskUsageHigh` (>85% por 5 minutos) com `category=media`, roteado pelo Alertmanager para o tópico Ntfy `alertas_media`. O Seerr também publica eventos `Available` e falhas de processamento nesse tópico.
+- **Validação:** Downloads reais validaram Radarr, Sonarr e Seerr de ponta a ponta. Hardlinks foram comprovados por inode idêntico e link count `2`; Jellyfin detectou e reproduziu a mídia; Bazarr gerou sidecar de legenda; e a notificação `Available` chegou ao celular via Ntfy. O fluxo completo está operacional.
+- **Decisão de Escopo:** A integração com a TV na VLAN 50 foi abandonada após troubleshooting sem retorno proporcional ao esforço. O consumo da biblioteca fica restrito ao desktop. Transcoding e 4K permanecem fora do escopo.
+- **Resultado:** Media Stack restaurada sob o padrão arquitetural atual do Homelab, com storage dedicado, VPN fail-closed, automação de aquisição/legendas, observabilidade, notificações e runbook operacional documentado.
+
 ## 2026-08-29
 **Status:** ✅ Sucesso
 

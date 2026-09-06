@@ -23,7 +23,7 @@ Adoção de padrões de arquitetura corporativa (Enterprise Patterns), porém ad
 | **Host Logs** | Alloy | Leitura direta (`/var/log/journal`) | Acesso de baixo nível ao kernel e systemd. |
 | **Container Logs** | Alloy | Leitura de arquivo (`json-file`) | Evita gargalo na API do Docker Socket em cargas altas. |
 | **Host Metrics** | Node Exporter | Serviço Systemd (Nativo) | Isolamento de falhas: se o Docker cair, ainda temos métricas do OS. |
-| **Container Metrics** | cAdvisor | Container Privilegiado | Granularidade por cgroup que o Node Exporter não oferece. |
+| **Container Metrics** | cAdvisor | Container Privilegiado | Granularidade por cgroup que o Node Exporter não oferece. No DockerHost, o filtro de filesystems foi sobrescrito via Ansible para incluir mounts em `/mnt`, permitindo monitorar `/mnt/media`. |
 | **Ingress** | Traefik | TLS Termination | Centraliza SSL e protege dashboards (Grafana) atrás do Authentik. |
 | **Energia (L3)** | NUT Exporter | Container HTTP `/ups_metrics` | Traduz o protocolo tcp/3493 do Raspberry Pi para métricas Prometheus. |
 | **Uptime (Externo)** | Heartbeat (Curl) | Push para Healthchecks.io | Garante notificação mesmo em caso de falha total de energia/internet (Dead Man's Switch). |
@@ -54,17 +54,19 @@ Para garantir a recuperabilidade e auditoria, os painéis do Grafana seguem o mo
 
 Esta implementação assume um modelo de ameaça específico para ambiente doméstico controlado.
 
-1.  **PKI Local (Mkcert):**
+1. **PKI Local (Mkcert):**
     * **Modelo:** Trust-on-device (Confiança manual no dispositivo).
     * **Limitação:** Não há CRL (Lista de Revogação) ou OCSP. Se a chave da CA vazar, a revogação exige remoção manual da CA em todos os dispositivos clientes.
     * **Proteção MITM:** Efetiva contra atacantes na rede local, *desde que* a CA não esteja comprometida.
     * Não indicado para ambientes multi-tenant ou expostos à internet.
 
-2.  **Alertas:**
-    * A infraestrutura de roteamento (Alertmanager -> Ntfy) está funcional.
-    * **Lacuna Atual:** Nenhuma regra de alerta (Recording/Alerting Rules) foi definida no Prometheus. O sistema é observável, mas reativo.
+2. **Alertas:**
+    * A infraestrutura de roteamento `Prometheus → Alertmanager → Ntfy` está funcional.
+    * Alertas sem categoria específica utilizam o receiver padrão `ntfy-infra` e o tópico `alertas_infra`.
+    * Alertas com `category="media"` são roteados para `ntfy-media` e o tópico `alertas_media`.
+    * O filesystem `/mnt/media` possui alerta dedicado `MediaDiskUsageHigh`, disparado quando o uso permanece acima de 85% por 5 minutos.
 
-3.  **Segurança de Segredos:**
+3. **Segurança de Segredos:**
     * Chaves TLS privadas armazenadas em disco (`/opt/services/traefik/certs`). Proteção baseada em permissões de arquivo do Linux (DAC).
     * Não há HSM nem TPM na Fase 1.
 
@@ -101,6 +103,6 @@ Esta implementação assume um modelo de ameaça específico para ambiente domé
 ### Fase 4 – Refinamento e Inteligência
 **Objetivo:** Transformar dados em alertas acionáveis.
 
-- [x] **Alerting Rules:** Definição de limiares críticos (Disco > 10%, Alta RAM/CPU, Instance Down, UPS Battery Low/Overload).
+- [x] **Alerting Rules:** Definição de alertas para indisponibilidade, espaço em disco, alta utilização de RAM/CPU, energia/UPS e armazenamento dedicado da Media Stack.
 - [X] **Dashboards:** Criação de visão unificada ("Single Pane of Glass").
 - [ ] **Watchdog:** Monitoramento de disponibilidade da própria stack de monitoramento (Dead Man's Switch).

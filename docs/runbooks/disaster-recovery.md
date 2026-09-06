@@ -55,6 +55,20 @@ Utilizar quando o servidor for formatado e reinstalado do zero.
     ```
 3.  **Realizar o Pós-Restore:** Reiniciar os serviços ou o servidor para carregar as configurações restauradas.
 
+### Nota sobre a Media Stack
+
+O Restic recupera as configurações persistentes da Media Stack em `/opt/services/media`, mas **não** o conteúdo de `/mnt/media/data`.
+
+Em uma reconstrução do DockerHost:
+
+1. Recriar/provisionar o disco dedicado de mídia.
+2. Formatar como `ext4` com `LABEL=media_disk`.
+3. Montá-lo em `/mnt/media`.
+4. Confirmar com `mountpoint /mnt/media`.
+5. Somente então executar `configuration/playbooks/dockerhost/services.yml`.
+
+O guard `mountpoint -q /mnt/media` do playbook existe deliberadamente para impedir que a stack crie sua árvore de mídia no filesystem raiz caso o disco dedicado esteja ausente. Filmes, séries e torrents são considerados dados recriáveis e não fazem parte do backup off-site.
+
 ### Recuperação do Firewall (OPNsense)
 O OPNsense não utilizar Restic. Ele utilizar o plugin `os-git-backup`.
 

@@ -8,7 +8,7 @@
 | **2. Borda (Network)** | **OPNsense** | Filtra conexões brutas (TCP/UDP). | Geo-blocking (bloqueia países), Listas Negras de IP, Proteção contra Scanners de Porta. |
 | **3. Inteligência** | **CrowdSec (Bouncer)** | Lê logs L7 via API Docker e atualiza o OPNsense. | Se alguém ataca o site, o parser entende o Access Log JSON do Traefik, bane o IP remotamente no OPNsense e impede o acesso. Protege a rede L3 a partir do reconhecimento web L7. |
 | **4. Ingresso (App)** | **Traefik** | Entende HTTP/HTTPS. | Roteamento por domínio (`app.home`), terminação SSL, Headers de segurança e **Rate Limiting** (evita flood em rotas específicas). |
-| **5. Identidade** | **Authentik** | Valida QUEM está entrando. | **Zero Trust:** Nenhuma requisição chega ao app sem um token válido. Gerencia MFA e SSO. |
+| **5. Identidade** | **Authentik** | Valida a identidade nas aplicações protegidas por ForwardAuth. Serviços que exigem acesso direto à própria API podem utilizar autenticação nativa, conforme decisão documentada por serviço (ex.: Jellyfin). | **Zero Trust:** MFA/SSO nos painéis administrativos; exceções explícitas preservam compatibilidade com clientes nativos. |
 | **6. Host (Micro-seg)** | **nftables (Host)** | Firewall interno do Linux. | Impede que um container hackeado acesse outros serviços lateralmente. |
 
 ### Diagrama do Fluxo (Request Lifecycle)
@@ -32,8 +32,9 @@ graph TD
     %% Fluxo de Dados HTTP/TCP
     Client -->|4. Request| OPNsense[OPNsense Firewall]
     OPNsense -->|5. Forward 443| Traefik[Traefik Ingress]
-    Traefik <-->|6. Auth Check| Authentik[Authentik]
-    Traefik -->|7. Access| App[App/Service]
+    Traefik <-->|6. Auth Check| Authentik
+    Traefik -->|7a. ForwardAuth aprovado| App[Apps Administrativos]
+    Traefik -->|7b. Autenticação Nativa| Jellyfin[Jellyfin]
 
     %% Bouncer
     CrowdSec[CrowdSec DockerHost] -.->|Block IPs| OPNsense

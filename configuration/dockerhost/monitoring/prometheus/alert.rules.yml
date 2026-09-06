@@ -127,3 +127,27 @@ groups:
         annotations:
           summary: "🔌 Perda de Telemetria L3 do UPS"
           description: "O Prometheus não consegue ler o nut-exporter, ou o RPi perdeu conexão com o Nobreak."
+
+  - name: media_alerts
+    rules:
+      - alert: MediaDiskUsageHigh
+        expr: |
+          (
+            1 -
+            node_filesystem_avail_bytes{
+              job="dockerhost-node",
+              mountpoint="/mnt/media"
+            }
+            /
+            node_filesystem_size_bytes{
+              job="dockerhost-node",
+              mountpoint="/mnt/media"
+            }
+          ) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          category: media
+        annotations:
+          summary: "💾 Media disk acima de 85%"
+          description: "/mnt/media está com {{ $value | printf \"%.1f\" }}% de uso."

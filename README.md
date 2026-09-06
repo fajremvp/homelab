@@ -34,7 +34,7 @@ homelab/
 │   │   ├── auth/           # Gestão de Identidade e Acesso (Authentik)
 │   │   ├── monitoring/     # Observabilidade PLG (Prometheus, Loki, Grafana, Alloy)
 │   │   ├── security/       # Camada de Defesa (CrowdSec IDS/IPS)
-│   │   └── services/       # Aplicações e Infraestrutura (Traefik, VPNs, Vaultwarden, Nostr)
+│   │   └── services/       # Aplicações e Infraestrutura (Traefik, VPNs, Vaultwarden, Nostr, Media Stack)
 │   ├── inventory/          # Inventário de Hosts (hosts.ini) e segredos cifrados (SOPs)
 │   │   ├── hosts.ini       # Definição dos hosts e grupos
 │   │   └── group_vars/     # Segredos cifrados (SOPS) por grupo de hosts
@@ -52,7 +52,7 @@ homelab/
 │   ├── JOURNAL.md          # Diário de Engenharia (Lessons Learned)
 │   ├── kubernetes/         # Manifestos e configs para o cluster k8s (Talos)
 │   ├── lab/                # Ambientes de teste e Pentest
-│   ├── runbooks/           # Procedimentos Operacionais (Disaster Recovery, Cold Boot)
+│   ├── runbooks/           # Procedimentos Operacionais (Disaster Recovery, Cold Boot, Media Stack)
 │   ├── security/           # Governança (Threat Model, Zero Trust, Key Management)
 │   └── services/           # Documentação Técnica dos Serviços (VMs e LXCs)
 │

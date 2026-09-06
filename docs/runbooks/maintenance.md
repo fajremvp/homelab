@@ -82,6 +82,11 @@ Após qualquer manutenção crítica (kernel, rede, storage):
   - `chronyc tracking`
 - Confirmar status da bateria e comunicação NUT L3 (Proxmox -> RPi):
   - `upsc intelbras@192.168.1.5 | grep ups.status` (Espera-se `OL` ou `OL CHRG`)
+- Confirmar storage dedicado da Media Stack no DockerHost:
+  - `findmnt /mnt/media`
+  - `df -hT /mnt/media`
+  - Esperado: filesystem `ext4` montado em `/mnt/media` com `rw,noatime`.
+  - Se o mount estiver ausente, não executar o playbook `services.yml`; seguir o runbook [`media-stack.md`](media-stack.md).
 
 ## Recuperação e Substituição de Disco (ZFS Root)
 

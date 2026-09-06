@@ -14,6 +14,7 @@ Implementação realizada em: 2025-12-27.
 | **RAM** | 12 GB | Ballooning: **Não** (Desativado para estabilidade de serviços Java/ZFS). Expandido de 8GB em 2026-03-29 para acomodar carga crescente. |
 | **Disco 1 (Boot)** | 64 GB (SCSI 0) | Storage: `local-zfs`. Sistema Operacional. Expandido de 32GB em 2026-03-29. Swap recriado como arquivo (`/swapfile`) em vez de partição dedicada. |
 | **Disco 2 (Data)** | 100 GB (SCSI 1) | Storage: `local-zfs`. Dados brutos (`/mnt/syncthing`). |
+| **Disco 3 (Media)** | 400 GB (SCSI 2) | Storage: `local-zfs`. Filesystem `ext4` com `LABEL=media_disk`, montado em `/mnt/media`. `backup=0` no Proxmox; mídia e torrents não participam do backup off-site. |
 | **Rede** | `vmbr0` (VirtIO) | **VLAN Tag: 30** (Rede SERVER). Firewall do Proxmox: Desligado. |
 
 ### Gestão de Recursos e Blast Radius (Cgroups)
@@ -78,6 +79,22 @@ Para manter a organização e facilitar backups, o DockerHost segue estritamente
 | `/opt/monitoring` | Stack de Observabilidade | `grafana/`, `prometheus/`, `alertmanager/`, `alloy/`, `loki/` |
 | `opt/security` | Segurança | `crowdsec/` |
 | `/opt/utils` | Scripts e Ferramentas | Scripts de manutenção local |
+
+### Armazenamento de Mídia
+
+A Media Stack utiliza um disco virtual dedicado montado em `/mnt/media`, identificado persistentemente por `LABEL=media_disk` para evitar dependência da ordem `/dev/sdX`.
+
+```text
+/mnt/media/data/
+├── torrents/
+│   ├── movies/
+│   └── tv/
+└── media/
+    ├── movies/
+    └── tv/
+```
+
+O layout unificado permite hardlinks entre downloads e biblioteca sem duplicação física dos arquivos.
 
 **Política de Logs:**
 O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs automaticamente.
@@ -195,6 +212,13 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - YouTube Duration
               - YouTube Video Feed
           - **Backup:** Dump consistente via `pg_dump` antes do Restic, além dos diretórios persistentes incluídos em `/opt/services`.
+        * `Media Stack`: [Reimplementada em 2026-09-05]
+          - **Local:** `/opt/services/media`.
+          - **Serviços:** Seerr, Radarr, Sonarr, Prowlarr, Bazarr, Jellyfin, qBittorrent, Gluetun e FlareSolverr.
+          - **Storage:** Disco dedicado em `/mnt/media`; configurações persistentes em `/opt/services/media/config`.
+          - **Privacidade:** qBittorrent compartilha o namespace de rede do Gluetun e utiliza ProtonVPN WireGuard com Kill Switch e Port Forwarding dinâmico.
+          - **Ingress:** Painéis administrativos via Traefik + Authentik; Jellyfin utiliza autenticação nativa para preservar compatibilidade com seus clientes.
+          - **Operação:** Ver [`docs/runbooks/media-stack.md`](../runbooks/media-stack.md).
 
 ## CI/CD e Deploy Contínuo
 Implementado em: 2026-05-26.
@@ -258,6 +282,7 @@ O DockerHost realiza backups diários, criptografados e incrementais para o Back
 * **Escopo de Backup:**
     * `/opt/services, /opt/auth, /opt/monitoring, /opt/security, /opt/utils e /mnt/syncthing/Mirror`.
     * *Nota:* O diretório `/mnt/syncthing/Mirror` foi explicitamente incluído para garantir o off-site backup (B2) da base de conhecimento (Obsidian), enquanto o resto de `/mnt/syncthing` permanece intencionalmente ignorado.
+    * **Media Stack:** As configurações em `/opt/services/media/config` são cobertas pelo escopo existente de `/opt/services`. O conteúdo de `/mnt/media/data` (biblioteca e torrents) permanece deliberadamente fora do Restic por ser volumoso e recriável.
 * **Exclusões:** Logs (`*.log`), arquivos temporários de banco (`*.sqlite3-wal`) e caches.
 * **Retenção:** 7 dias, 4 semanas, 6 meses.
 
