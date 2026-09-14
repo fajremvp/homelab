@@ -4,6 +4,26 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-09-13
+**Status:** ✅ Sucesso
+
+**Foco:** Migração do File Browser legado para FileBrowser Quantum.
+
+- **Motivação:** O File Browser original utilizado como interface Web sobre o Syncthing foi oficialmente descontinuado e teve seu repositório arquivado. Como a aplicação faz parte do meu fluxo habitual para acessar e gerenciar os arquivos do servidor, manter uma versão sem futuras correções de bugs ou segurança não fazia sentido a longo prazo.
+- **Pesquisa de Alternativas:** Antes da migração, pesquisei alternativas que mantivessem a principal característica que eu gostava no File Browser: uma interface simples sobre diretórios reais do filesystem, sem introduzir uma plataforma mais pesada como Nextcloud. Entre as opções avaliadas estavam FileBrowser Quantum, copyparty, SFTPGo e Filestash.
+- **Discussão com a Comunidade:** Também publiquei no `r/autohospedagem` explicando a descontinuação do projeto e perguntando para quais alternativas outros usuários estavam migrando. O FileBrowser Quantum apareceu repetidamente entre as recomendações e relatos de migração.
+  - Post: https://www.reddit.com/r/autohospedagem/s/8bHBWsJlhl
+- **Decisão:** Escolhi o FileBrowser Quantum por ser a alternativa mais próxima do funcionamento e experiência do File Browser original, permitindo continuar expondo diretamente o filesystem do Syncthing sem alterar a arquitetura de armazenamento existente.
+- **Migração:** O container `filebrowser/filebrowser:v2.61.2` foi substituído por `gtstef/filebrowser:1.5.6-stable`. O serviço passou de `filebrowser` para `filebrowserquantum` e o ingress de `https://filebrowser.home` para `https://filebrowserquantum.home`.
+- **Dados:** Não houve migração ou cópia dos arquivos dos usuários. O mesmo diretório `/mnt/syncthing` continua sendo montado como `/srv` em modo read/write, portanto os dados permaneceram intactos durante toda a mudança.
+- **Persistência:** O FileBrowser Quantum utiliza `/opt/services/filebrowserquantum/data/database.db` para seu estado e `/opt/services/filebrowserquantum/data/tmp` para cache, índices e thumbnails. O `config.yaml` é versionado no Git e montado read-only no container.
+- **Autenticação:** Mantido o modelo de dupla autenticação: Authentik ForwardAuth na borda através do Traefik e autenticação nativa por senha no FileBrowser Quantum. A senha do administrador é armazenada no SOPS e injetada pelo Ansible através de `FILEBROWSER_ADMIN_PASSWORD`.
+- **Hardening:** WebDAV desabilitado, source configurada como privada, signup desabilitado e arquivos ocultos bloqueados na raiz da source para proteger metadados internos do Syncthing como `.stfolder` e `.stversions`. Nenhuma porta do container é publicada diretamente no DockerHost.
+- **Incidentes durante o Bootstrap:** A primeira configuração utilizava `adminUsername` dentro de `auth.methods.password`, estrutura inválida para a versão 1.5.6. Após movê-lo para `auth.adminUsername`, o serviço avançou no bootstrap. A senha administrativa inicial também excedeu o limite aceito pelo bcrypt e foi substituída. Como o primeiro banco havia sido criado durante essas tentativas, o `database.db` inicial foi removido antes do bootstrap definitivo.
+- **Validação:** Confirmados healthcheck `healthy`, versão `v1.5.6-stable`, UID/GID `1000:1000`, configuração montada read-only, data e `/srv` read/write, endpoint `/health`, ausência de portas publicadas e validade do Docker Compose. O acesso pela interface, autenticação, leitura/escrita e persistência também foram validados.
+- **Descomissionamento:** Após a validação do Quantum, o container antigo permaneceu parado e seu diretório `/opt/services/filebrowser` foi removido. As imagens `filebrowser/filebrowser:latest` e `filebrowser/filebrowser:v2.61.2` também foram removidas do DockerHost.
+- **Resultado:** FileBrowser Quantum tornou-se a interface Web oficial para os arquivos do Syncthing, mantendo a arquitetura de autenticação dupla e o mesmo storage, sem perda ou migração dos dados sincronizados.
+
 ## 2026-09-05
 **Status:** ✅ Sucesso
 

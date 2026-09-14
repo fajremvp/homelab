@@ -11,28 +11,36 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-09-13] - Migração para FileBrowser Quantum
+
+### Adicionado (Added)
+- **FileBrowser Quantum:** Implantado `gtstef/filebrowser:1.5.6-stable` como nova interface Web para os arquivos sincronizados pelo Syncthing, acessível em `https://filebrowserquantum.home`.
+
+### Removido (Removed)
+- **File Browser legado:** Removida a implantação baseada em `filebrowser/filebrowser:v2.61.2`, incluindo container, configuração Docker Compose/Ansible, diretório `/opt/services/filebrowser` e imagens Docker antigas após a migração para o FileBrowser Quantum.
+
 ## [2026-09-05] - Reimplementação e Validação da Media Stack
 
 ### Adicionado (Added)
-- **Media Stack:*- Reimplementada no DockerHost a suíte de mídia com Seerr, Radarr, Sonarr, Prowlarr, Bazarr, Jellyfin, qBittorrent, Gluetun e FlareSolverr, integrada ao fluxo GitOps atual via Docker Compose, Ansible e SOPS.
-- **Storage de Mídia:*- Adicionado disco virtual dedicado de 400GB (SCSI 2), formatado em `ext4` com `LABEL=media_disk` e montado em `/mnt/media`, utilizando o layout unificado `/mnt/media/data/{torrents,media}` para preservar hardlinks entre downloads e biblioteca.
-- **VPN e Port Forwarding:*- qBittorrent isolado no namespace de rede do Gluetun via ProtonVPN WireGuard, com Kill Switch, binding em `tun0` e propagação automática da porta dinâmica de Port Forwarding para a API do qBittorrent.
-- **Alertas de Mídia:*- Criado o tópico Ntfy `alertas_media`, com notificações do Seerr e roteamento dedicado no Alertmanager para alertas com `category="media"`. Adicionada a regra `MediaDiskUsageHigh` para uso de `/mnt/media` acima de 85% por 5 minutos.
-- **Documentação Operacional:*- Adicionado runbook da Media Stack em `docs/runbooks/media-stack.md`.
+- **Media Stack:** Reimplementada no DockerHost a suíte de mídia com Seerr, Radarr, Sonarr, Prowlarr, Bazarr, Jellyfin, qBittorrent, Gluetun e FlareSolverr, integrada ao fluxo GitOps atual via Docker Compose, Ansible e SOPS.
+- **Storage de Mídia:** Adicionado disco virtual dedicado de 400GB (SCSI 2), formatado em `ext4` com `LABEL=media_disk` e montado em `/mnt/media`, utilizando o layout unificado `/mnt/media/data/{torrents,media}` para preservar hardlinks entre downloads e biblioteca.
+- **VPN e Port Forwarding:** qBittorrent isolado no namespace de rede do Gluetun via ProtonVPN WireGuard, com Kill Switch, binding em `tun0` e propagação automática da porta dinâmica de Port Forwarding para a API do qBittorrent.
+- **Alertas de Mídia:** Criado o tópico Ntfy `alertas_media`, com notificações do Seerr e roteamento dedicado no Alertmanager para alertas com `category="media"`. Adicionada a regra `MediaDiskUsageHigh` para uso de `/mnt/media` acima de 85% por 5 minutos.
+- **Documentação Operacional:** Adicionado runbook da Media Stack em `docs/runbooks/media-stack.md`.
 
 ### Alterado (Changed)
-- **Node Exporter:*- Ajustado no DockerHost para incluir mounts em `/mnt`, permitindo a coleta de métricas do filesystem `/mnt/media`.
-- **Backup:*- Configurações persistentes da Media Stack em `/opt/services/media/config` passam a ser cobertas pelo Restic através do escopo existente de `/opt/services`; arquivos de mídia e torrents em `/mnt/media/data` permanecem deliberadamente fora do backup off-site.
-- **Ingress e Autenticação:*- Interfaces administrativas da Media Stack são publicadas via Traefik e protegidas pelo Authentik; Jellyfin permanece com autenticação nativa para preservar compatibilidade com seus clientes.
+- **Node Exporter:** Ajustado no DockerHost para incluir mounts em `/mnt`, permitindo a coleta de métricas do filesystem `/mnt/media`.
+- **Backup:** Configurações persistentes da Media Stack em `/opt/services/media/config` passam a ser cobertas pelo Restic através do escopo existente de `/opt/services`; arquivos de mídia e torrents em `/mnt/media/data` permanecem deliberadamente fora do backup off-site.
+- **Ingress e Autenticação:** Interfaces administrativas da Media Stack são publicadas via Traefik e protegidas pelo Authentik; Jellyfin permanece com autenticação nativa para preservar compatibilidade com seus clientes.
 
 ### Corrigido (Fixed)
-- **FlareSolverr:*- Corrigida a referência da imagem para a tag válida `ghcr.io/flaresolverr/flaresolverr:v3.5.0`.
-- **qBittorrent/Gluetun:*- Corrigida a atualização automática da porta Proton habilitando bypass de autenticação somente para localhost e padronizado o restart do Gluetun via Docker Compose para manter o namespace compartilhado do qBittorrent consistente.
-- **qBittorrent Categories:*- Habilitado o uso de caminhos de categoria no modo de gerenciamento manual, garantindo novos downloads `radarr` em `/data/torrents/movies` e `sonarr` em `/data/torrents/tv`.
+- **FlareSolverr:** Corrigida a referência da imagem para a tag válida `ghcr.io/flaresolverr/flaresolverr:v3.5.0`.
+- **qBittorrent/Gluetun:** Corrigida a atualização automática da porta Proton habilitando bypass de autenticação somente para localhost e padronizado o restart do Gluetun via Docker Compose para manter o namespace compartilhado do qBittorrent consistente.
+- **qBittorrent Categories:** Habilitado o uso de caminhos de categoria no modo de gerenciamento manual, garantindo novos downloads `radarr` em `/data/torrents/movies` e `sonarr` em `/data/torrents/tv`.
 
 ### Validado (Verified)
-- **Fluxo End-to-End:*- Validado o pipeline `Seerr → Radarr/Sonarr → Prowlarr → qBittorrent → Gluetun/ProtonVPN → hardlink/import → Bazarr → Jellyfin`, incluindo reprodução, legendas e notificação `Available` no Ntfy.
-- **Hardlinks e Kill Switch:*- Confirmados hardlinks por inode/link count e bloqueio de saída do qBittorrent quando a interface VPN `tun0` é indisponibilizada.
+- **Fluxo End-to-End:** Validado o pipeline `Seerr → Radarr/Sonarr → Prowlarr → qBittorrent → Gluetun/ProtonVPN → hardlink/import → Bazarr → Jellyfin`, incluindo reprodução, legendas e notificação `Available` no Ntfy.
+- **Hardlinks e Kill Switch:** Confirmados hardlinks por inode/link count e bloqueio de saída do qBittorrent quando a interface VPN `tun0` é indisponibilizada.
 
 ## [2026-08-29] - Resumos de YouTube por Transcrição no FreshRSS
 

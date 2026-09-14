@@ -147,7 +147,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Portas de Dados:** 22000/TCP+UDP expostas para a LAN/WAN.
           - **Política de Sync (Atualizada em 2026-03-07):**
               - **Servidor e Clientes:** Send & Receive + Staggered File Versioning.
-              - **Motivo:** Permitir que alterações realizadas via interface Web (File Browser) sejam propagadas bidirecionalmente para todos os dispositivos (NixOS (Acer Aspire) e Android M55).
+              - **Motivo:** Permitir que alterações realizadas via interface Web (File Browser Quantum) sejam propagadas bidirecionalmente para todos os dispositivos (NixOS (Acer Aspire) e Android M55).
           - **File Pull Order:** Definido globalmente como `Oldest First` em todos os nós. Impede o comportamento padrão (`Random`) de fragmentar arquivos na memória flash/ZFS durante sincronizações massivas.
           - **Segurança:** Autenticação Dupla (Authentik Middleware + Senha da App).
           - **Matriz de Configuração (Tuning):**
@@ -162,25 +162,27 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
                   - *Run Conditions:* Wi-Fi Only (Padrão), Battery or AC Power.
                   - *Network:* `NAT Traversal=On` (Bypass CGNAT), `Global/Local/Relay=On`.
                   - *System:* Bateria do Android definida como **"Sem Restrições" (Unrestricted)**.
-        * `File Browser` (Web Drive para Syncthing): [Implementado em 2026-03-07]
-          - **Função:** Interface Web minimalista para navegação, upload e gerenciamento dos arquivos sincronizados pelo Syncthing.
-          - **Versão:** `v2.61.2` (Tag travada para evitar quebra por atualizações automáticas).
+        * `FileBrowser Quantum` (Web Drive para Syncthing): [Implementado em 2026-09-13]
           - **Integração de Armazenamento:**
-              - **Mount Interno:** `/srv`
-              - **Origem no Host:** `/mnt/syncthing`
-          - **Banco de Dados:** SQLite (`filebrowser.db`) persistido em `/opt/services/filebrowser/data`.
-          - **Configuração:** `/opt/services/filebrowser/config`.
-          - **Ingress:** `https://filebrowser.home`
+              - **Mount Interno:** `/srv`.
+              - **Origem no Host:** `/mnt/syncthing`.
+              - **Modo:** Read/Write, permitindo que alterações feitas pela interface sejam propagadas pelo Syncthing.
+          - **Persistência:**
+              - **Banco:** `/opt/services/filebrowserquantum/data/database.db`.
+              - **Cache/Índices:** `/opt/services/filebrowserquantum/data/tmp`.
+              - **Configuração:** `/opt/services/filebrowserquantum/config/config.yaml`.
+          - **Ingress:** `https://filebrowserquantum.home`.
           - **Segurança:**
-              - **Nível 1 (Rede):** Protegido por middleware `authentik@docker` no Traefik.
-              - **Nível 2 (Aplicação):** Autenticação nativa do File Browser (credenciais armazenadas no `filebrowser.db`).
-              - **Modelo:** Autenticação dupla isolada (fail-safe).
-          - **Proteção de Infraestrutura:**
-              - **Dotfiles ocultos:** Evita deleção acidental de `.stfolder` e `.stversions` utilizados pelo Syncthing.
-          - **Uploads:**
-              - **Chunked Upload:** Ativado (10MB chunks / 5 retries) para maior resiliência em conexões instáveis.
-          - **Observação Arquitetural:**
-              - A tentativa de autenticação via injeção de headers (`X-Authentik-*`) foi abandonada por fragilidade histórica dessa integração.
+              - **Nível 1:** Authentik ForwardAuth através do middleware `authentik@docker`.
+              - **Nível 2:** Autenticação nativa por senha do FileBrowser Quantum.
+              - **Senha Admin:** Gerenciada via SOPS + age e injetada como `FILEBROWSER_ADMIN_PASSWORD`.
+              - **Configuração Declarativa:** `config.yaml` montado read-only no container.
+              - **Dotfiles:** Arquivos ocultos bloqueados na source para proteger `.stfolder`, `.stversions` e outros metadados.
+              - **WebDAV:** Desabilitado.
+              - **Compartilhamento Público:** Source configurada como privada.
+          - **Rede:**
+              - Nenhuma porta publicada diretamente no DockerHost.
+              - Backend acessível pelo Traefik internamente na porta `80`.
         * `Speedtest Tracker`: [Implementado em 2026-05-01]
           - **Função:** Serviço essencial para auditar a entrega de banda da operadora. A configuração foi altamente customizada para otimização de recursos e integração total com o ecossistema do Homelab:
               - **Armazenamento (DB):** Utiliza `sqlite` local em `/opt/services/speedtest-tracker/data`. Não requer um container de DB dedicado (MariaDB/Postgres), tornando-o leve e facilmente backupeável pelo Restic.
