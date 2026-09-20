@@ -4,6 +4,30 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-09-19
+**Status:** ✅ Sucesso
+
+**Foco:** Normalização da identidade do Acer Aspire e eliminação de nomenclaturas legadas do Arch Linux no Syncthing.
+
+- **Motivação:** Apesar da migração do notebook principal de Arch Linux para NixOS já ter ocorrido em maio, a estrutura persistente do Syncthing ainda carregava nomenclaturas históricas como `/mnt/syncthing/Arch`, Device Name `nix`, labels `Nix - *` e Folder IDs `arch-*`. A alteração teve como objetivo desacoplar a identidade do dispositivo do sistema operacional instalado e alinhar a configuração com o hardware real.
+- **Storage:** O diretório `/mnt/syncthing/Arch` no DockerHost foi renomeado para `/mnt/syncthing/Acer-Aspire`. Como a operação ocorreu dentro do mesmo filesystem, não houve cópia ou movimentação física dos ~15GB armazenados.
+- **Estrutura Preservada:** Permaneceram intactos `Dev`, `Documents`, `Faculdade`, `Important`, `Pictures` e `Videos`, incluindo seus respectivos `.stfolder` e `.stversions`.
+- **Folder Paths:** No DockerHost, os seis caminhos foram atualizados de `/var/syncthing/data/Arch/*` para `/var/syncthing/data/Acer-Aspire/*`. No NixOS, os caminhos locais permaneceram `~/Dev`, `~/Documents`, `~/Faculdade`, `~/Important`, `~/Pictures` e `~/Videos`.
+- **Identidade do Dispositivo:** O Device Name do notebook foi normalizado de `nix` para `Acer-Aspire` nos dois lados do pareamento. O Device ID criptográfico do Syncthing permaneceu inalterado.
+- **Folder Labels:** Os labels `Nix - *` foram substituídos por `Acer-Aspire - *`.
+- **Folder IDs:** Os IDs legados foram substituídos simultaneamente nos dois nós:
+    - `arch-dev` → `acer-aspire-dev`
+    - `arch-documents` → `acer-aspire-documents`
+    - `arch-faculdade` → `acer-aspire-faculdade`
+    - `arch-important` → `acer-aspire-important`
+    - `arch-pictures` → `acer-aspire-pictures`
+    - `arch-videos` → `acer-aspire-videos`
+- **Procedimento Seguro:** As seis pastas foram pausadas, os dois Syncthings foram parados, os `config.xml` foram copiados antes da alteração e os Folder IDs foram modificados offline de forma simétrica. As pastas foram então retomadas individualmente e reindexadas.
+- **Validação:** Todas as pastas retornaram ao estado `Up to Date`. Os tamanhos permaneceram consistentes com o baseline anterior e os seis `.stfolder` foram preservados.
+- **Teste End-to-End:** Validada sincronização bidirecional com criação e remoção de arquivos tanto no Acer Aspire quanto diretamente no DockerHost.
+- **FileBrowser Quantum:** Após a remoção dos diretórios vazios recriados pelo path antigo, a interface passou a exibir somente `Acer-Aspire`, `M55`, `Mirror` e `lost+found`.
+- **Resultado:** Toda a nomenclatura operacional do notebook passou a usar `Acer-Aspire`, eliminando dependência nominal do sistema operacional sem perda de dados ou alteração da topologia Hub-and-Spoke.
+
 ## 2026-09-13
 **Status:** ✅ Sucesso
 

@@ -11,6 +11,21 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-09-19] - Normalização de Identidade e Layout do Syncthing
+
+### Alterado (Changed)
+- **Syncthing - Acer Aspire:** Padronizada a identidade do notebook principal de `nix` para `Acer-Aspire`, eliminando nomenclaturas legadas associadas ao sistema operacional.
+- **Storage:** Diretório agregador do notebook no DockerHost renomeado de `/mnt/syncthing/Arch` para `/mnt/syncthing/Acer-Aspire`, mantendo os dados e históricos de versionamento existentes.
+- **Folder Labels:** Pastas do notebook renomeadas de `Nix - *` para `Acer-Aspire - *`.
+- **Folder IDs:** IDs legados `arch-*` substituídos por `acer-aspire-*` simultaneamente no DockerHost e no cliente NixOS.
+- **Folder Paths:** Caminhos do DockerHost atualizados para `/var/syncthing/data/Acer-Aspire/*`; os caminhos locais do NixOS (`~/Dev`, `~/Documents`, `~/Faculdade`, `~/Important`, `~/Pictures` e `~/Videos`) permaneceram inalterados.
+
+### Validado (Verified)
+- **Integridade:** Preservados os seis diretórios sincronizados, seus marcadores `.stfolder`, históricos `.stversions` e tamanhos de dados anteriores à mudança.
+- **Sincronização:** Todas as pastas retornaram ao estado `Up to Date` após reindexação com os novos Folder IDs.
+- **Fluxo Bidirecional:** Validadas criação e remoção de arquivos nos sentidos Acer-Aspire → DockerHost e DockerHost → Acer-Aspire.
+- **FileBrowser Quantum:** Confirmado o novo layout em `/mnt/syncthing`, sem permanência do diretório legado `Arch`.
+
 ## [2026-09-13] - Migração para FileBrowser Quantum
 
 ### Adicionado (Added)

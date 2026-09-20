@@ -147,7 +147,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Portas de Dados:** 22000/TCP+UDP expostas para a LAN/WAN.
           - **Política de Sync (Atualizada em 2026-03-07):**
               - **Servidor e Clientes:** Send & Receive + Staggered File Versioning.
-              - **Motivo:** Permitir que alterações realizadas via interface Web (File Browser Quantum) sejam propagadas bidirecionalmente para todos os dispositivos (NixOS (Acer Aspire) e Android M55).
+              - **Motivo:** Permitir que alterações realizadas via interface Web (File Browser Quantum) sejam propagadas bidirecionalmente para todos os dispositivos (`Acer-Aspire` com NixOS e `M55` com Android).
           - **File Pull Order:** Definido globalmente como `Oldest First` em todos os nós. Impede o comportamento padrão (`Random`) de fragmentar arquivos na memória flash/ZFS durante sincronizações massivas.
           - **Segurança:** Autenticação Dupla (Authentik Middleware + Senha da App).
           - **Matriz de Configuração (Tuning):**
@@ -155,7 +155,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
                   - *Options:* `NAT Enabled=Off` (Isolado no Docker), `Global Announce=On`, `Relays=On`.
                   - *Defaults:* `Ignore Perms=On` (Crucial para evitar erros de chmod), `Compression=Metadata Only` (Otimizado para LAN Gigabit).
                   - *GUI:* `Insecure Skip Hostcheck=On` (Evita erros 403 atrás do Traefik).
-              - **NixOS (Acer Aspire):**
+              - **Acer-Aspire (NixOS):**
                   - *Options:* `NAT Enabled=On` (UPnP para Roaming), `Global/Local/Relay=On`.
                   - *Defaults:* `Ignore Perms=On`, `Compression=Metadata Only` (Economia de CPU/Bateria).
               - **Android (M55):**
