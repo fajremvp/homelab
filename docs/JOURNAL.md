@@ -4,6 +4,25 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-09-21
+**Status:** ✅ Sucesso
+
+**Foco:** Automação do tratamento de downloads problemáticos da Media Stack com Cleanuparr.
+
+- **Motivação:** O fluxo `Seerr → Radarr/Sonarr → Prowlarr → qBittorrent` funcionava corretamente, porém torrents públicos podiam permanecer indefinidamente em estados como `Stalled` ou `Downloading Metadata` sem serem tratados como falha pelos Arrs. Isso ainda exigia intervenção manual para remover a release problemática e iniciar uma nova busca.
+- **Pesquisa e Decisão:** Foram avaliadas ferramentas específicas para tratamento de downloads problemáticos, incluindo Cleanuparr, Swaparr, Huntarr e qbit_manage. Cleanuparr foi escolhido por concentrar Queue Cleaner baseado em strikes, tratamento específico de metadata stalled e Replacement Search, sem exigir outra ferramenta paralela para cada função.
+- **Implementação:** Adicionado `ghcr.io/cleanuparr/cleanuparr:2.10.6` ao Compose da Media Stack. O estado persistente fica em `/opt/services/media/config/cleanuparr`, criado pelo Ansible e preservado pelo `rsync` através da exclusão existente de `config/`. Nenhum mount de `/mnt/media/data` foi concedido ao serviço, reduzindo seu blast radius.
+- **Integrações:** Cleanuparr conecta-se internamente ao qBittorrent por `http://gluetun:8080`, ao Sonarr por `http://sonarr:8989` usando API v4 e ao Radarr por `http://radarr:7878` usando API v6. As URLs externas `.home` são utilizadas somente para links administrativos.
+- **Política de Limpeza:** Queue Cleaner executa a cada 10 minutos. Torrents públicos stalled recebem até 12 strikes, cobrindo 0–100% de conclusão, com reset do contador quando há progresso. Downloads presos em `Downloading Metadata` utilizam 6 strikes. Failed Import e Slow Download permanecem desabilitados.
+- **Replacement Search:** O Seeker permanece habilitado exclusivamente para Replacement Search. Proactive Search foi mantido desabilitado para que Cleanuparr não procure mídia ausente ou upgrades por iniciativa própria.
+- **Fail-Safe da VPN:** O health server do Gluetun passou a escutar em `0.0.0.0:9999` dentro das redes Docker. Cleanuparr usa `http://gluetun:9999` como Internet Connectivity Check antes de executar o Queue Cleaner. A porta não é publicada no DockerHost. Isso reduz o risco de uma queda da ProtonVPN ser interpretada como múltiplos torrents stalled.
+- **Autenticação:** A interface `https://cleanuparr.home` é protegida pelo Authentik ForwardAuth e também mantém autenticação nativa do Cleanuparr com 2FA. O bypass de autenticação para redes locais permanece desabilitado.
+- **Notificações:** Cleanuparr foi integrado ao servidor Ntfy interno (`http://ntfy:80`) usando o tópico `alertas_media`. Foram habilitados eventos de stalled strike, remoção de item da fila, início de busca e nova release obtida. Notificações de teste foram enviadas com sucesso.
+- **Validação de Infraestrutura:** O deploy pelo Ansible concluiu com `failed=0`. Cleanuparr e Gluetun permaneceram `healthy`; o endpoint local `/health` retornou `healthy`; o health server da VPN retornou `HTTP 200`; e qBittorrent, Radarr e Sonarr foram reconhecidos como saudáveis pelo Cleanuparr.
+- **Ativação:** A implantação começou em Dry Run para validar integrações e regras sem ações destrutivas. Após a validação, o Dry Run foi desabilitado. O log confirmou a transição com zero strikes, eventos, orphaned downloads ou histórico de busca temporário a purgar.
+- **Limitação de Validação:** Não foi artificialmente criado um torrent morto apenas para forçar o ciclo completo. O fluxo `stalled → strikes → remoção → blocklist → replacement search` será validado empiricamente quando ocorrer naturalmente um download problemático.
+- **Resultado:** A Media Stack passa a possuir uma camada automática e conservadora para recuperação de torrents públicos problemáticos, preservando Radarr/Sonarr como autoridade da aquisição, qBittorrent como download client e Gluetun como gateway VPN.
+
 ## 2026-09-19
 **Status:** ✅ Sucesso
 

@@ -14,6 +14,9 @@ services:
     environment:
       - TZ=America/Sao_Paulo
 
+      # Permite que o Cleanuparr valide a saúde real do túnel VPN
+      - HEALTH_SERVER_ADDRESS=0.0.0.0:9999
+
       - VPN_SERVICE_PROVIDER=protonvpn
       - VPN_TYPE=wireguard
       - WIREGUARD_PRIVATE_KEY=${VPN_WIREGUARD_PRIVATE_KEY}
@@ -77,6 +80,45 @@ services:
     volumes:
       - ./config/qbittorrent:/config
       - /mnt/media/data:/data
+
+  # DOWNLOAD CLEANUP / REPLACEMENT SEARCH
+  cleanuparr:
+    image: ghcr.io/cleanuparr/cleanuparr:2.10.6
+    container_name: cleanuparr
+    restart: unless-stopped
+
+    environment:
+      - TZ=America/Sao_Paulo
+      - PORT=11011
+      - BASE_PATH=
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+
+    volumes:
+      - ./config/cleanuparr:/config
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11011/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+    networks:
+      - media_net
+      - proxy
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+
+      - "traefik.http.routers.cleanuparr.rule=Host(`cleanuparr.home`)"
+      - "traefik.http.routers.cleanuparr.entrypoints=websecure"
+      - "traefik.http.routers.cleanuparr.tls=true"
+      - "traefik.http.routers.cleanuparr.middlewares=authentik@docker"
+
+      - "traefik.http.services.cleanuparr.loadbalancer.server.port=11011"
 
   # INDEXERS
   prowlarr:

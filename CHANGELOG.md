@@ -11,6 +11,15 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-09-21] - Automação de Downloads Problemáticos com Cleanuparr
+
+### Adicionado (Added)
+- **Cleanuparr:** Adicionado `ghcr.io/cleanuparr/cleanuparr:2.10.6` à Media Stack para detectar e tratar downloads problemáticos em Radarr/Sonarr e qBittorrent.
+
+### Alterado (Changed)
+- **Gluetun:** Health server alterado para `0.0.0.0:9999`, acessível apenas pelas redes Docker e sem publicação direta da porta no DockerHost.
+- **Media Stack:** Adicionado o diretório persistente `/opt/services/media/config/cleanuparr` ao provisionamento Ansible; o serviço não recebe acesso direto a `/mnt/media/data`.
+
 ## [2026-09-19] - Normalização de Identidade e Layout do Syncthing
 
 ### Alterado (Changed)

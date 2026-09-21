@@ -1,11 +1,12 @@
 # Runbook — Media Stack
 
 - **Estado:** funcional e validado
-- **Data de referência:** 2026-09-05
+- **Data de referência:** 2026-09-21
 - **Host:** DockerHost — `10.10.30.10`
 - **Orquestração:** Docker Compose + Ansible
 - **Repositório:** `homelab`
-- **Branch usada durante a implantação:** `feat/media-stack`
+- **Branch da implantação original:** `feat/media-stack`
+- **Branch da evolução Cleanuparr:** `feat/cleanuparr`
 
 ---
 
@@ -56,6 +57,37 @@ qBittorrent
     └── Jellyfin → reprodução
 ```
 
+Cleanuparr atua em paralelo ao fluxo de aquisição, monitorando downloads problemáticos enviados por Radarr/Sonarr ao qBittorrent:
+
+```text
+Radarr/Sonarr
+      │
+      ▼
+ qBittorrent
+      │
+      ├── download saudável → fluxo normal
+      │
+      └── stalled / metadata sem progresso
+                    │
+                    ▼
+               Cleanuparr
+                    │
+              strikes/policy
+                    │
+             remove + blocklist
+                    │
+                    ▼
+             Replacement Search
+                    │
+                    ▼
+              Radarr/Sonarr
+                    │
+                    ▼
+               nova release
+```
+
+O Cleanuparr não substitui Radarr/Sonarr como autoridade da biblioteca e não possui acesso direto a `/mnt/media/data`.
+
 A TV/VLAN50 foi removida definitivamente do escopo. O cliente de reprodução é o desktop.
 
 ---
@@ -69,6 +101,7 @@ A stack contém:
 ```text
 gluetun
 qbittorrent
+cleanuparr
 prowlarr
 radarr
 sonarr
@@ -83,6 +116,7 @@ Imagens configuradas:
 ```text
 qmcgaw/gluetun:latest
 lscr.io/linuxserver/qbittorrent:latest
+ghcr.io/cleanuparr/cleanuparr:2.10.6
 lscr.io/linuxserver/prowlarr:latest
 lscr.io/linuxserver/radarr:latest
 lscr.io/linuxserver/sonarr:latest
@@ -92,10 +126,11 @@ ghcr.io/seerr-team/seerr:latest
 ghcr.io/flaresolverr/flaresolverr:v3.5.0
 ```
 
-Versões observadas durante a implantação/validação, sem garantia de permanência devido ao uso de `latest`:
+Versões observadas durante a implantação/validação. Serviços baseados em `latest` podem mudar entre deploys; Cleanuparr e FlareSolverr utilizam versões fixadas:
 
 ```text
 qBittorrent:          5.1.4
+Cleanuparr:           2.10.6
 Seerr:                3.4.1
 Jellyfin:             10.11.11 após atualização
 FlareSolverr:         3.5.0
@@ -112,7 +147,7 @@ Existe uma bridge própria:
 media_net
 ```
 
-Ela **não é `internal: true`**, pois Radarr, Sonarr, Prowlarr, Bazarr, Jellyfin e Seerr precisam acessar serviços externos.
+Ela **não é `internal: true`**, pois Radarr, Sonarr, Prowlarr, Bazarr, Jellyfin, Seerr e Cleanuparr precisam acessar serviços externos.
 
 Existe também a rede externa:
 
@@ -131,6 +166,7 @@ Prowlarr      → media_net + proxy
 Bazarr        → media_net + proxy
 Jellyfin      → media_net + proxy
 Seerr         → media_net + proxy
+Cleanuparr    → media_net + proxy
 Gluetun       → media_net + proxy
 FlareSolverr  → media_net
 ```
@@ -170,6 +206,7 @@ https://prowlarr.home
 https://bazarr.home
 https://seerr.home
 https://qbittorrent.home
+https://cleanuparr.home
 ```
 
 Jellyfin é propositalmente diferente:
@@ -198,6 +235,7 @@ bazarr.home       → 10.10.30.10
 jellyfin.home     → 10.10.30.10
 seerr.home        → 10.10.30.10
 qbittorrent.home  → 10.10.30.10
+cleanuparr.home   → 10.10.30.10
 ```
 
 Isso foi validado com `dig`.
@@ -397,6 +435,25 @@ VPN_PORT_FORWARDING=on
 VPN_PORT_FORWARDING_PROVIDER=protonvpn
 ```
 
+O health server do Gluetun também passou a escutar em todas as interfaces do container:
+
+```text
+HEALTH_SERVER_ADDRESS=0.0.0.0:9999
+```
+
+A porta `9999` não é publicada através de `ports`: e, portanto, não é exposta diretamente à LAN. O endpoint é utilizado internamente pelo Cleanuparr através da rede Docker como guard de conectividade:
+
+```text
+Cleanuparr
+    ↓
+http://gluetun:9999
+    ↓
+2xx → health check aprovado, Queue Cleaner pode executar
+não-2xx/erro → health check falha, execução atual do Queue Cleaner é pulada
+```
+
+Isso evita que uma indisponibilidade do túnel ProtonVPN produza falsos strikes contra torrents saudáveis.
+
 A antiga configuração:
 
 ```text
@@ -562,34 +619,15 @@ no_log: true
 
 ## 6.2 ntfy
 
-O token de acesso do ntfy já existente no SOPS é reutilizado pelo:
+O mesmo token operacional do ntfy é utilizado por:
 
 ```text
 Alertmanager
 Seerr
+Cleanuparr
 ```
 
 O ntfy está configurado com autenticação `deny-all`; publicações precisam de Bearer token.
-
----
-
-## 6.3 Segredos mantidos pelas aplicações
-
-Não foram migrados para SOPS durante este trabalho:
-
-```text
-qBittorrent admin password
-Radarr API key
-Sonarr API key
-Jellyfin API keys
-Seerr API key
-OpenSubtitles.com username/password
-SubDL API key
-```
-
-Eles persistem dentro dos respectivos diretórios `/config`.
-
-Não devem ser adicionados em texto puro ao repositório.
 
 ---
 
@@ -1735,7 +1773,395 @@ Seerr não passa pelo Gluetun.
 
 ---
 
-# 15. ntfy e alertas de mídia
+# 15. Configurações manuais — Cleanuparr
+
+Acesso:
+
+```text
+https://cleanuparr.home
+```
+
+Versão implantada:
+
+```text
+2.10.6
+```
+
+Imagem:
+
+```text
+ghcr.io/cleanuparr/cleanuparr:2.10.6
+```
+
+Persistência:
+
+```text
+/opt/services/media/config/cleanuparr
+→ /config
+```
+
+O Cleanuparr não recebe mount de:
+
+```text
+/mnt/media/data
+```
+
+e opera exclusivamente através das APIs do qBittorrent, Radarr e Sonarr.
+
+---
+
+## Download Client — qBittorrent
+
+```text
+Enabled: ON
+Name: qBittorrent
+Client Type: qBittorrent
+
+Host:
+http://gluetun:8080
+
+URL Base:
+vazio
+
+External URL:
+https://qbittorrent.home
+
+Download Directory Source:
+vazio
+
+Download Directory Target:
+vazio
+```
+
+A autenticação utiliza o usuário e a senha nativos da WebUI do qBittorrent.
+
+Essas credenciais permanecem na configuração persistente do Cleanuparr e não são versionadas no Git.
+
+O hostname `gluetun` é utilizado porque o qBittorrent compartilha seu namespace de rede:
+
+```yaml
+network_mode: service:gluetun
+```
+
+---
+
+## Sonarr
+
+```text
+Enabled: ON
+Name: Sonarr
+
+URL:
+http://sonarr:8989
+
+External URL:
+https://sonarr.home
+
+API Version:
+v4
+```
+
+A API Key permanece na configuração persistente do Cleanuparr.
+
+---
+
+## Radarr
+
+```text
+Enabled: ON
+Name: Radarr
+
+URL:
+http://radarr:7878
+
+External URL:
+https://radarr.home
+
+API Version:
+v6
+```
+
+A API Key permanece na configuração persistente do Cleanuparr.
+
+---
+
+## General
+
+Estado final:
+
+```text
+Dry Run: OFF
+Update Check: ON
+Ignored Downloads: vazio
+Local Network Authentication Bypass: OFF
+```
+
+Connectivity Check:
+
+```text
+Enabled: ON
+
+URL:
+http://gluetun:9999
+```
+
+Somente o health server do Gluetun é utilizado.
+
+O objetivo é validar especificamente a conectividade da VPN usada pelo qBittorrent, em vez de verificar apenas se o DockerHost possui acesso geral à Internet.
+
+HTTP:
+
+```text
+Max Retries:             0
+Timeout:                 100 seconds
+Certificate Validation:  Enabled
+```
+
+State Management:
+
+```text
+Strike Inactivity Window: 72 hours
+History Retention:        30 days
+```
+
+Logging:
+
+```text
+Log Level:
+Information
+```
+
+---
+
+## Queue Cleaner
+
+```text
+Enabled: ON
+
+Scheduling:
+Basic
+
+Schedule Unit:
+Minutes
+
+Every:
+10
+
+Process downloads with no content ID:
+OFF
+```
+
+### Failed Import
+
+```text
+Max Strikes:
+0
+```
+
+Desabilitado.
+
+### Downloading Metadata
+
+```text
+Max Strikes:
+6
+```
+
+Com execução a cada 10 minutos, um magnet precisa permanecer preso em metadata por vários ciclos antes de qualquer ação.
+
+### Public stalled
+
+```text
+Enabled: ON
+
+Privacy:
+Public
+
+Completion:
+0% - 100%
+
+Max Strikes:
+12
+
+Reset Strikes on Progress:
+ON
+
+Minimum Progress to Reset:
+vazio
+
+Change Category:
+OFF
+```
+
+A cobertura de torrents privados permanece deliberadamente ausente.
+
+### Slow Download Rules
+
+Nenhuma regra configurada.
+
+Baixa velocidade isoladamente não é tratada como evidência suficiente de que uma release esteja morta.
+
+---
+
+## Malware Blocker
+
+```text
+OFF
+```
+
+---
+
+## Download Cleaner
+
+```text
+OFF
+```
+
+O lifecycle de seeding permanece sob responsabilidade do qBittorrent e de Radarr/Sonarr através de `Remove Completed`.
+
+---
+
+## Blacklist Sync
+
+```text
+OFF
+```
+
+---
+
+## Seeker
+
+```text
+Search Enabled:
+ON
+
+Search Interval:
+10 minutes
+
+Replacement Search:
+ON
+
+Proactive Search:
+OFF
+```
+
+O Seeker é utilizado somente para recuperar downloads problemáticos removidos pelo Queue Cleaner.
+
+Ele não procura mídia ausente ou upgrades proativamente.
+
+Fluxo esperado:
+
+```text
+release problemática
+        ↓
+Queue Cleaner
+        ↓
+strikes
+        ↓
+remove + blocklist
+        ↓
+Replacement Search
+        ↓
+Radarr/Sonarr
+        ↓
+nova release
+```
+
+---
+
+## Autenticação
+
+A interface possui duas camadas:
+
+```text
+Traefik
+    ↓
+Authentik ForwardAuth
+    ↓
+Cleanuparr
+    ↓
+autenticação nativa + 2FA
+```
+
+O bypass de autenticação para redes locais permanece desabilitado.
+
+---
+
+## Validação
+
+Healthcheck interno:
+
+```bash
+docker exec cleanuparr \
+  curl -fsS http://localhost:11011/health
+```
+
+Resultado:
+
+```text
+healthy
+```
+
+Health do túnel VPN visto pelo Cleanuparr:
+
+```bash
+docker exec cleanuparr \
+  curl -sS -o /dev/null -w 'HTTP %{http_code}\n' \
+  http://gluetun:9999
+```
+
+Resultado:
+
+```text
+HTTP 200
+```
+
+Também foram confirmados como `Healthy` pelo Cleanuparr:
+
+```text
+qBittorrent
+Radarr
+Sonarr
+```
+
+O Queue Cleaner foi agendado corretamente a cada 10 minutos e a regra:
+
+```text
+Public stalled
+```
+
+foi criada com sucesso.
+
+Notificações de teste via ntfy também foram entregues.
+
+Após a validação inicial, o Dry Run foi desativado.
+
+O log registrou:
+
+```text
+Dry run disabled — purged dry-run data:
+0 strikes
+0 events
+0 manual events
+0 orphaned download items
+0 search history entries
+```
+
+O cenário destrutivo completo:
+
+```text
+stalled
+→ strikes
+→ remoção
+→ blocklist
+→ replacement search
+```
+
+não foi artificialmente forçado. Ele será validado naturalmente quando ocorrer um download realmente problemático.
+
+---
+
+# 16. ntfy e alertas de mídia
 
 Topic:
 
@@ -1751,7 +2177,7 @@ alertas_infra
 
 ---
 
-## 15.1 Seerr → ntfy
+## 16.1 Seerr → ntfy
 
 Configuração manual:
 
@@ -1801,11 +2227,53 @@ Um request real de Toy Story 5 produziu uma notificação `Available`, validando
 Seerr → ntfy → alertas_media
 ```
 
+## 16.2 Cleanuparr → ntfy
+
+Configuração manual:
+
+```text
+Enabled: ON
+Name: ntfy Media
+
+Server URL:
+http://ntfy:80
+
+Topic:
+alertas_media
+
+Authentication:
+Access Token
+
+Priority:
+Default
+```
+
+Eventos habilitados:
+
+```text
+Stalled Download Strike
+Queue Item Deleted
+Search Triggered
+Search Item Grabbed
+```
+
+Eventos desabilitados enquanto suas funcionalidades correspondentes também permanecem desligadas:
+
+```text
+Failed Import Strike
+Slow Download Strike
+Download Cleaned
+Download Stopped
+Category Changed
+```
+
+Notificações de teste foram enviadas com sucesso para o provider.
+
 ---
 
-# 16. Monitoring persistente
+# 17. Monitoring persistente
 
-## 16.1 Node Exporter
+## 17.1 Node Exporter
 
 O pacote Debian:
 
@@ -1857,7 +2325,7 @@ passou a ser exportada.
 
 ---
 
-## 16.2 Prometheus
+## 17.2 Prometheus
 
 Arquivo:
 
@@ -1903,7 +2371,7 @@ Esse é o valor vigente.
 
 ---
 
-## 16.3 Alertmanager
+## 17.3 Alertmanager
 
 Arquivo:
 
@@ -1960,7 +2428,7 @@ alert category=media
 
 ---
 
-## 16.4 Validação
+## 17.4 Validação
 
 Prometheus:
 
@@ -2021,76 +2489,6 @@ docker exec alertmanager amtool \
 
 ---
 
-# 17. Deploy
-
-## 17.1 Alterações normais da media stack
-
-No NixOS:
-
-```bash
-cd ~/Dev/homelab
-git switch feat/media-stack
-git pull
-```
-
-Editar os arquivos.
-
-Validar diff:
-
-```bash
-git diff
-```
-
-Commit/push:
-
-```bash
-git add <arquivos>
-git commit -m "<conventional commit>"
-git push
-```
-
-No Management LXC:
-
-```bash
-ssh root@10.10.10.10
-cd /opt/homelab
-git pull
-```
-
-Deploy dos serviços:
-
-```bash
-ansible-playbook configuration/playbooks/dockerhost/services.yml
-```
-
----
-
-## 17.2 Mudanças de monitoring
-
-Para alterações em:
-
-```text
-Prometheus
-Alertmanager
-monitoring compose
-```
-
-usar:
-
-```bash
-ansible-playbook configuration/playbooks/dockerhost/monitoring.yml
-```
-
-Alterações no node_exporter:
-
-```bash
-ansible-playbook configuration/playbooks/hardening_debian.yml
-```
-
-A configuração do node_exporter e do monitoring exigiu ambos os playbooks.
-
----
-
 # 18. Procedimentos operacionais
 
 ## 18.1 Verificar stack
@@ -2104,6 +2502,7 @@ Esperado:
 
 ```text
 bazarr
+cleanuparr healthy
 flaresolverr
 gluetun healthy
 jellyfin healthy
@@ -2373,6 +2772,7 @@ Logo entram no backup:
 
 ```text
 /opt/services/media/config/qbittorrent
+/opt/services/media/config/cleanuparr
 /opt/services/media/config/prowlarr
 /opt/services/media/config/radarr
 /opt/services/media/config/sonarr
@@ -2451,6 +2851,7 @@ Healthchecks explícitos/observados:
 
 ```text
 Gluetun
+Cleanuparr
 Seerr
 Jellyfin
 ```
@@ -3095,6 +3496,8 @@ Resumo cronológico relevante, sem transformar cada tentativa em procedimento:
 | Playback Reporting incompatível                     | Jellyfin 10.11.6                         | Jellyfin 10.11.11                                 |
 | Intro Skipper aparentemente ausente                 | usuário estava em Installed, não All     | encontrado no catálogo All                        |
 | TV/VLAN50                                           | integração não funcionou após tentativas | removida do escopo                                |
+| Downloads podem permanecer stalled sem falhar formalmente | Radarr/Sonarr não tratam todo torrent sem progresso como falha | Cleanuparr Queue Cleaner + strikes + Replacement Search |
+| Queda da VPN pode fazer downloads parecerem stalled | Falha de conectividade pode gerar falsos positivos | Connectivity Check do Cleanuparr em `http://gluetun:9999` |
 
 ---
 
@@ -3158,13 +3561,21 @@ Pode ser excluído futuramente.
 
 ## Monitor VPN semanticamente
 
-Ainda não existe alerta específico que diga:
+Ainda não existe um **alerta Prometheus/Alertmanager** específico que diga:
 
 ```text
 Gluetun está UP mas túnel VPN não funciona
 ```
 
-Um simples alerta de container não é suficiente.
+Entretanto, o Cleanuparr agora utiliza:
+
+```text
+http://gluetun:9999
+```
+
+como guard semântico de conectividade antes de executar o Queue Cleaner.
+
+Isso impede ações destrutivas durante uma falha detectada do túnel, mas **não substitui um alerta operacional dedicado** via Prometheus/Alertmanager.
 
 ---
 
@@ -3221,6 +3632,13 @@ cd /opt/services/media
 
 docker compose ps
 
+docker exec cleanuparr \
+  curl -fsS http://localhost:11011/health
+
+docker exec cleanuparr \
+  curl -sS -o /dev/null -w 'HTTP %{http_code}\n' \
+  http://gluetun:9999
+
 findmnt /mnt/media
 df -hT /mnt/media
 
@@ -3241,6 +3659,8 @@ Estado saudável:
 ```text
 /mnt/media montado em ext4
 Gluetun healthy
+Cleanuparr healthy
+Cleanuparr → Gluetun health = HTTP 200
 IP público = Proton
 qBit possui tun0
 qBit interface = tun0
@@ -3276,6 +3696,11 @@ FlareSolverr             ✅
 Radarr                   ✅
 Sonarr                   ✅
 qBittorrent              ✅
+Cleanuparr               ✅ operacional
+Queue Cleaner            ✅ configurado
+VPN health guard         ✅ validado via HTTP 200
+Replacement Search       ✅ configurado
+Cleanup end-to-end       ⏳ não forçado; aguardando ocorrência natural
 Gluetun/ProtonVPN        ✅
 Port forwarding          ✅
 tun0 binding             ✅

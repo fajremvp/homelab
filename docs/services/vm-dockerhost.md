@@ -214,9 +214,9 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
               - YouTube Duration
               - YouTube Video Feed
           - **Backup:** Dump consistente via `pg_dump` antes do Restic, além dos diretórios persistentes incluídos em `/opt/services`.
-        * `Media Stack`: [Reimplementada em 2026-09-05]
+        * `Media Stack`: [Reimplementada em 2026-09-05; Cleanuparr adicionado em 2026-09-21]
           - **Local:** `/opt/services/media`.
-          - **Serviços:** Seerr, Radarr, Sonarr, Prowlarr, Bazarr, Jellyfin, qBittorrent, Gluetun e FlareSolverr.
+          - **Serviços:** Seerr, Radarr, Sonarr, Prowlarr, Bazarr, Jellyfin, qBittorrent, Gluetun, Cleanuparr e FlareSolverr.
           - **Storage:** Disco dedicado em `/mnt/media`; configurações persistentes em `/opt/services/media/config`.
           - **Privacidade:** qBittorrent compartilha o namespace de rede do Gluetun e utiliza ProtonVPN WireGuard com Kill Switch e Port Forwarding dinâmico.
           - **Ingress:** Painéis administrativos via Traefik + Authentik; Jellyfin utiliza autenticação nativa para preservar compatibilidade com seus clientes.

@@ -431,6 +431,7 @@
       loop:
         - "{{ base_dir }}/media/config"
         - "{{ base_dir }}/media/config/qbittorrent"
+        - "{{ base_dir }}/media/config/cleanuparr"
         - "{{ base_dir }}/media/config/prowlarr"
         - "{{ base_dir }}/media/config/radarr"
         - "{{ base_dir }}/media/config/sonarr"
