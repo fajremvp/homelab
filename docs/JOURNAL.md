@@ -4,6 +4,27 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-10-05
+**Status:** ✅ Sucesso
+
+**Foco:** Reintegração controlada da Roku TV à Media Stack através da VLAN 50.
+
+- **Contexto:** A integração da TV havia sido abandonada durante as implementações anteriores da Media Stack devido ao custo de troubleshooting e à dificuldade de atravessar a VLAN IOT. Em outubro, a decisão foi revisitada com o objetivo de permitir somente reprodução Jellyfin, sem conceder acesso geral da VLAN 50 à infraestrutura.
+- **Cliente:** A Roku TV com o IP reservado `10.10.50.105` na VLAN 50.
+- **Jellyfin:** O container passou a publicar diretamente `10.10.30.10:8096:8096/TCP`. O bind é feito exclusivamente no IP SERVER do DockerHost; o acesso HTTPS normal pelo Traefik em `https://jellyfin.home` continua disponível para clientes confiáveis.
+- **Primeiro Sintoma:** Mesmo com uma regra `PASS` no OPNsense para `10.10.50.105 → 10.10.30.10:8096`, o cliente Roku retornava `Server not found, is it online?`.
+- **Investigação:** O endpoint `http://10.10.30.10:8096/System/Info/Public` retornou `HTTP 200` e Jellyfin `10.11.11` a partir da VLAN 20. O mesmo teste a partir da VLAN 50 falhava. Capturas no OPNsense e `tcpdump` no DockerHost inicialmente não observavam tráfego TCP/8096 da Roku, demonstrando que os pacotes eram descartados antes de chegar ao firewall.
+- **Causa Raiz:** O recurso `Guest Network` do EAP610 estava habilitado no SSID IoT nas bandas 2.4 GHz e 5 GHz. Ele bloqueava destinos RFC1918 diretamente no AP, antes do OPNsense, tornando ineficazes as exceções configuradas no firewall.
+- **Correção no EAP:** `Guest Network` foi desabilitado em ambas as bandas, mantendo o SSID associado normalmente à VLAN 50. O EAP passou a ser responsável apenas por Wi-Fi/VLAN tagging e o OPNsense tornou-se a única autoridade de política L3 entre VLANs.
+- **Firewall:** Criado o alias `RFC1918` contendo `10.0.0.0/8`, `172.16.0.0/12` e `192.168.0.0/16`. A ordem das regras da VLAN 50 passou a ser: exceção Roku → Jellyfin, DNS Primary, DNS Secondary, bloqueio RFC1918 e, por último, acesso geral à Internet.
+- **DNS:** Mantidas exceções `TCP/UDP 53` para o AdGuard Primary (`10.10.30.5`) e Secondary (`192.168.1.5`).
+- **Least Privilege:** Apenas `10.10.50.105` pode acessar `10.10.30.10:8096`. Um notebook de teste na mesma VLAN (`10.10.50.100`) permaneceu incapaz de acessar o Jellyfin ou HTTPS da VLAN SERVER, enquanto o acesso à Internet continuou funcional.
+- **Validação de Rede:** O Live View do OPNsense registrou `PASS` para `10.10.50.105 → 10.10.30.10:8096`. O `tcpdump` do DockerHost confirmou SYN, SYN/ACK, ACK e tráfego bidirecional, incluindo o encaminhamento Docker para o IP interno do container Jellyfin.
+- **Validação Funcional:** O cliente oficial Jellyfin na Roku conectou manualmente em `http://10.10.30.10:8096`, autenticou com uma conta dedicada `roku`, carregou a biblioteca e reproduziu um filme com sucesso.
+- **Escopo Mantido:** Auto Discovery, DLNA, multicast inter-VLAN e Authentik na API do Jellyfin permanecem desabilitados. A Roku utiliza autenticação nativa do Jellyfin.
+- **Limitação Conhecida:** Não foi identificada uma configuração separada de client isolation no EAP610. Portanto, não se assume isolamento L2 entre clientes da própria VLAN 50.
+- **Resultado:** A Roku voltou ao escopo da Media Stack através de uma exceção mínima e explicitamente controlada, sem abrir acesso geral da rede IOT à VLAN SERVER.
+
 ## 2026-09-21
 **Status:** ✅ Sucesso
 

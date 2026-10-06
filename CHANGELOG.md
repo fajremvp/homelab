@@ -11,6 +11,21 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-10-05] - Integração da Roku TV com Jellyfin
+
+### Adicionado (Added)
+- **Jellyfin/Roku:** Publicada a porta `10.10.30.10:8096/TCP` do Jellyfin como caminho direto para a Roku TV `10.10.50.105` na VLAN 50.
+- **Firewall VLAN 50:** Criado alias `RFC1918` e política explícita de least privilege, permitindo somente Jellyfin e DNS antes do bloqueio das redes privadas.
+
+### Alterado (Changed)
+- **EAP610:** Desabilitado `Guest Network` no SSID IoT em 2.4 GHz e 5 GHz, mantendo o tagging da VLAN 50 e centralizando a política inter-VLAN no OPNsense.
+- **Escopo da Media Stack:** Roku TV adicionada novamente como cliente suportado do Jellyfin; desktop continua utilizando `https://jellyfin.home`.
+
+### Validado (Verified)
+- **Isolamento:** Cliente genérico na VLAN 50 permanece incapaz de acessar Jellyfin e demais serviços SERVER, enquanto a Roku possui acesso exclusivamente a `10.10.30.10:8096`.
+- **Reprodução:** Login, carregamento da biblioteca e reprodução de filme validados no cliente oficial Jellyfin para Roku.
+- **Rede:** OPNsense e `tcpdump` confirmaram handshake TCP e tráfego bidirecional Roku → Jellyfin.
+
 ## [2026-09-21] - Automação de Downloads Problemáticos com Cleanuparr
 
 ### Adicionado (Added)

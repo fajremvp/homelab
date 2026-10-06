@@ -88,7 +88,11 @@ Radarr/Sonarr
 
 O Cleanuparr não substitui Radarr/Sonarr como autoridade da biblioteca e não possui acesso direto a `/mnt/media/data`.
 
-A TV/VLAN50 foi removida definitivamente do escopo. O cliente de reprodução é o desktop.
+A reprodução é utilizada no desktop e também em uma Roku TV na VLAN 50.
+
+A TV é tratada como uma exceção controlada, não como um cliente confiável da infraestrutura. A Roku possui IP reservado `10.10.50.105` e pode acessar somente o Jellyfin diretamente em `10.10.30.10:8096/TCP`.
+
+O restante da VLAN 50 continua sem acesso geral às redes RFC1918, salvo as exceções explícitas de DNS. Não foram habilitados DLNA, Auto Discovery, multicast entre VLANs ou acesso geral da VLAN IOT à VLAN SERVER.
 
 ---
 
@@ -217,9 +221,33 @@ https://jellyfin.home
 
 usa autenticação nativa do Jellyfin, sem ForwardAuth do Authentik.
 
-Motivo: clientes Jellyfin precisam acessar diretamente sua API e um ForwardAuth externo pode quebrar clientes nativos.
+O Jellyfin possui dois caminhos de acesso:
+```text
+Desktop / TRUSTED:
+cliente
+  ↓ HTTPS
+Traefik
+  ↓ HTTP
+Jellyfin:8096
 
-Não existe mais porta `8085` publicada diretamente para o qBittorrent.
+Roku TV / VLAN 50:
+10.10.50.105
+  ↓ HTTP 8096
+10.10.30.10:8096
+  ↓ Docker DNAT
+Jellyfin:8096
+```
+
+A porta direta é publicada somente no endereço SERVER do DockerHost:
+
+```yaml
+ports:
+  - "10.10.30.10:8096:8096/tcp"
+```
+
+Ela não representa uma exposição geral do Jellyfin à VLAN IOT. O OPNsense restringe o acesso à origem `10.10.50.105/32`.
+
+O caminho direto da Roku evita dependência de Traefik, DNS interno e da CA privada utilizada por `jellyfin.home`. A autenticação continua sendo realizada nativamente pelo Jellyfin.
 
 ---
 
@@ -1524,39 +1552,62 @@ Require HTTPS: OFF
 Base URL:     vazio
 ```
 
-TLS:
+Existem dois caminhos de acesso.
+
+Desktop e clientes confiáveis:
 
 ```text
 cliente → HTTPS → Traefik → HTTP → Jellyfin:8096
 ```
 
-IPv4:
+Roku TV:
 
 ```text
-ON
+Roku 10.10.50.105
+  → HTTP
+  → 10.10.30.10:8096
+  → Jellyfin
 ```
 
-Auto Discovery:
+A publicação Docker é restrita ao IP da VLAN SERVER:
 
 ```text
-OFF
+10.10.30.10:8096 → jellyfin:8096
 ```
 
-Remote connections permaneceram permitidas durante a configuração, sem qualquer exposição direta das portas Jellyfin para a Internet.
-
-Traefik foi observado em:
+Configuração Jellyfin confirmada em 05/10/2026:
 
 ```text
-172.18.0.6
+HTTP port:                8096
+HTTPS:                    OFF
+Require HTTPS:            OFF
+Base URL:                 vazio
+IPv4:                     ON
+Auto Discovery:           OFF
+Allow remote connections: ON
+LAN networks:             vazio
+Remote IP address filter: vazio
+Known Proxies:            172.18.0.0/16
 ```
 
-e a rede proxy:
+Não são necessários:
 
 ```text
-172.18.0.0/16
+DLNA
+SSDP
+mDNS
+UDP 7359
+multicast entre VLANs
+Auto Discovery
 ```
 
-Esse é o valor determinado para `Known Proxies`. O histórico, entretanto, não contém uma confirmação inequívoca posterior de que esse campo foi salvo; portanto não deve ser tratado como confirmado sem conferir a GUI.
+A Roku recebe o endereço do servidor manualmente:
+
+```text
+http://10.10.30.10:8096
+```
+
+Foi criado um usuário Jellyfin dedicado `roku`, sem necessidade de privilégios administrativos. A senha não é versionada no repositório.
 
 ---
 
@@ -3064,6 +3115,60 @@ confirmando a correção.
 
 ---
 
+## Roku TV / VLAN 50
+
+Teste realizado em 05/10/2026.
+
+Cliente:
+
+```text
+Roku TV
+IP: 10.10.50.105
+VLAN: 50 IOT
+```
+
+Servidor configurado manualmente no cliente Jellyfin:
+
+```text
+http://10.10.30.10:8096
+```
+
+O OPNsense registrou:
+
+```text
+10.10.50.105 → 10.10.30.10:8096/TCP
+PASS
+```
+
+O `tcpdump` no DockerHost confirmou o handshake completo:
+
+```text
+Roku → SYN
+Jellyfin → SYN/ACK
+Roku → ACK
+```
+
+e o Docker encaminhou o fluxo:
+
+```text
+10.10.30.10:8096
+  ↓
+jellyfin:8096
+```
+
+Também foram validados:
+
+```text
+login no cliente Roku
+carregamento da biblioteca
+início da reprodução
+stream de filme funcional
+```
+
+Um cliente diferente na VLAN 50 (`10.10.50.100`) permaneceu incapaz de acessar `10.10.30.10:8096`, confirmando que a exceção está restrita ao IP da Roku.
+
+---
+
 # 28. Troubleshooting
 
 ## 28.1 Deploy falha em `mountpoint -q /mnt/media`
@@ -3335,6 +3440,85 @@ Active
 
 ---
 
+## 28.11 Roku retorna `Server not found, is it online?`
+
+### Sintoma
+
+A Roku em `10.10.50.105` não conseguia conectar manualmente em:
+
+```text
+http://10.10.30.10:8096
+```
+
+O Jellyfin funcionava normalmente a partir da VLAN 20:
+
+```bash
+curl http://10.10.30.10:8096/System/Info/Public
+```
+
+retornava:
+
+```text
+HTTP 200
+Jellyfin 10.11.11
+```
+
+Porém o mesmo acesso a partir da VLAN 50 não chegava ao DockerHost.
+
+Capturas no OPNsense e `tcpdump` no DockerHost inicialmente não registravam tráfego TCP/8096 originado pela TV.
+
+### Causa
+
+O recurso `Guest Network` do EAP610 estava habilitado no SSID da VLAN 50 nas bandas 2.4 GHz e 5 GHz.
+
+Essa política bloqueava acesso a redes privadas no próprio AP, antes de o tráfego alcançar o OPNsense. Consequentemente, regras corretas de firewall no OPNsense não tinham oportunidade de permitir a conexão.
+
+### Correção
+
+`Guest Network` foi desabilitado nas duas bandas do SSID `Homelab_IoT`.
+
+O SSID continua associado à VLAN 50; somente a política adicional de isolamento do AP foi removida.
+
+A autoridade de filtragem L3 passou a ser exclusivamente o OPNsense.
+
+Foi criado o alias:
+
+```text
+RFC1918
+10.0.0.0/8
+172.16.0.0/12
+192.168.0.0/16
+```
+
+A ordem efetiva das regras da VLAN 50 passou a ser:
+
+```text
+1. Roku 10.10.50.105 → 10.10.30.10:8096/TCP       PASS
+2. VLAN50 → AdGuard Primary 10.10.30.5:53 TCP/UDP PASS
+3. VLAN50 → AdGuard Secondary 192.168.1.5:53      PASS
+4. VLAN50 → RFC1918                                BLOCK
+5. VLAN50 → demais destinos                        PASS
+```
+
+Com isso, a última regra funciona efetivamente como acesso à Internet, já que redes privadas são bloqueadas antes dela.
+
+### Validação
+
+Depois da alteração:
+
+```text
+Roku → Jellyfin:8096        ✅
+Roku → login Jellyfin       ✅
+Roku → reprodução           ✅
+VLAN50 genérica → Jellyfin  ❌
+VLAN50 genérica → HTTPS SERVER ❌
+VLAN50 → Internet           ✅
+```
+
+Não foi encontrada uma configuração separada de client isolation no EAP. Portanto não se deve assumir isolamento L2 entre dispositivos que compartilham a própria VLAN 50.
+
+---
+
 # 29. Decisões e justificativas
 
 ## VPN somente no qBittorrent
@@ -3464,16 +3648,43 @@ As configurações são difíceis de reconstruir; mídia/torrents são grandes e
 
 ---
 
-## TV/VLAN50
+## Roku TV / VLAN50
 
-Integração descartada depois de troubleshooting sem sucesso.
+A integração foi retomada em 05/10/2026, mas com escopo mínimo e explícito.
 
-Estado final:
+A Roku permanece na VLAN 50, considerada não confiável:
 
 ```text
-não faz parte da arquitetura
-desktop é o único cliente
+Roku:       10.10.50.105
+Jellyfin:   10.10.30.10:8096
+Protocolo:  HTTP/TCP
 ```
+
+Não foi concedido acesso geral da VLAN IOT à VLAN SERVER.
+
+O OPNsense mantém default-deny para redes privadas através do alias `RFC1918`, com exceção específica para a Roku acessar somente o Jellyfin.
+
+O `Guest Network` do EAP foi desabilitado porque ele bloqueava RFC1918 antes do OPNsense, duplicando a política de segurança e impedindo exceções controladas.
+
+Decisão arquitetural:
+
+```text
+EAP      → Wi-Fi + VLAN tagging
+OPNsense → política L3/firewall
+Jellyfin → autenticação da aplicação
+```
+
+Permanecem desabilitados:
+
+```text
+Auto Discovery
+DLNA
+multicast inter-VLAN
+Authentik na frente da API Jellyfin
+acesso geral IOT → SERVER
+```
+
+O desktop continua utilizando `https://jellyfin.home`; a Roku utiliza `http://10.10.30.10:8096`.
 
 ---
 
@@ -3495,7 +3706,7 @@ Resumo cronológico relevante, sem transformar cada tentativa em procedimento:
 | `/mnt/media` não tinha métricas                     | node_exporter excluía `/mnt`             | override persistido via Ansible                   |
 | Playback Reporting incompatível                     | Jellyfin 10.11.6                         | Jellyfin 10.11.11                                 |
 | Intro Skipper aparentemente ausente                 | usuário estava em Installed, não All     | encontrado no catálogo All                        |
-| TV/VLAN50                                           | integração não funcionou após tentativas | removida do escopo                                |
+| Roku/VLAN50 não alcançava Jellyfin | `Guest Network` do EAP bloqueava RFC1918 antes do OPNsense | `Guest Network` desabilitado; isolamento centralizado no OPNsense com exceção `10.10.50.105 → 10.10.30.10:8096` |
 | Downloads podem permanecer stalled sem falhar formalmente | Radarr/Sonarr não tratam todo torrent sem progresso como falha | Cleanuparr Queue Cleaner + strikes + Replacement Search |
 | Queda da VPN pode fazer downloads parecerem stalled | Falha de conectividade pode gerar falsos positivos | Connectivity Check do Cleanuparr em `http://gluetun:9999` |
 
@@ -3700,7 +3911,7 @@ Cleanuparr               ✅ operacional
 Queue Cleaner            ✅ configurado
 VPN health guard         ✅ validado via HTTP 200
 Replacement Search       ✅ configurado
-Cleanup end-to-end       ⏳ não forçado; aguardando ocorrência natural
+Cleanup end-to-end       ✅
 Gluetun/ProtonVPN        ✅
 Port forwarding          ✅
 tun0 binding             ✅
@@ -3718,7 +3929,7 @@ Prometheus media disk    ✅
 Alertmanager routing     ✅
 Log rotation             ✅
 Restic config backup     ✅
-TV/VLAN50                — removida do escopo
+Roku TV / VLAN50         ✅ reprodução validada
 4K                       — fora do escopo
 Transcoding              — fora do escopo
 Backup da mídia          — intencionalmente fora do escopo

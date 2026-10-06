@@ -27,13 +27,16 @@ Para evitar que "vizinhos barulhentos" (Noisy Neighbors) causem a exaustão tota
 ## Estratégia de Ingress e Proxy Reverso (Traefik)
 Implementação realizada em: 2026-01-02.
 
-O DockerHost utiliza o **Traefik** como "Porteiro Único". Nenhuma aplicação expõe portas diretamente para a rede, exceto o próprio Traefik.
+O DockerHost utiliza o **Traefik** como caminho padrão de ingress para aplicações Web. Interfaces administrativas não publicam suas portas diretamente na LAN.
+
+Existe uma exceção deliberada: o Jellyfin publica `10.10.30.10:8096/TCP` diretamente para compatibilidade com o cliente Jellyfin da Roku TV. Essa exposição é restrita pelo OPNsense à origem `10.10.50.105/32` e utiliza autenticação nativa do Jellyfin.
 
 * **Versão:** `Traefik v3.6+` (Latest Stable).
 * **Portas Expostas:**
     * `80` (HTTP): Redireciona forçadamente para HTTPS.
     * `443` (HTTPS): Terminação SSL (Atualmente Autoassinado, futuro Let's Encrypt).
     * `8080` (Dashboard): **Bloqueada**. O acesso direto foi removido; o dashboard agora é acessível exclusivamente via `https://traefik.home` (protegido por autenticação).
+    * `8096` (Jellyfin): **Exceção controlada**, bind somente em `10.10.30.10`, acessível pela Roku `10.10.50.105` através de regra específica do OPNsense.
 
 ### ⚠️ Compatibilidade Debian 13 (Trixie)
 O Docker Engine v29+ (presente no Debian Trixie) rejeita conexões de clientes que tentam negociar APIs muito antigas (<1.44), comportamento padrão do Traefik.

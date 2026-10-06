@@ -1,5 +1,5 @@
 ## Topologia de Rede e Segmentação (VLANs)
-   - Status: Atualizado em 12/01/2026.
+   - Status: Atualizado em 05/10/2026.
    - **Estratégia:** Router-on-a-Stick Virtualizado.
       - **Proxmox:** Atua como Switch Central (`vmbr0` VLAN Aware).
       - **OPNsense:** Atua como Roteador e Firewall.
@@ -11,7 +11,7 @@
 | Porta | Conectado a | Descrição |
 |:------|:------------|:----------|
 | 1     | Servidor (Proxmox)| Interface `nic0`. Funciona como "Trunk Hybrid". Passa tráfego nativo (Proxmox IP) + todas as VLANs (VMs). |
-| 2     | Access Point (AP) | Wi-Fi. Transmite SSID Pessoal (VLAN 20) e Guest/IoT (VLAN 50). |
+| 2     | Access Point (AP) | Wi-Fi. Transmite SSID Pessoal (VLAN 20) e IoT (VLAN 50). O recurso `Guest Network` do EAP está desabilitado; o isolamento inter-VLAN é responsabilidade do OPNsense. |
 | 3     | Desktop Pessoal | Conexão cabeada Gigabit. Porta de Acesso (Untagged) com PVID 20, entregando tráfego direto para a rede TRUSTED (10.10.20.x). |
 | 8     | Modem (ISP)       | Uplink de Internet. Entrega DHCP na rede nativa `192.168.1.x`. |
 
@@ -35,7 +35,7 @@
 | 20 | TRUSTED (Home) | 10.10.20.0/24 | "Dispositivos Pessoais". Rede de confiança média-alta. Habitantes: Notebook NixOS, Celular (via AP Porta 2). Acesso permitido à Internet e a serviços na VLAN SERVER. |
 | 30 | SERVER (Services) | 10.10.30.0/24 | "Produção". Onde rodam os serviços estáveis. Habitantes: VM DockerHost (Stalwart, Nostr, Vaultwarden, Forgejo), LXC AdGuard-Primary e futura VM do Bitcoin Node. Isolados, acessíveis apenas via portas específicas (ex: 443 via Traefik). |
 | 40 | SECURE | 10.10.40.0/24 | "O Cofre". Isolamento máximo. Sem acesso direto à internet (exceto update controlado e backups diários). Fisicamente separada na interface vtnet0. |
-| 50 | IOT (Guest) | 10.10.50.0/24 | "A Selva". Dispositivos que não controlo e não confio. Sem acesso à VLAN de gerenciamento ou servidores. Habitantes: TV Smart, Lâmpadas, Visitantes (via AP Porta 2). |
+| 50 | IOT (Guest) | 10.10.50.0/24 | "A Selva". Dispositivos não confiáveis. Acesso a redes privadas é bloqueado pelo OPNsense através do alias `RFC1918`, salvo exceções explícitas. Habitantes: Roku TV (`10.10.50.105`), dispositivos IoT e visitantes via AP. A Roku possui acesso exclusivamente ao Jellyfin em `10.10.30.10:8096/TCP`. |
 | 60 | LAB (K8s/Dev) | 10.10.60.0/24 | "O Caos Controlado". [Futuro] Ambiente efêmero para testes e quebras. Habitantes: Cluster Kubernetes, VMs de teste. Se for comprometido, não afeta a Produção. |
 | 99 | DMZ/DANGER | 10.10.99.0/24 | "Zona de Guerra". [Futuro] Isolamento total (Air-gapped via Firewall). Habitantes: VM de Pentest (Kali), Targets vulneráveis. Bloqueio total de saída para a LAN. |
 
@@ -50,11 +50,36 @@
 | TRUSTED (20) | SERVER (30) | HTTPS (443) | Acessar serviços e painéis (Vaultwarden, Grafana, Traefik...). |
 | TRUSTED (20) | SERVER (30) | UDP 53 (DNS) | Clientes usam o AdGuard (10.10.30.5) para resolver nomes. |
 | SERVER (30) | WAN | HTTPS/DNS | Updates e serviços. |
-| IOT (50) | LOCAL | - | BLOQUEADO (Acesso somente à Internet). Dispositivos IoT usam AdGuard (10.10.30.5). |
+| Roku (`10.10.50.105`) | DockerHost (`10.10.30.10`) | TCP 8096 | Acesso direto e exclusivo ao Jellyfin. |
+| IOT (50) | RFC1918 | ANY | BLOQUEADO após as exceções explícitas. |
+| IOT (50) | WAN | ANY | Acesso normal à Internet após o bloqueio das redes privadas. |
 | Raspberry Pi | Proxmox (Dropbear) | TCP/SSH 2222 | Acesso de emergência para desbloqueio de disco (Via VPN). |
 | Proxmox | Raspberry Pi | TCP 3493 (NUT) | Leitura de status de bateria. |
 | TRUSTED (20) | ISP LAN | UDP 53 (DNS) | Failover: Clientes acessam AdGuard Secundário (192.168.1.5) se o Primário cair. |
 | VPN (Tailscale) | SERVER (30) | HTTPS/SSH | Acesso remoto via Gateway DockerHost (com NAT). |
+
+### Política efetiva da VLAN 50
+
+Alias utilizado no OPNsense:
+
+```text
+RFC1918
+├── 10.0.0.0/8
+├── 172.16.0.0/12
+└── 192.168.0.0/16
+```
+
+Ordem das regras:
+
+```text
+1. PASS  Roku → Jellyfin:8096
+2. PASS  IOT → AdGuard Primary:53
+3. PASS  IOT → AdGuard Secondary:53
+4. BLOCK IOT → RFC1918
+5. PASS  IOT → ANY
+```
+
+Como o bloqueio RFC1918 precede o `PASS ANY`, a última regra representa efetivamente acesso à Internet.
 
 ## Estrutura de Interfaces (OPNsense)
    - Para referência de manutenção (Drivers VirtIO).

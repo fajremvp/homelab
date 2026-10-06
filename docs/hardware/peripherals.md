@@ -80,6 +80,27 @@ A configuração foi otimizada para ambientes de apartamento (alta interferênci
 - **Multiplexação:** Protocolo **OFDMA** habilitado nativamente para baixar latência de dispositivos concorrentes.
 - **Gerenciamento:** IP Fixo `192.168.1.10`, VLAN 1 (Untagged). Time Sync via `a.ntp.br`.
 
+### Segmentação e Segurança do SSID IoT
+
+O SSID:
+
+```text
+Homelab_IoT → VLAN 50
+```
+
+mantém o tagging 802.1Q normalmente, porém o recurso `Guest Network` do Omada está **desabilitado em 2.4 GHz e 5 GHz**.
+
+Motivo: durante a integração da Roku TV com o Jellyfin em 05/10/2026, foi confirmado que `Guest Network` bloqueava destinos RFC1918 diretamente no AP, antes de o tráfego chegar ao OPNsense. Isso impedia a criação de exceções de firewall controladas.
+
+A separação de responsabilidades atual é:
+
+```text
+EAP610   → Wi-Fi e VLAN tagging
+OPNsense → roteamento e firewall inter-VLAN
+```
+
+Não foi localizada uma opção separada de client isolation na configuração atual do EAP. Portanto, o projeto **não assume isolamento L2 entre clientes da própria VLAN 50**; a proteção documentada refere-se principalmente ao acesso entre VLANs/redes.
+
 ### Especificações
 - **Padrão:** Wi-Fi 6 (802.11ax), retrocompatível com ac/n/g/b/a.
 - **Frequência:** Dual-Band simultâneo (2.4 GHz e 5 GHz).
