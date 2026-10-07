@@ -4,6 +4,24 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-10-06
+**Status:** ✅ Sucesso
+
+**Foco:** Revisão do ecossistema Arr e alteração da política de seeding do qBittorrent.
+
+- **Revisão do Ecossistema:** Foi realizada uma revisão das principais ferramentas e companions atuais do ecossistema Arr em outubro de 2026 para identificar possíveis lacunas na Media Stack. A conclusão foi que o núcleo atual já cobre adequadamente aquisição, indexação, downloads problemáticos, legendas, reprodução, observabilidade e notificações, evitando adicionar serviços sem uma necessidade concreta.
+- **Recyclarr:** Avaliado como forma de transformar Quality Profiles, Custom Formats e outras configurações internas de Radarr/Sonarr em configuração declarativa. Foi deliberadamente não adotado porque o estado persistente das aplicações em `/opt/*` já é protegido por Restic/B2 e pelos checkpoints de DR. O benefício adicional de desired state versionado não compensa atualmente outra ferramenta, considerando que existe apenas uma instância dos Arrs e essas configurações mudam pouco.
+- **Maintainerr:** Avaliado para automação do lifecycle da biblioteca. Não adotado porque o workflow atual já consiste em remover manualmente a mídia após assisti-la quando ela não precisa ser mantida. Pode ser reconsiderado caso o storage seja expandido e a biblioteca passe a permanecer armazenada por períodos significativamente maiores.
+- **Subgen:** Avaliado como fallback de legendas geradas localmente por Whisper. Não adotado porque Bazarr com OpenSubtitles.com, SubDL e Gestdown.info não apresentou até agora falhas recorrentes de cobertura que justifiquem o custo adicional de CPU e manutenção.
+- **Unpackerr:** Avaliado para tratamento de releases compactadas em RAR. Não implantado porque esse cenário nunca ocorreu na stack atual. Permanece como solução conhecida caso downloads concluídos passem a falhar na importação por estarem compactados.
+- **Política Anterior de Seeding:** O qBittorrent estava configurado para parar torrents ao atingir ratio `1.0` ou `2880 minutos` de seeding, equivalentes a 48 horas.
+- **Nova Política de Seeding:** Foram desabilitados os três limites globais de `Ratio`, `Total Seeding Time` e `Inactive Seeding Time`. Torrents saudáveis passam a permanecer disponíveis indefinidamente enquanto a mídia correspondente for mantida localmente.
+- **Motivação:** O layout único `/mnt/media/data/{torrents,media}` utiliza hardlinks, portanto manter simultaneamente os caminhos de torrent e biblioteca não duplica os blocos físicos ocupados. Não havia vantagem de armazenamento em interromper o seeding após 48 horas. Manter o torrent disponível por mais tempo também aumenta a contribuição para a rede BitTorrent, especialmente em swarms menos populares.
+- **Lifecycle:** Quando uma mídia for deliberadamente descartada, o fluxo esperado passa a ser remover o item da biblioteca e também o torrent com seus dados. O espaço físico somente é liberado após a remoção do último hardlink.
+- **Cleanuparr:** A mudança não altera o tratamento de downloads problemáticos. Torrents stalled ou presos em metadata continuam sujeitos às regras de strikes, remoção e Replacement Search do Cleanuparr; o seeding ilimitado vale para conteúdo saudável.
+- **Auditoria do qBittorrent:** A revisão da GUI também confirmou `500` conexões globais, `100` por torrent, `20` upload slots globais, `4` por torrent, `3` downloads ativos, `3` uploads ativos e `5` torrents ativos. A documentação anterior possuía valores antigos para os limites de upload/torrents ativos e foi corrigida.
+- **Resultado:** O lifecycle dos torrents passa a acompanhar o lifecycle real da mídia: enquanto os dados forem mantidos, a stack continua contribuindo com a swarm; quando a mídia é descartada, os hardlinks correspondentes são removidos e o armazenamento é liberado.
+
 ## 2026-10-05
 **Status:** ✅ Sucesso
 

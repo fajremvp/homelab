@@ -11,6 +11,13 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-10-06] - Política de Seeding da Media Stack
+
+### Alterado (Changed)
+- **qBittorrent:** Removidos os limites globais de ratio (`1.0`), tempo total de seeding (`48h`) e tempo inativo. Torrents saudáveis passam a permanecer em seeding sem prazo enquanto a mídia correspondente continuar armazenada.
+- **Lifecycle de Mídia:** O lifecycle de seeding passa a acompanhar o lifecycle da biblioteca. A remoção deliberada de conteúdo deve eliminar tanto o hardlink da biblioteca quanto o torrent correspondente para liberar definitivamente os blocos do filesystem.
+- **Documentação do qBittorrent:** Sincronizados os limites operacionais atuais com o estado real da aplicação: 20 upload slots globais, 4 por torrent, 3 downloads ativos, 3 uploads ativos e 5 torrents ativos.
+
 ## [2026-10-05] - Integração da Roku TV com Jellyfin
 
 ### Adicionado (Added)

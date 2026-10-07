@@ -1,7 +1,7 @@
 # Runbook — Media Stack
 
 - **Estado:** funcional e validado
-- **Data de referência:** 2026-09-21
+- **Data de referência:** 2026-10-06
 - **Host:** DockerHost — `10.10.30.10`
 - **Orquestração:** Docker Compose + Ansible
 - **Repositório:** `homelab`
@@ -740,8 +740,8 @@ Limites:
 Global connections:       500
 Connections per torrent:  100
 
-Global upload slots:      50
-Upload slots per torrent: 10
+Global upload slots:      20
+Upload slots per torrent: 4
 ```
 
 Proxy:
@@ -770,8 +770,8 @@ Anonymous Mode:         OFF
 Torrent Queueing: ON
 
 Maximum active downloads: 3
-Maximum active uploads:   8
-Maximum active torrents: 10
+Maximum active uploads:   3
+Maximum active torrents:  5
 
 Do not count slow torrents:
 ON
@@ -781,13 +781,15 @@ ON
 
 ## Seeding
 
+Política vigente desde 06/10/2026:
+
 ```text
-Ratio limit:       1.0
-Seeding time:      48 h
-Action:            Stop
+Ratio limit:                 OFF / unlimited
+Total seeding time limit:    OFF / unlimited
+Inactive seeding time limit: OFF / unlimited
 ```
 
-O runbook **não assume remoção automática dos dados ao atingir esses limites**: o valor confirmado é `Stop`.
+O objetivo é continuar contribuindo com a rede BitTorrent enquanto a mídia correspondente continuar armazenada localmente, em vez de interromper o seeding após um ratio ou período arbitrário.
 
 ---
 
@@ -2769,7 +2771,9 @@ media/movie.mkv → inode X
 
 a mídia continua existindo, mas qBittorrent não consegue mais seedar aquele conteúdo através daquele caminho.
 
-A política confirmada de qBittorrent é **STOP em ratio 1.0 ou 48h**; remoção automática posterior não foi documentada de forma suficiente para entrar neste runbook como comportamento garantido.
+A política vigente desde 06/10/2026 é manter o seeding **sem limite global de ratio, tempo total ou tempo de inatividade**.
+
+Enquanto a mídia continuar armazenada, o hardlink em `/data/torrents` também é mantido para que o qBittorrent possa continuar contribuindo com a swarm.
 
 ---
 
@@ -3583,6 +3587,26 @@ Essa decisão foi validada por uma troca real de nomes de devices após reboot.
 
 ---
 
+## Seeding enquanto a mídia existir
+
+Desde 06/10/2026, os limites globais de ratio, tempo total e tempo inativo de seeding permanecem desabilitados no qBittorrent.
+
+A política anterior de ratio `1.0` ou `48 horas`, seguida de `Stop`, foi abandonada.
+
+A nova decisão é manter torrents saudáveis disponíveis enquanto a mídia correspondente permanecer armazenada.
+
+Motivações:
+
+- Contribuir por mais tempo com a rede BitTorrent, especialmente em swarms pouco populares.
+- Aproveitar os hardlinks existentes para manter a biblioteca e os arquivos de torrent sem duplicação física do conteúdo.
+- Associar o lifecycle dos torrents ao lifecycle real da mídia, em vez de utilizar limites arbitrários de tempo ou ratio.
+
+A remoção permanece manual e exige eliminar tanto o arquivo da biblioteca quanto o torrent correspondente. O espaço físico é liberado somente quando o último hardlink é removido.
+
+Limites de concorrência e gerenciamento de downloads continuam independentes dessa política.
+
+---
+
 ## Jellyfin read-only
 
 Jellyfin é consumidor da biblioteca.
@@ -3831,6 +3855,135 @@ Bluray-1080p
 pode resultar em episódios de aproximadamente 8–13 GiB e temporada de ~47.8 GiB.
 
 Como o disco possui ~393 GiB úteis, os limites de tamanho devem ser revisitados se esse padrão se repetir.
+
+---
+
+## Recyclarr
+
+Avaliado em 06/10/2026 e deliberadamente não adotado.
+
+O Recyclarr permitiria transformar configurações internas de Radarr/Sonarr, como Quality Profiles, Custom Formats, naming e Quality Definitions, em configuração declarativa versionada.
+
+A infraestrutura da Media Stack já segue esse modelo para:
+
+```text
+Docker Compose
+Ansible
+SOPS
+Prometheus
+Alertmanager
+```
+
+Entretanto, o estado interno das aplicações é tratado de forma diferente:
+
+```text
+/opt/*
+→ estado persistente
+→ Restic/B2
+→ DR checkpoints
+```
+
+Essa estratégia já permite restaurar integralmente as configurações das aplicações após perda do DockerHost.
+
+A diferença reconhecida é:
+
+```text
+backup
+→ recupera o estado que existia
+
+Recyclarr
+→ reconstrói/sincroniza um desired state declarativo
+```
+
+No estado atual, há apenas uma instância de Radarr/Sonarr e as configurações de profiles/Custom Formats mudam pouco. Portanto, adicionar Recyclarr criaria mais uma ferramenta para operar sem resolver um problema prático existente.
+
+Reconsiderar caso surja algum destes cenários:
+
+```text
+múltiplas instâncias Radarr/Sonarr
+alterações frequentes de profiles/Custom Formats
+necessidade de diff/rollback semântico dessas configurações
+adoção sistemática de templates externos como TRaSH Guides
+```
+
+---
+
+## Maintainerr
+
+Avaliado em 06/10/2026 e deliberadamente não adotado no momento.
+
+Maintainerr automatizaria o lifecycle da biblioteca com regras baseadas em idade, estado de reprodução e outros critérios, removendo automaticamente mídia que deixou de ser relevante.
+
+O workflow atual é mais simples:
+
+```text
+assistir mídia
+→ decidir que não será mantida
+→ apagar manualmente
+```
+
+Como a biblioteca ainda é pequena, o disco dedicado possui capacidade limitada e o usuário já remove conteúdo conscientemente após o consumo, não existe hoje trabalho manual suficiente para justificar outra camada de automação destrutiva.
+
+Reconsiderar no futuro caso:
+
+```text
+o storage seja expandido
+a biblioteca passe a ser mantida por períodos maiores
+o volume de conteúdo torne a limpeza manual inconveniente
+```
+
+---
+
+## Subgen
+
+Avaliado em 06/10/2026 e deliberadamente não adotado.
+
+Subgen poderia utilizar modelos Whisper para gerar legendas localmente quando providers tradicionais não possuírem uma legenda adequada.
+
+O Bazarr atual, entretanto, já utiliza:
+
+```text
+OpenSubtitles.com
+SubDL
+Gestdown.info
+```
+
+e não houve até agora um problema recorrente de ausência de legendas.
+
+Adicionar Subgen implicaria:
+
+```text
+mais um container
+uso adicional significativo de CPU
+modelos de transcrição
+mais um fluxo para operar e monitorar
+```
+
+sem resolver uma necessidade observada.
+
+Reconsiderar somente se o Bazarr começar a falhar repetidamente em encontrar legendas adequadas para conteúdo realmente consumido.
+
+---
+
+## Unpackerr
+
+Avaliado em 06/10/2026 e mantido apenas como solução contingencial.
+
+Unpackerr resolve releases distribuídas como arquivos compactados, principalmente RAR, extraindo o conteúdo para que Radarr/Sonarr possam importá-lo sem quebrar o fluxo de seeding.
+
+Até o momento nenhum download da stack apresentou esse problema.
+
+Portanto, não há motivo para manter um serviço permanente sem uma ocorrência real que o justifique.
+
+Reconsiderar caso passe a ocorrer repetidamente o padrão:
+
+```text
+qBittorrent conclui download
+→ release contém arquivos compactados
+→ Radarr/Sonarr não conseguem importar
+```
+
+Nesse cenário, Unpackerr seria a ferramenta preferida para resolver especificamente essa falha.
 
 ---
 
