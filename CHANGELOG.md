@@ -11,6 +11,20 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+## [2026-10-09] - Recuperação do NUT após Blecaute
+
+### Corrigido (Fixed)
+- **NUT Primary/Secondary:** Rotacionadas manualmente as credenciais dos monitores no Raspberry Pi e no Proxmox, eliminando o caractere `#` não escapado que provocava falha de parsing nas diretivas `MONITOR`.
+- **Proteção de Energia:** Restabelecida a execução dos serviços `nut-monitor.service`, com autenticação confirmada para os usuários Primary e Secondary.
+
+### Documentado (Documented)
+- **Incidente:** Registrado blecaute de 09/10/2026, durante o qual a bateria do nobreak foi esgotada sem registro de FSD ou desligamento gracioso.
+- **NUT:** Atualizada a documentação da lógica de bateria crítica e corrigido o atraso documentado de `130s` para os `140s` implementados no `ups-kill.sh`.
+
+### Validado (Verified)
+- **Serviços:** `nut-monitor.service` ativo e habilitado em ambos os hosts, com autenticações registradas pelo NUT Server.
+- **Limitação:** Desligamento completo não retestado por decisão operacional.
+
 ## [2026-10-06] - Política de Seeding da Media Stack
 
 ### Alterado (Changed)

@@ -30,7 +30,7 @@ Além disso, o fluxo padrão de shutdown do NUT sob `systemd` pode encerrar o dr
 **A Mitigação (`ups-kill.sh`):**
 O `SHUTDOWNCMD` no `upsmon.conf` do RPi foi alterado para executar um script customizado `/usr/local/bin/ups-kill.sh` que faz o seguinte:
 
-1. **Atraso Incondicional (`sleep 130`):** Cria uma janela de evacuação imutável baseada no tempo real cronometrado de desligamento do Proxmox (83s) + margem de segurança (47s). Isso impede que a desconexão precoce de rede do Proxmox faça o RPi cortar a energia com o ZFS ainda montado.
+1. Atraso Incondicional (`sleep 140`): Cria uma janela de evacuação baseada em medição anterior de aproximadamente 77 segundos para o desligamento do Proxmox, acrescida de 63 segundos de margem de segurança. O objetivo é permitir o encerramento das VMs/LXCs e a exportação segura do ZFS antes do comando de corte do nobreak.
 2. Usa `pkill -9 usbhid-ups` para assassinar o driver (bypasseando o cgroup do systemd que mataria o script junto).
 3. Executa `/usr/sbin/upsdrvctl shutdown`, ativando a guilhotina de 20 segundos do hardware.
 4. Executa `/sbin/shutdown -h now` para o RPi morrer graciosamente.

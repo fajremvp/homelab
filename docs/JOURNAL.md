@@ -4,6 +4,25 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
+## 2026-10-09
+**Status:** ✅ Diagnóstico e correção concluídos; desligamento completo não retestado
+
+**Foco:** Investigação de blecaute e correção da falha de desligamento automático do NUT.
+
+- **Incidente:** Por volta das 05h26, ocorreu uma interrupção no fornecimento de energia elétrica. O nobreak Intelbras Gamer Ultimate assumiu a alimentação do homelab, mantendo os equipamentos operacionais por aproximadamente uma hora.
+- **Alertas:** O Prometheus detectou `UpsOnBattery` às 05h26 e `UpsBatteryCriticalWarning` às 05h49, quando a bateria indicava 51% de carga.
+- **Falha de Desligamento:** Apesar da descarga da bateria e da detecção do estado `LB`, o dashboard do Grafana não registrou `FSD`. Os equipamentos permaneceram ligados até a perda de alimentação, sem evidência de desligamento gracioso.
+- **Sinalização Sonora:** Durante o blecaute, o nobreak apresentou bipes mais frequentes do que o habitual. O silenciamento foi acionado e indicado no equipamento, mas o alarme continuou. Suspeita-se de sinalização de fim de autonomia, porém nenhum código de alarme foi registrado para confirmação no momento.
+- **Investigação:** Após o retorno da energia, `nut-server` e `usbhid-ups` estavam funcionando normalmente, mas `nut-monitor.service` apresentava falha tanto no Raspberry Pi quanto no Proxmox.
+- **Causa Identificada:** As senhas utilizadas nas diretivas `MONITOR` continham o caractere `#` não escapado. O parser do NUT interpretava o restante da linha como comentário, produzindo `Unable to use old-style MONITOR line without a username` e `Fatal error: unusable configuration`.
+- **Limitação Forense:** Os logs persistidos do Raspberry Pi não cobriam o período anterior à queda. Portanto, não foi possível comprovar diretamente desde quando os monitores estavam inoperantes. A falha encontrada é compatível com a ausência de FSD observada no incidente.
+- **Correção:** As credenciais dos usuários `upsmon_local` e `proxmox` foram rotacionadas manualmente, utilizando senhas hexadecimais sem caracteres especiais. Os arquivos `/etc/nut/upsd.users` e `/etc/nut/upsmon.conf` foram atualizados nos respectivos hosts.
+- **Validação:** O `nut-monitor.service` retornou ao estado `active (running)` e permaneceu `enabled` em ambas as máquinas. O servidor NUT confirmou autenticação de `proxmox@192.168.1.200` às 13h57 e `upsmon_local@127.0.0.1` às 13h59.
+- **Aviso Residual:** O Proxmox continua registrando ausência de `/usr/lib/tmpfiles.d/nut-common-tmpfiles.conf`. O `ExecStartPre` correspondente permite ignorar a falha e o serviço funciona normalmente. Decidido não modificar os pacotes ou a unit systemd sem necessidade funcional.
+- **Decisões:** Mantido o gerenciamento manual das credenciais NUT, sem migração para Ansible Secrets ou SOPS + age. Não serão adicionados alertas específicos nem realizado blecaute artificial para testar a rotina.
+- **Resultado:** A configuração dos monitores foi corrigida e a autenticação Primary/Secondary foi restabelecida. A sequência completa de FSD e desligamento físico permanece sem nova validação após a correção.
+- **Aprendizado:** A disponibilidade do NUT Server e do exporter não garante a operação do `upsmon`. A telemetria pode continuar funcionando mesmo quando o mecanismo responsável pelo desligamento automático está inoperante.
+
 ## 2026-10-06
 **Status:** ✅ Sucesso
 
