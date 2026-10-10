@@ -201,12 +201,15 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
         * `FreshRSS` (Agregador RSS): [Implementado em 2026-08-26]
           - **Função:** Agregador RSS/Atom pessoal, substituindo o Miniflux.
           - **Local:** `/opt/services/freshrss`.
-          - **Imagem:** `freshrss/freshrss:1.29.1`.
+          - **Imagem:** `freshrss-custom:1.29.1`, construída a partir de `freshrss/freshrss:1.29.1` com Python, yt-dlp e Deno.
           - **Banco de Dados:** PostgreSQL 16 Alpine dedicado.
           - **Persistência:**
             - Aplicação/configuração: `/opt/services/freshrss/data/app`.
             - PostgreSQL: `/opt/services/freshrss/data/postgres`.
             - Extensões: `/opt/services/freshrss/extensions`.
+          - **Resumos do YouTube:** A extensão AI Summary utiliza fork próprio com suporte a transcrições obtidas pelo `yt-dlp`, mantendo fallback para o conteúdo RSS quando necessário.
+          - **Saída de Rede do yt-dlp:** Wrapper incorporado à imagem customizada direciona exclusivamente o `yt-dlp` ao proxy HTTP autenticado do Gluetun (`gluetun:8888`), com saída pela ProtonVPN. As demais conexões do FreshRSS permanecem nas rotas normais.
+          - **Segredos:** URL do proxy injetada via `YTDLP_PROXY_URL`, gerada pelo Ansible a partir do segredo `gluetun_http_proxy_password` armazenado no SOPS + age.
           - **Ingress:** `https://freshrss.home` via Traefik.
           - **Autenticação:** ForwardAuth do Authentik + autenticação nativa do FreshRSS.
           - **Atualização de Feeds:** Cron interno do container nos minutos `7,37`, além de atualização manual completa pela interface.
@@ -222,6 +225,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Serviços:** Seerr, Radarr, Sonarr, Prowlarr, Bazarr, Jellyfin, qBittorrent, Gluetun, Cleanuparr e FlareSolverr.
           - **Storage:** Disco dedicado em `/mnt/media`; configurações persistentes em `/opt/services/media/config`.
           - **Privacidade:** qBittorrent compartilha o namespace de rede do Gluetun e utiliza ProtonVPN WireGuard com Kill Switch e Port Forwarding dinâmico.
+          - **Proxy Compartilhado:** Gluetun também disponibiliza proxy HTTP autenticado na porta interna `8888` para a extração de transcrições do FreshRSS, sem exposição direta à LAN.
           - **Ingress:** Painéis administrativos via Traefik + Authentik; Jellyfin utiliza autenticação nativa para preservar compatibilidade com seus clientes.
           - **Operação:** Ver [`docs/runbooks/media-stack.md`](../runbooks/media-stack.md).
 

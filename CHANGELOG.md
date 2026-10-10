@@ -11,6 +11,22 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 - Automatizar testes de alertas.
 
 ---
+
+## [2026-10-09] - Recuperação das Transcrições do YouTube no FreshRSS
+
+### Corrigido (Fixed)
+- **FreshRSS / AI Summary:** Restabelecida a obtenção de transcrições do YouTube após falhas do `yt-dlp` com `HTTP 429 Too Many Requests` e desafio antibot na saída habitual do DockerHost.
+- **Roteamento do yt-dlp:** Requisições do extrator passaram a utilizar o proxy HTTP do Gluetun, com saída pela ProtonVPN, mantendo o fallback para o conteúdo RSS quando a transcrição não estiver disponível.
+
+### Adicionado (Added)
+- **Gluetun:** Habilitado proxy HTTP autenticado na porta interna `8888`, sem publicação direta no DockerHost. Credencial gerenciada por SOPS + age e injetada pelo Ansible.
+- **FreshRSS:** Adicionado wrapper versionado para o `yt-dlp`, permitindo aplicar `--proxy` mesmo com `--ignore-config`, sem modificar o fork da extensão AI Summary ou redirecionar globalmente as conexões da aplicação.
+
+### Validado (Verified)
+- **Rede:** Confirmadas saídas públicas distintas entre a conexão normal do FreshRSS e o proxy da ProtonVPN, com túnel HTTPS via `CONNECT 200`.
+- **Transcrição:** Confirmados listagem e download de legendas automáticas em formato JSON3 pelo usuário `www-data`, além da geração de resumo baseado na transcrição pela interface do FreshRSS.
+- **Deploy:** Playbook Ansible concluído com `failed=0` e `unreachable=0`; FreshRSS, PostgreSQL e Gluetun saudáveis após a implantação.
+
 ## [2026-10-09] - Recuperação do NUT após Blecaute
 
 ### Corrigido (Fixed)

@@ -17,6 +17,14 @@ services:
       # Permite que o Cleanuparr valide a saúde real do túnel VPN
       - HEALTH_SERVER_ADDRESS=0.0.0.0:9999
 
+      # Proxy HTTP autenticado para o yt-dlp do FreshRSS
+      # Não publicar a porta 8888 no DockerHost
+      - HTTPPROXY=on
+      - HTTPPROXY_LISTENING_ADDRESS=:8888
+      - HTTPPROXY_USER=freshrss
+      - HTTPPROXY_PASSWORD=${GLUETUN_HTTP_PROXY_PASSWORD}
+      - HTTPPROXY_STEALTH=on
+
       - VPN_SERVICE_PROVIDER=protonvpn
       - VPN_TYPE=wireguard
       - WIREGUARD_PRIVATE_KEY=${VPN_WIREGUARD_PRIVATE_KEY}

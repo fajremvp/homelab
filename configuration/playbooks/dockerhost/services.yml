@@ -395,6 +395,7 @@
           FRESHRSS_VERSION={{ freshrss_version }}
           YTDLP_VERSION={{ freshrss_ytdlp_version }}
           DENO_VERSION={{ freshrss_deno_version }}
+          YTDLP_PROXY_URL=http://freshrss:{{ gluetun_http_proxy_password }}@gluetun:8888
         owner: "1000"
         group: "1000"
         mode: "0600"
@@ -467,6 +468,7 @@
         dest: "{{ base_dir }}/media/.env"
         content: |
           VPN_WIREGUARD_PRIVATE_KEY={{ media_vpn_wireguard_private_key }}
+          GLUETUN_HTTP_PROXY_PASSWORD={{ gluetun_http_proxy_password }}
         owner: "1000"
         group: "1000"
         mode: "0600"

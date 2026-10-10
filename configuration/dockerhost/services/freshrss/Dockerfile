@@ -14,8 +14,12 @@ RUN apt-get update \
 
 RUN curl -fsSL \
       "https://github.com/yt-dlp/yt-dlp/releases/download/${YTDLP_VERSION}/yt-dlp" \
-      -o /usr/local/bin/yt-dlp \
-    && chmod 0755 /usr/local/bin/yt-dlp
+      -o /usr/local/bin/yt-dlp.real \
+    && chmod 0755 /usr/local/bin/yt-dlp.real
+
+COPY yt-dlp-wrapper.sh /usr/local/bin/yt-dlp
+
+RUN chmod 0755 /usr/local/bin/yt-dlp
 
 RUN curl -fsSL \
       "https://github.com/denoland/deno/releases/download/v${DENO_VERSION}/deno-x86_64-unknown-linux-gnu.zip" \

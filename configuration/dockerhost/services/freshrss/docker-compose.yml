@@ -21,6 +21,9 @@ services:
       TZ: America/Sao_Paulo
       FRESHRSS_ENV: production
 
+      # Usado exclusivamente pelo wrapper do yt-dlp
+      YTDLP_PROXY_URL: ${YTDLP_PROXY_URL}
+
       # Atualiza automaticamente os feeds duas vezes por hora.
       # Horários não-redondos evitam concentrar tarefas no mesmo minuto.
       CRON_MIN: '7,37'

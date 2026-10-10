@@ -4,7 +4,29 @@ Este arquivo documenta a jornada, erros, aprendizados e decisões diárias.
 Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
-## 2026-10-09
+
+## 2026-10-09 — Recuperação das Transcrições do YouTube no FreshRSS
+**Status:** ✅ Sucesso
+
+**Foco:** Diagnóstico e correção de falhas na extração de transcrições do YouTube pela extensão AI Summary.
+
+- **Incidente:** A partir de aproximadamente 07/10/2026, a extensão AI Summary começou a utilizar novamente o título e a descrição RSS como contexto para os resumos de vídeos do YouTube, em vez das transcrições. Nenhuma alteração recente havia sido realizada na extensão ou nas dependências do container.
+- **Investigação:** A execução manual do `yt-dlp 2026.08.19` no container FreshRSS revelou respostas `HTTP 429 Too Many Requests` e `Sign in to confirm you're not a bot`. O erro persistiu após mais de dez horas. Python e Deno estavam disponíveis e funcionais.
+- **Isolamento da Causa:** O bloqueio ocorria durante a consulta ao YouTube, antes da chamada ao modelo Gemini. A utilização da mesma API key do Gemini em outros projetos não explicava a falha de obtenção das transcrições.
+- **Teste de Rede:** Um container temporário executado com `--network container:gluetun` conseguiu consultar o mesmo vídeo e listar suas legendas automáticas utilizando a saída ProtonVPN. Um segundo teste confirmou o download da transcrição em formato JSON3, sem cookies de autenticação.
+- **Decisão Arquitetural:** Reutilizar o Gluetun existente na Media Stack como gateway de saída apenas para o `yt-dlp`. Não colocar o FreshRSS inteiro no namespace de rede da VPN, evitando alterações desnecessárias nas conexões com Traefik, PostgreSQL, feeds RSS e Gemini.
+- **Gluetun:** Habilitado proxy HTTP autenticado na porta interna `8888`, com `HTTPPROXY_STEALTH=on` e sem publicação da porta no DockerHost. O segredo `gluetun_http_proxy_password` é armazenado com SOPS + age.
+- **FreshRSS:** Criado `yt-dlp-wrapper.sh`, incorporado à imagem customizada pelo Dockerfile. O executável original foi preservado como `/usr/local/bin/yt-dlp.real`. O wrapper injeta `--proxy` a partir de `YTDLP_PROXY_URL` e preserva os argumentos originais, inclusive `--ignore-config`.
+- **Escopo:** Nenhuma alteração foi realizada no fork `fajremvp/xExtension-AiSummary`, na API do Gemini ou nas versões fixadas de FreshRSS, yt-dlp e Deno. O fallback para a descrição RSS permanece disponível.
+- **Infraestrutura como Código:** Configuração declarada nos Docker Compose do FreshRSS e da Media Stack, com injeção das variáveis e credenciais pelo playbook `configuration/playbooks/dockerhost/services.yml`.
+- **Deploy:** A execução do Ansible terminou com `ok=49`, `changed=16`, `failed=0` e `unreachable=0`. FreshRSS, PostgreSQL e Gluetun retornaram ao estado `healthy`; o qBittorrent também foi observado em execução após a recriação do Gluetun.
+- **Validação de Rede:** A saída normal do FreshRSS permaneceu no IP público do provedor, enquanto o proxy apresentou um endereço diferente da ProtonVPN. Requisições HTTP e HTTPS pelo proxy funcionaram, incluindo `CONNECT 200`.
+- **Validação do Wrapper:** Ao substituir temporariamente `YTDLP_PROXY_URL` por `http://127.0.0.1:1` apenas na execução de teste, o `yt-dlp` retornou `Connection refused`, comprovando que as chamadas realmente utilizam o proxy configurado.
+- **Validação Funcional:** Executando como `www-data`, o `yt-dlp` listou as legendas automáticas e baixou um arquivo JSON3 de 175.536 bytes. Pela interface do FreshRSS, a extensão voltou a produzir um resumo baseado no conteúdo da transcrição.
+- **Limitação:** A solução depende da disponibilidade do túnel ProtonVPN e da aceitação do IP de saída pelo YouTube. Novos bloqueios ou vídeos sem transcrição utilizável ainda podem provocar fallback para o conteúdo RSS.
+- **Resultado:** Restabelecida a geração de resumos do YouTube baseados em transcrições, sem autenticação Google e sem modificar o fork da extensão, mantendo o gerenciamento declarativo via Git, Ansible e SOPS.
+
+## 2026-10-09 — Incidente do Nobreak e Correção do NUT
 **Status:** ✅ Diagnóstico e correção concluídos; desligamento completo não retestado
 
 **Foco:** Investigação de blecaute e correção da falha de desligamento automático do NUT.
