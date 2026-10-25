@@ -12,6 +12,15 @@ e este projeto adere ao versionamento semântico (onde aplicável).
 
 ---
 
+## [2026-10-25] - Recuperação do Armazenamento do Syncthing
+
+### Corrigido (Fixed)
+- **Syncthing:** Removidas versões históricas de backups automáticos do Firefox que acumulavam aproximadamente 49 GiB no diretório `.stversions` do DockerHost.
+
+### Validado (Verified)
+- **Armazenamento:** Utilização de `/mnt/syncthing` reduzida de 90% para 38%, recuperando aproximadamente 48 GiB.
+- **Observabilidade:** Confirmado o ciclo `firing → resolved` do alerta `HostOutOfDiskSpace` através de Prometheus, Alertmanager e ntfy.
+
 ## [2026-10-09] - Recuperação das Transcrições do YouTube no FreshRSS
 
 ### Corrigido (Fixed)

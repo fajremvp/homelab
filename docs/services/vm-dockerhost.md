@@ -145,7 +145,7 @@ O Docker Daemon foi configurado (`/etc/docker/daemon.json`) para rotacionar logs
           - **Função:** Centralização de arquivos (Hub-and-Spoke).
           - **Armazenamento Híbrido:**
               - *Config:* SSD de Boot (`/opt/services/syncthing/config`) -> Backup Restic Diário.
-              - *Dados:* Disco Virtual 100GB (`/mnt/syncthing`) -> Sem Backup Offsite (Dados Brutos).
+              - *Dados:* Disco virtual de 100 GB (`/mnt/syncthing`, ext4, `scsi1`, `backup=0` no Proxmox). O conteúdo bruto não possui backup off-site integral; a exceção é `/mnt/syncthing/Mirror`, incluída explicitamente no Restic/B2.
           - **Ingress:** `syncthing.home` (Porta 8384).
           - **Portas de Dados:** 22000/TCP+UDP expostas para a LAN/WAN.
           - **Política de Sync (Atualizada em 2026-03-07):**

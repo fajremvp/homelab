@@ -5,6 +5,33 @@ Para mudanças estruturais formais, veja o [CHANGELOG](../CHANGELOG.md).
 
 ---
 
+## 2026-10-25 — Saturação do Disco do Syncthing por Versionamento de Backups do Firefox
+**Status:** ✅ Sucesso
+
+**Foco:** Investigação e recuperação do espaço em disco da VM DockerHost, após alerta de armazenamento gerado pelo Prometheus.
+
+- **Incidente:** O Prometheus disparou `HostOutOfDiskSpace` para o DockerHost (`10.10.30.10:9100`), indicando menos de 10% de espaço disponível no filesystem `ext4` montado em `/mnt/syncthing`. O alerta foi encaminhado pelo Alertmanager ao receiver `ntfy-infra`.
+- **Armazenamento:** O volume afetado corresponde ao disco virtual de 100 GB (`scsi1`, `local-zfs`, `backup=0`) da VM 105 no Proxmox, identificado como `/dev/sdc` no momento do incidente.
+- **Diagnóstico Inicial:** `df -hT` indicou 98 GiB de capacidade, 84 GiB ocupados e apenas 9,7 GiB disponíveis (90% de utilização). O FileBrowser Quantum mostrava aproximadamente 25,8 GB de 97,9 GB (26%), gerando uma aparente divergência.
+- **Investigação:** O comando `du -xhd1 /mnt/syncthing` identificou 64 GiB em `Acer-Aspire`, 20 GiB em `M55` e 12 MiB em `Mirror`. A análise dos diretórios ocultos `.stversions` revelou aproximadamente 56,7 GiB de versões históricas, concentradas principalmente em `Acer-Aspire/Important`.
+- **Causa Identificada:** O diretório `/mnt/syncthing/Acer-Aspire/Important/.stversions/Backups/Firefox/Restore Firefox` acumulava aproximadamente 49 GiB de versões históricas de backups automáticos do Firefox. Diversos arquivos `FirefoxBackup_*.html`, com aproximadamente 100–110 MiB cada, haviam sido gerados em intervalos curtos.
+- **Referência Externa:** Durante a investigação, foi identificado o [Mozilla Bug 2057333](https://bugzilla.mozilla.org/show_bug.cgi?id=2057333), que relata a geração excessivamente frequente de backups automáticos do perfil do Firefox, inclusive a cada poucos minutos. Os relatos descrevem acúmulo de versões em serviços de sincronização, comportamento semelhante ao observado neste incidente. Desenvolvedores da Mozilla reconheceram a frequência excessiva e investigam possíveis correções. Entretanto, não foi comprovado que o ambiente local seja afetado pelo mesmo defeito, permanecendo apenas como uma possível relação.
+- **Fator Contribuinte:** O Syncthing utiliza `Staggered File Versioning`, com `Maximum Age = 0` (sem limite máximo de idade). O versionamento manteve cópias históricas desses arquivos. O FileBrowser Quantum ocultava os diretórios `.stversions`, explicando a diferença em relação à ocupação reportada pelo filesystem.
+- **Mitigação na Origem:** O backup automático do Firefox foi desativado no notebook Acer Aspire para interromper a geração recorrente desses arquivos.
+- **Verificação Prévia:** Não foram encontrados backups atuais correspondentes ao padrão `FirefoxBackup_*.html` no diretório sincronizado de backups do Firefox. Foi autorizado o descarte de todas as versões históricas desses backups.
+- **Correção:** Executado no DockerHost:
+  ```bash
+  sudo find '/mnt/syncthing/Acer-Aspire/Important/.stversions/Backups/Firefox' \
+    -type f -name 'FirefoxBackup_*.html' -delete
+  ```
+- **Validação do Armazenamento:** Após a exclusão, o uso do volume caiu de 84 GiB para 36 GiB, e o espaço disponível aumentou de 9,7 GiB para 58 GiB. A utilização reportada pelo `df` passou de 90% para 38%, recuperando aproximadamente 48 GiB.
+- **Validação do Versionamento:** O tamanho total de `/mnt/syncthing/Acer-Aspire/Important/.stversions` caiu de aproximadamente 49 GiB para 397 MiB. Os históricos de outros tipos de arquivo foram preservados.
+- **Validação da Observabilidade:** O Alertmanager enviou uma notificação `resolved` pelo ntfy. O alerta registrou `startsAt=2026-10-25T17:41:27.082Z` e `endsAt=2026-10-25T18:26:12.082Z`, correspondentes a 14h41 e 15h26 no horário de Brasília. A duração registrada foi de aproximadamente 45 minutos.
+- **Decisão sobre Retenção:** Mantido `Staggered File Versioning` com `Maximum Age = 0`, sem limite máximo de idade. A retenção permanece deliberadamente sem prazo máximo, e o crescimento do armazenamento continuará sujeito a monitoramento e manutenção manual quando necessário.
+- **Escopo:** Nenhuma alteração foi realizada no Docker Compose, no Proxmox, nas regras Prometheus ou na configuração do Syncthing. Não foi necessário expandir o disco virtual nem reiniciar a VM.
+- **Resultado:** Resolvida a saturação de armazenamento sem impacto identificado nos demais serviços. O fluxo `Prometheus → Alertmanager → ntfy` detectou a condição e notificou sua resolução.
+- **Aprendizado:** Diretórios de versionamento podem consumir mais espaço que os arquivos ativos. Ferramentas que ocultam arquivos internos não devem substituir `df` e `du` no diagnóstico do filesystem. Pastas com arquivos frequentemente recriados exigem atenção especial quando o versionamento não possui limite máximo de idade.
+
 ## 2026-10-09 — Recuperação das Transcrições do YouTube no FreshRSS
 **Status:** ✅ Sucesso
 
